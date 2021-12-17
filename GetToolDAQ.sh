@@ -2,12 +2,12 @@
 
 init=1
 tooldaq=1
-boostflag=1
-zmq=1
+boostflag=0
+zmq=0
 final=1
 rootflag=0
 setup=1
-
+threads=`nproc --all`
 
 while [ ! $# -eq 0 ]
 do
@@ -101,7 +101,7 @@ git clone https://github.com/ToolFramework/ToolFrameworkCore.git
 
 cd ToolFrameworkCore
 make clean
-make
+make -j $threads
 
 export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
 cd ../
@@ -115,7 +115,7 @@ then
     cd zeromq-4.0.7
     
     ./configure --prefix=`pwd`
-    make -j8
+    make -j $threads
     make install
     
     export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
@@ -134,7 +134,7 @@ then
     mkdir install 
     
     ./bootstrap.sh --prefix=`pwd`/install/  > /dev/null 2>/dev/null
-    ./b2 install iostreams
+    ./b2 install iostreams -j $threads
     
     export LD_LIBRARY_PATH=`pwd`/install/lib:$LD_LIBRARY_PATH
     cd ../
@@ -150,7 +150,7 @@ then
     cd root
     
     ./configure --enable-rpath
-    make -j8
+    make -j $threads
     make install
     
     source ./bin/thisroot.sh
@@ -165,7 +165,7 @@ then
     
     cd ToolDAQFramework
     make clean
-    make
+    make -j $threads
     export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
     cd ../
     
@@ -193,10 +193,10 @@ then
     git add configfiles/*
     git add ./Makefile
     git add ./CMakeLists.txt
-    sed -i 's/setup=1/setup=0/' GetToolDAQ.sh
+    sed -i 's/setup=0/setup=0/' GetToolDAQ.sh
 fi   
     make clean
-    make 
+    make -j $threads
     
     export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
 fi
