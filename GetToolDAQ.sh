@@ -2,8 +2,8 @@
 
 init=1
 tooldaq=1
-boostflag=0
-zmq=0
+boostflag=1
+zmq=1
 final=1
 rootflag=0
 setup=1
@@ -186,8 +186,8 @@ then
     cp -r ./Dependancies/ToolDAQFramework/UserTools/template/* ./UserTools/template
     cp -r ./Dependancies/ToolFrameworkCore/configfiles/*.sh ./configfiles
     cp -r ./Dependancies/ToolDAQFramework/configfiles/* ./configfiles
-    cp ./Dependancies/ToolDAQFrameworkCore/Makefile.Application ./Makefile
-    cp ./Dependancies/ToolDAQFrameworkCore/CMakeLists.txt.Application ./CMakeLists.txt
+    cp ./Dependancies/ToolDAQFramework/Makefile.Application ./Makefile
+    cp ./Dependancies/ToolDAQFramework/CMakeLists.txt.Application ./CMakeLists.txt
     git add DataModel/*
     git add UserTools/*
     git add configfiles/*

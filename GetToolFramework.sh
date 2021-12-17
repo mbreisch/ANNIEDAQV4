@@ -4,6 +4,7 @@ init=1
 toolframework=1
 final=1
 setup=1
+threads=`nproc --all`
 
 while [ ! $# -eq 0 ]
 do
@@ -53,7 +54,7 @@ then
 git clone https://github.com/ToolFramework/ToolFrameworkCore.git
 cd ToolFrameworkCore
 make clean
-make
+make -j $threads
 export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
 cd ../
 
@@ -81,7 +82,7 @@ then
     sed -i 's/setup=1/setup=0/' GetToolFramework.sh
 fi
     make clean
-    make 
+    make -j $threads
     
     export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
 fi
