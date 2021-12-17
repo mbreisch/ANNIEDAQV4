@@ -3,6 +3,7 @@
 init=1
 toolframework=1
 final=1
+setup=1
 
 while [ ! $# -eq 0 ]
 do
@@ -65,6 +66,8 @@ then
     
     echo "current directory"
     echo `pwd`
+if [ $setup -eq 1 ]
+then
     cp -r ./Dependancies/ToolFrameworkCore/DataModel/* ./DataModel
     cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependancies/ToolFrameworkCore/configfiles/* ./configfiles
@@ -75,6 +78,8 @@ then
     git add configfiles/*
     git add ./Makefile
     git add ./CMakeLists.txt
+    sed -i 's/setup=1/setup=0/' GetToolFramework.sh
+fi
     make clean
     make 
     
