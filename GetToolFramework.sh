@@ -68,9 +68,13 @@ then
     cp -r ./Dependancies/ToolFrameworkCore/DataModel/* ./DataModel
     cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependancies/ToolFrameworkCore/configfiles/* ./configfiles
+    cp ./Dependancies/ToolFrameworkCore/Makefile.Applcaition ./Makefile
+    cp ./Dependancies/ToolFrameworkCore/CMakeLists.txt.Application ./CMakeLists.txt
     git add DataModel/*
     git add UserTools/*
     git add configfiles/*
+    git add ./Makefile
+    git add ./CMakeLists.txt
     make clean
     make 
     
