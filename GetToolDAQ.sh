@@ -6,6 +6,8 @@ boostflag=1
 zmq=1
 final=1
 rootflag=0
+setup=1
+
 
 while [ ! $# -eq 0 ]
 do
@@ -177,15 +179,22 @@ then
     
     echo "current directory"
     echo `pwd`
+if [ $setup -eq 1 ]
+then   
     cp -r ./Dependancies/ToolDAQFramework/DataModel/* ./DataModel
     cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependancies/ToolDAQFramework/UserTools/template/* ./UserTools/template
     cp -r ./Dependancies/ToolFrameworkCore/configfiles/*.sh ./configfiles
     cp -r ./Dependancies/ToolDAQFramework/configfiles/* ./configfiles
-
-   # git add DataModel/*
-   # git add UserTools/*
-   # git add configfiles/*
+    cp ./Dependancies/ToolDAQFrameworkCore/Makefile.Application ./Makefile
+    cp ./Dependancies/ToolDAQFrameworkCore/CMakeLists.txt.Application ./CMakeLists.txt
+    git add DataModel/*
+    git add UserTools/*
+    git add configfiles/*
+    git add ./Makefile
+    git add ./CMakeLists.txt
+    sed -i 's/setup=1/setup=0/' GetToolDAQ.sh
+fi   
     make clean
     make 
     
