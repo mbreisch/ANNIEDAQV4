@@ -186,13 +186,13 @@ then
     cp -r ./Dependancies/ToolDAQFramework/UserTools/template/* ./UserTools/template
     cp -r ./Dependancies/ToolFrameworkCore/configfiles/*.sh ./configfiles
     cp -r ./Dependancies/ToolDAQFramework/configfiles/* ./configfiles
-    cp ./Dependancies/ToolDAQFramework/Makefile.Application ./Makefile
-    cp ./Dependancies/ToolDAQFramework/CMakeLists.txt.Application ./CMakeLists.txt
+    cp ./Dependancies/ToolDAQFramework/Application/* ./
     git add DataModel/*
     git add UserTools/*
     git add configfiles/*
     git add ./Makefile
     git add ./CMakeLists.txt
+    git add ./Setup.sh
     sed -i 's/setup=0/setup=0/' GetToolDAQ.sh
 fi   
     make clean
