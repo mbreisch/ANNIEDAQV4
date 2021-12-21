@@ -185,7 +185,6 @@ then
     cp -r ./Dependancies/ToolDAQFramework/DataModel/* ./DataModel
     cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependancies/ToolDAQFramework/UserTools/template/* ./UserTools/template
-    cp -r ./Dependancies/ToolFrameworkCore/configfiles/*.sh ./configfiles
     cp -r ./Dependancies/ToolDAQFramework/configfiles/* ./configfiles
     cp ./Dependancies/ToolDAQFramework/Application/* ./
     git add DataModel/*
