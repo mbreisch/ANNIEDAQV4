@@ -181,6 +181,7 @@ then
     echo `pwd`
 if [ $setup -eq 1 ]
 then   
+    cp -r ./Dependancies/ToolFrameworkCore/DataModel/* ./DataModel
     cp -r ./Dependancies/ToolDAQFramework/DataModel/* ./DataModel
     cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependancies/ToolDAQFramework/UserTools/template/* ./UserTools/template
