@@ -13,7 +13,7 @@ while [ ! $# -eq 0 ]
 do
     case "$1" in
 	--help | -h)
-	    helpmenu
+	    echo "This script should be run once after initially cloning the ToolApplication repository. It retrieves the ToolFrameworkCore TooDAQFramework ZMQ and BOOST repositories that provides the core framework and dependancies on which your application will be built."
 	    exit
 	    ;;
 
@@ -90,10 +90,10 @@ done
 if [ $init -eq 1 ]
 then
     
-    mkdir Dependancies
+    mkdir Dependencies
 fi
 
-cd Dependancies
+cd Dependencies
 
 if [ $tooldaq -eq 1 ]
 then
@@ -181,12 +181,12 @@ then
     echo `pwd`
 if [ $setup -eq 1 ]
 then   
-    cp -r ./Dependancies/ToolFrameworkCore/DataModel/* ./DataModel
-    cp -r ./Dependancies/ToolDAQFramework/DataModel/* ./DataModel
-    cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
-    cp -r ./Dependancies/ToolDAQFramework/UserTools/template/* ./UserTools/template
-    cp -r ./Dependancies/ToolDAQFramework/configfiles/* ./configfiles
-    cp ./Dependancies/ToolDAQFramework/Application/* ./
+    cp -r ./Dependencies/ToolFrameworkCore/DataModel/* ./DataModel
+    cp -r ./Dependencies/ToolDAQFramework/DataModel/* ./DataModel
+    cp -r ./Dependencies/ToolFrameworkCore/UserTools/* ./UserTools
+    cp -r ./Dependencies/ToolDAQFramework/UserTools/template/* ./UserTools/template
+    cp -r ./Dependencies/ToolDAQFramework/configfiles/* ./configfiles
+    cp ./Dependencies/ToolDAQFramework/Application/* ./
     git add DataModel/*
     git add UserTools/*
     git add configfiles/*

@@ -10,12 +10,12 @@ while [ ! $# -eq 0 ]
 do
     case "$1" in
 	--help | -h)
-	    helpmenu
+	    echo "This script should be run once after initially cloning the ToolApplication repository. It retrieves the ToolFrameworkCore repository that provides the core framework on which your application will be built."
 	    exit
 	    ;;
 	
 	--no_init )
-	     echo "Installing Applicaiton without creating Dependancy Folder"
+	    echo "Installing Applicaiton without creating Dependancy Folder"
 	    init=0;
 	    ;;
 
@@ -43,10 +43,10 @@ done
 if [ $init -eq 1 ]
 then
     
-    mkdir Dependancies
+    mkdir Dependencies
 fi
 
-cd Dependancies
+cd Dependencies
 
 if [ $toolframework -eq 1 ]
 then
@@ -69,10 +69,10 @@ then
     echo `pwd`
 if [ $setup -eq 1 ]
 then
-    cp -r ./Dependancies/ToolFrameworkCore/DataModel/* ./DataModel
-    cp -r ./Dependancies/ToolFrameworkCore/UserTools/* ./UserTools
-    cp -r ./Dependancies/ToolFrameworkCore/configfiles/* ./configfiles
-    cp ./Dependancies/ToolFrameworkCore/Application/* ./
+    cp -r ./Dependencies/ToolFrameworkCore/DataModel/* ./DataModel
+    cp -r ./Dependencies/ToolFrameworkCore/UserTools/* ./UserTools
+    cp -r ./Dependencies/ToolFrameworkCore/configfiles/* ./configfiles
+    cp ./Dependencies/ToolFrameworkCore/Application/* ./
     git add DataModel/*
     git add UserTools/*
     git add configfiles/*
