@@ -40,7 +40,9 @@ https://drive.google.com/file/d/19F-nJpeq3cHJbjV4qiSk5qzpOa7p8keQ
 or the Doxygen docs
 
 https://toolframework.github.io/ToolApplication/
+
 https://toolframework.github.io/ToolFrameworkCore/
+
 http://tooldaq.github.io/ToolDAQFramework/
 
 Copyright (c) 2016 Benjamin Richards
