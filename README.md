@@ -1,4 +1,5 @@
-# ToolApplication
+![toolapplication logo](https://user-images.githubusercontent.com/14093889/147496518-f3751cd6-0c57-4dd1-8517-3a02b61e59f5.png)
+
 # *Please clone/fork this repository to build your own ToolApplication in either ToolFramework or ToolDAQ* 
 
 ToolApplication is a template repository for building your own applications in either: 
@@ -27,11 +28,11 @@ or
 # Concept
 ****************************
 
-The main executable creates a ToolChain which is an object that holds Tools. Tools are added to the ToolChain and then the ToolChain can be told to Initialise Execute and Finalise each tool in the chain.
+The main executable creates a ToolChain which is an object that holds Tools. Tools are added to the ToolChain and then the ToolChain can be told to Initialise Execute and Finalise each Tool in the chain.
 
-The ToolChain also holds a uesr defined DataModel which each tool has access too and can read ,update and modify. This is the method by which data is passed between Tools.
+The ToolChain also holds a uesr defined DataModel which each Tool has access too and can read ,update and modify. This is the method by which data is passed between Tools.
 
-User Tools can be generated for use in the tool chain by incuding a Tool header.
+User Tools can be generated for use in the ToolChain by included scripts.
 
 For more information consult the ToolFramework manual:
 
