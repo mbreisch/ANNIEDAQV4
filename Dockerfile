@@ -1,4 +1,4 @@
-### Created by Dr. Benjamin Richards (b.richards@qmul.ac.uk)
+### Created by Dr. Benjamin Richards
 
 ### Download base image from repo
 FROM tooldaq/tooldaq:base
