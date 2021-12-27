@@ -1,11 +1,28 @@
-# ToolFramework
+# ToolApplication
+# *Please clone/fork this repository to build your own ToolApplication in either ToolFramework or ToolDAQ* 
 
-ToolFramework is an open source general modular C++ Framework.
+ToolApplication is a template repository for building your own applications in either: 
 
-*Please clone/fork this repository to build your own application in the ToolFramework and not the ToolFrameworkCore as that will be downlaoded as a dependancy using the GetToolFramework.sh script.*
+  ToolFramework:- an open source general modular C++ Framework.
+  
+  ToolDAQ:- DAQ based frameowrk built on ToolFramework
+
 
 ****************************
-#Concept
+# Installation
+****************************
+
+Once clonned please run either:
+
+*GetToolFramework.sh* to install dependances and files for creating a ToolFramework app
+
+or
+
+*GetToolDAQ.sh* to install dependances and files for creating a ToolDAQ app
+
+
+****************************
+# Concept
 ****************************
 
 The main executable creates a ToolChain which is an object that holds Tools. Tools are added to the ToolChain and then the ToolChain can be told to Initialise Execute and Finalise each tool in the chain.
