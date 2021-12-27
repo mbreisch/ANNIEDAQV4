@@ -5,6 +5,8 @@ ToolApplication is a template repository for building your own applications in e
 
   ToolFramework:- an open source general modular C++ Framework.
   
+  or
+  
   ToolDAQ:- DAQ based frameowrk built on ToolFramework
 
 
@@ -35,10 +37,10 @@ For more information consult the ToolFramework manual:
 
 https://drive.google.com/file/d/19F-nJpeq3cHJbjV4qiSk5qzpOa7p8keQ
 
-or the docs
+or the Doxygen docs
 
-https://toolframework.github.io/ToolFrameworkApplication/
-docs https://toolframework.github.io/ToolFrameworkCore/
-
+https://toolframework.github.io/ToolApplication/
+https://toolframework.github.io/ToolFrameworkCore/
+http://tooldaq.github.io/ToolDAQFramework/
 
 Copyright (c) 2016 Benjamin Richards
