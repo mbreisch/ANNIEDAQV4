@@ -72,6 +72,7 @@ then
     cp -r ./Dependencies/ToolFrameworkCore/DataModel/* ./DataModel
     cp -r ./Dependencies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependencies/ToolFrameworkCore/configfiles/* ./configfiles
+    cp -r ./Dependencies/ToolFrameworkCore/src ./src
     cp ./Dependencies/ToolFrameworkCore/Application/* ./
     git add DataModel/*
     git add UserTools/*
@@ -79,6 +80,7 @@ then
     git add ./Makefile
     git add ./CMakeLists.txt
     git add ./Setup.sh
+    git add ./src/*
     sed -i 's/setup=1/setup=0/' GetToolFramework.sh
 fi
     make clean
