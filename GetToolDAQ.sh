@@ -186,7 +186,8 @@ then
     cp -r ./Dependencies/ToolFrameworkCore/UserTools/* ./UserTools
     cp -r ./Dependencies/ToolDAQFramework/UserTools/template/* ./UserTools/template
     cp -r ./Dependencies/ToolDAQFramework/configfiles/* ./configfiles
-    cp -r ./Dependencies/ToolDAQFramework/src ./src
+    mkdir src
+    cp -r ./Dependencies/ToolDAQFramework/src/main.cpp ./src/
     cp ./Dependencies/ToolDAQFramework/Application/* ./
     git add DataModel/*
     git add UserTools/*
@@ -194,7 +195,7 @@ then
     git add ./Makefile
     git add ./CMakeLists.txt
     git add ./Setup.sh
-    git add ./src/*
+    git add ./src/main.cpp
     sed -i 's/setup=0/setup=0/' GetToolDAQ.sh
 fi   
     make clean
