@@ -8,7 +8,7 @@ USER root
 
 Run git clone https://github.com/ToolFramework/ToolApplication.git \
     && cd ToolApplication \
-    && ln -s /opt ./Dependancies \
+    && ln -s /opt ./Dependencies \
     && ./GetToolFramework.sh --Final 
 
 ### Open terminal
