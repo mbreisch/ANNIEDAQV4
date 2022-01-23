@@ -27,5 +27,5 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         
     - name: push docker images
-      run: docker push toolframework/toolapplication:latest /
+      run: docker push toolframework/toolapplication:latest \
         && docker push toolframework/toolframeworkapplcation:latest
