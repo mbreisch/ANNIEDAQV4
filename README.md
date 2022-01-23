@@ -1,27 +1,27 @@
 ![toolapplication logo](https://user-images.githubusercontent.com/14093889/147496518-f3751cd6-0c57-4dd1-8517-3a02b61e59f5.png)
 
-# *Please clone/fork this repository to build your own ToolApplication in either ToolFramework or ToolDAQ* 
+# ***Please clone/fork this repository to build your own ToolApplication in either ToolFramework or ToolDAQ***
 
 ToolApplication is a template repository for building your own applications in either: 
 
-  ToolFramework:- an open source general modular C++ Framework.
-  
-  or
-  
-  ToolDAQ:- DAQ based frameowrk built on ToolFramework
+  - ToolFramework:- an open source general modular C++ Framework.
+  - ToolDAQ:- DAQ focused frameowrk built on ToolFramework
 
 
 ****************************
 # Installation
 ****************************
 
-Once clonned please run either:
+- Install Prequisits: 
+     - RHEL/Centos... ``` yum install git make gcc-c++ zlib-devel dialog ```
+     - Debian/Ubuntu.. ``` apt-get install git make g++ libz-dev dialog ```
 
-*GetToolFramework.sh* to install dependances and files for creating a ToolFramework app
+- Then clone the repo with ```git clone https://github.com/ToolFramework/ToolApplication.git```
 
-or
+- Once clonned please run either:
 
-*GetToolDAQ.sh* to install dependances and files for creating a ToolDAQ app
+     - *GetToolFramework.sh* to install dependances and files for creating a ToolFramework app
+     - *GetToolDAQ.sh* to install dependances and files for creating a ToolDAQ app
 
 
 ****************************
@@ -40,10 +40,10 @@ https://drive.google.com/file/d/19F-nJpeq3cHJbjV4qiSk5qzpOa7p8keQ
 
 or the Doxygen docs
 
-https://toolframework.github.io/ToolApplication/
+- https://toolframework.github.io/ToolApplication/
 
-https://toolframework.github.io/ToolFrameworkCore/
+- https://toolframework.github.io/ToolFrameworkCore/
 
-http://tooldaq.github.io/ToolDAQFramework/
+- http://tooldaq.github.io/ToolDAQFramework/
 
 Copyright (c) 2016 Benjamin Richards (benjamin.richards@warwick.ac.uk)
