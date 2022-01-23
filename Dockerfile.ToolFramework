@@ -7,9 +7,9 @@ FROM toolframework/toolframework
 USER root
 
 Run git clone https://github.com/ToolFramework/ToolApplication.git /
-    && cd ToolApplication
-    && ln -s /opt ./Dependancies
-    && ./GetToolFramework.sk --Final
+    && cd ToolApplication /
+    && ln -s /opt ./Dependancies /
+    && ./GetToolFramework.sk --Final 
 
 ### Open terminal
 CMD ["/bin/bash"]
