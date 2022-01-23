@@ -28,4 +28,4 @@ jobs:
         
     - name: push docker images
       run: docker push toolframework/toolapplication:latest 
-        && docker push toolframework/toolframeworkapplcation:latest
+        && docker push toolframework/toolframeworkapplication:latest
