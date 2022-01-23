@@ -6,9 +6,9 @@ FROM toolframework/toolframework
 ### Run the following commands as super user (root):
 USER root
 
-Run git clone https://github.com/ToolFramework/ToolApplication.git /
-    && cd ToolApplication /
-    && ln -s /opt ./Dependancies /
+Run git clone https://github.com/ToolFramework/ToolApplication.git \
+    && cd ToolApplication \
+    && ln -s /opt ./Dependancies \
     && ./GetToolFramework.sk --Final 
 
 ### Open terminal
