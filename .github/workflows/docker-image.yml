@@ -18,7 +18,7 @@ jobs:
     - name: Build the ToolApplicaiton Docker image
       run: docker build . --file Dockerfile --tag toolframework/toolapplication:latest
     - name: Build the ToolFrameworkApplication Docker image
-      run: docker build . --file Dockerfile.ToolFramework --tag toolframework/toolframeworkapplication:latest
+      run: docker build . --file Dockerfile.ToolFramework --tag toolframework/toolframeworkapp:latest
     
     - name: docker login
       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -28,4 +28,4 @@ jobs:
         
     - name: push docker images
       run: docker push toolframework/toolapplication:latest 
-        && docker push toolframework/toolframeworkapplication:latest
+        && docker push toolframework/toolframeworkapp:latest
