@@ -12,16 +12,30 @@ ToolApplication is a template repository for building your own applications in e
 # Installation
 ****************************
 
-- Install Prequisits: 
+There are a few choices for installation, as mentioned this is an application template repository so the idea would be to fork or clone this repo into your own repo first, or build with it as a base. Some containers are provided for installation or trying out the code as well.
+
+1. Using Docker / Singularity
+
+   - For testing a complete install of Toolframework and ToolDAQ can be used by either:
+     - ``` docker run --name=ToolFramework -it toolframework/toolframeworkapp```
+     - ~~``` docker run --name=ToolDAQ -it toolframework/tooldaqapp```~~ in progress
+   - If you want a container to use as a base for your own application container you can use either:
+     - ```toolframework/centos7``` which is a light weight centos build with the prequisits to install ToolApplication
+     - ```toolframework/core``` which is the same as above but with ToolFrameworkCore already installed in /opt/
+     - ~~```tooldaq/core``` which is the same as above but with ToolFrameworkCore and ToolDAQframework already installed in /opt/~~ in progress
+
+2. Install from source
+
+   - Install Prequisits: 
      - RHEL/Centos... ``` yum install git make gcc-c++ zlib-devel dialog ```
      - Debian/Ubuntu.. ``` apt-get install git make g++ libz-dev dialog ```
 
-- Then clone the repo with ```git clone https://github.com/ToolFramework/ToolApplication.git```
+   - Then clone the repo with ```git clone https://github.com/ToolFramework/ToolApplication.git``` or more likely your own fork
 
-- Once clonned please run either:
+   - Once clonned please run either:
 
-     - *GetToolFramework.sh* to install dependances and files for creating a ToolFramework app
-     - *GetToolDAQ.sh* to install dependances and files for creating a ToolDAQ app
+     - ```./GetToolFramework.sh``` to install dependances and files for creating a ToolFramework app
+     - ```./GetToolDAQ.sh``` to install dependances and files for creating a ToolDAQ app
 
 
 ****************************
