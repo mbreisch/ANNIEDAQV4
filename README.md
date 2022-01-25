@@ -63,7 +63,7 @@ User Tools can be generated for use in the ToolChain by included scripts.
 
 For more information consult the ToolFramework manual:
 
-https://drive.google.com/file/d/19F-nJpeq3cHJbjV4qiSk5qzpOa7p8keQ
+https://docs.google.com/document/d/18rgYMOAGt3XiW9i0qN9kfUK1ssbQgLV1gQgG3hyVUoA
 
 or the Doxygen docs
 
