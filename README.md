@@ -18,11 +18,11 @@ There are a few choices for installation, as mentioned this is an application te
 
    - For testing a complete install of Toolframework and ToolDAQ can be used by either:
      - ``` docker run --name=ToolFramework -it toolframework/toolframeworkapp```
-     - ~~``` docker run --name=ToolDAQ -it toolframework/tooldaqapp```~~ in progress
+     - ``` docker run --name=ToolDAQ -it tooldaq/tooldaqapp```
    - If you want a container to use as a base for your own application container you can use either:
      - ```toolframework/centos7``` which is a light weight centos build with the prequisits to install ToolApplication
      - ```toolframework/core``` which is the same as above but with ToolFrameworkCore already installed in /opt/
-     - ~~```tooldaq/core``` which is the same as above but with ToolFrameworkCore and ToolDAQframework already installed in /opt/~~ in progress
+     - ```tooldaq/core``` which is the same as above but with ToolFrameworkCore and ToolDAQframework already installed in /opt/
 
 2. Install from source
 
