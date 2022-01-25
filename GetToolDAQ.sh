@@ -161,7 +161,7 @@ fi
 
 if [ $tooldaq -eq 1 ]
 then
-    git clone https://github.com/ToolDAQ/ToolDAQFramework.git -b derived
+    git clone https://github.com/ToolDAQ/ToolDAQFramework.git
     
     cd ToolDAQFramework
     make clean
