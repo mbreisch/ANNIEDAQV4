@@ -20,13 +20,14 @@ There are a few choices for installation, as mentioned this is an application te
      - ``` docker run --name=ToolFramework -it toolframework/toolframeworkapp```
      - ``` docker run --name=ToolDAQ -it tooldaq/tooldaqapp```
    - If you want a container to use as a base for your own application container you can use either:
-     - ```toolframework/centos7``` which is a light weight centos build with the prequisits to install ToolApplication
-     - ```toolframework/core``` which is the same as above but with ToolFrameworkCore already installed in /opt/
-     - ```tooldaq/core``` which is the same as above but with ToolFrameworkCore and ToolDAQframework already installed in /opt/
+     - ```toolframework/centos7``` which is a lightweight centos build with the prerequisites to install any ToolApplication from source
+     - ```toolframework/core``` which is the same as above but with ToolFrameworkCore already installed in /opt/. This is a useful base for building ToolFramework containers
+     - ```tooldaq/core``` which is the same as above but with ToolFrameworkCore, and ToolDAQframework plus its dependencies of boost and zmq already installed in /opt/. This is a useful base for building ToolDAQ containers
+
 
 2. Install from source
 
-   - Install Prequisits: 
+   - Install Prerequisites: 
      - RHEL/Centos... ``` yum install git make gcc-c++ zlib-devel dialog ```
      - Debian/Ubuntu.. ``` apt-get install git make g++ libz-dev dialog ```
 
@@ -36,6 +37,18 @@ There are a few choices for installation, as mentioned this is an application te
 
      - ```./GetToolFramework.sh``` to install dependances and files for creating a ToolFramework app
      - ```./GetToolDAQ.sh``` to install dependances and files for creating a ToolDAQ app
+
+(Note: if your doing this from inside one of the pre prepared core containers the core components will already be in the containers. In which case you should instead do:
+
+ - ```ln -s /opt ./Dependencies```
+
+followed by either:
+
+ - ```./GetToolFramework.sh  --Final```
+ - ```./GetToolDAQ.sh --Final```
+
+To set up your application )
+
 
 
 ****************************

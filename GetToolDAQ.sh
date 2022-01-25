@@ -196,6 +196,7 @@ then
     git add ./CMakeLists.txt
     git add ./Setup.sh
     git add ./src/main.cpp
+    rm -f ./GetTooFramework.sh
     sed -i 's/setup=0/setup=0/' GetToolDAQ.sh
 fi   
     make clean
