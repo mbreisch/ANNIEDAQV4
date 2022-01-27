@@ -83,7 +83,7 @@ then
     git add ./Setup.sh
     git add ./src/main.cpp
     rm -f ./GetToolDAQ.sh
-    sed -i 's/setup=1/setup=0/' GetToolFramework.sh
+    sed -i 's/setup=1/setup=0/' ./GetToolFramework.sh
 fi
     make clean
     make -j $threads
