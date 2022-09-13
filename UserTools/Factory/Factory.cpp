@@ -7,7 +7,8 @@ Tool* ret=0;
 if (tool=="DummyTool") ret=new DummyTool;
 
 if (tool=="VME") ret=new VME;
-  if (tool=="PGTool") ret=new PGTool;
+if (tool=="PGTool") ret=new PGTool;
+  if (tool=="StoreSave") ret=new StoreSave;
 return ret;
 }
 

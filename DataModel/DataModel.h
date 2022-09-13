@@ -65,6 +65,10 @@ class DataModel {
   PGHelper postgres_helper; // provides user methods to perform routine database operations
 
   std::vector<std::string> identities;
+  std::map<std::string,unsigned long> triggers;
+
+  unsigned long run;
+  unsigned long subrun;
   
  private:
 

@@ -77,8 +77,8 @@ class VME: public Tool {
   static void VME_Thread(Thread_args* arg); ///< Function to be run by the thread in a loop. Make sure not to block in it
   static void Store_Thread(Thread_args* arg); ///< Function to be run by the thread in a loop. Make sure not to block in it
 
-  bool VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> m_args, DAQUtilities* m_util);
-  bool Store_Thread_Setup(DataModel* m_data, std::vector<VME_args*> m_args, DAQUtilities* m_util);
+  bool VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DAQUtilities* m_util);
+  bool Store_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DAQUtilities* m_util);
   static bool Get_Data(VME_args* args);
   static bool VME_To_Store(VME_args* args);
   static bool VME_Stats_Send(VME_args* args);

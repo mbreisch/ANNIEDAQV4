@@ -127,9 +127,20 @@ bool VME::Execute(){
     
     std::string status="";
     *tmp>>status;
-    
+
     Log(status,1,m_verbose);
     
+    unsigned long VME_readouts;
+    tmp->Get("data_counter",VME_readouts);
+    unsigned long TRIG_readouts;
+    tmp->Get("trigger_counter",TRIG_readouts);
+
+    m_data->triggers["VME"]= VME_readouts;
+    m_data->triggers["Trig"]= TRIG_readouts;
+   
+    delete tmp;
+    tmp=0;
+
   }
  
 
@@ -193,12 +204,13 @@ void VME::Store_Thread(Thread_args* arg){
 }
 
 
-bool VME::VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> m_args, DAQUtilities* m_util){
+bool VME::VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DAQUtilities* m_util){
 
 
   VME_args* tmp_args=new VME_args();
   m_args.push_back(tmp_args);
-
+ 
+  //Ben add timeout and linger settings;
   tmp_args->m_trigger_pub = new zmq::socket_t(*m_data->context, ZMQ_PAIR);
   tmp_args->m_trigger_pub->connect("inproc://VMEtrigger_status");
   tmp_args->m_data_receive = new zmq::socket_t(*m_data->context, ZMQ_ROUTER);
@@ -230,11 +242,12 @@ bool VME::VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> m_args, DAQ
 
 }
 
-bool VME::Store_Thread_Setup(DataModel* m_data, std::vector<VME_args*> m_args, DAQUtilities* m_util){
+bool VME::Store_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DAQUtilities* m_util){
 
   VME_args* tmp_args=new VME_args();
   m_args.push_back(tmp_args);
   
+  //Ben add timeout and linger settings;
   tmp_args->m_data_receive = new zmq::socket_t(*m_data->context, ZMQ_PAIR);
   tmp_args->m_data_receive->connect("inproc://VMEtobuffer");
   tmp_args->m_data_send = new zmq::socket_t(*m_data->context, ZMQ_DEALER);
@@ -403,8 +416,12 @@ bool VME::VME_Stats_Send(VME_args* args){
   tmp->Set("trigger_buffer",args->trigger_buffer.size());
   tmp->Set("connections",args->connections.size());
   
-  if(!args->m_utils->SendPointer(args->m_trigger_pub, tmp)) args->m_logger->Log("ERROR:Failed to send vme status data");    //    send store pointer possbile mem leak here as pub socket and not garenteed that main thread will receive, maybe use string //its PAR not pub sub
+  if(!args->m_utils->SendPointer(args->m_trigger_pub, tmp)){
+    args->m_logger->Log("ERROR:Failed to send vme status data");  
+    return false;
+  }  //    send store pointer possbile mem leak here as pub socket and not garenteed that main thread will receive, maybe use string //its PAR not pub sub
   
+  return true;
 }
 
 bool VME::Store_Send_Data(VME_args* args){
