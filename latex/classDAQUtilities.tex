@@ -38,6 +38,9 @@ bool \mbox{\hyperlink{classDAQUtilities_a7d139f1f583b9374149ef4488607f46b}{Messa
 \mbox{\Hypertarget{classDAQUtilities_a1534e41ecda9cfc0bb45712930fb4c69}\label{classDAQUtilities_a1534e41ecda9cfc0bb45712930fb4c69}} 
 bool \mbox{\hyperlink{classDAQUtilities_a1534e41ecda9cfc0bb45712930fb4c69}{Message\+Thread}} (std\+::string Thread\+Name, std\+::string Message, bool block=true)
 \begin{DoxyCompactList}\small\item\em Send simple string to String thread. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDAQUtilities_ac31bea068f52744c39f6b00838a00568}\label{classDAQUtilities_ac31bea068f52744c39f6b00838a00568}} 
+bool \mbox{\hyperlink{classDAQUtilities_ac31bea068f52744c39f6b00838a00568}{Receive\+Messages}} (zmq\+::socket\+\_\+t $\ast$sock, std\+::queue$<$ zmq\+::message\+\_\+t $>$ \&messages)
+\begin{DoxyCompactList}\small\item\em Receive all messages on a socet and put them into a FIFO queue;. \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{classDAQUtilities_aae714090b9d85aecfa1152eb2239a281}\label{classDAQUtilities_aae714090b9d85aecfa1152eb2239a281}} 
 {\footnotesize template$<$typename T $>$ }\\bool \mbox{\hyperlink{classDAQUtilities_aae714090b9d85aecfa1152eb2239a281}{Send\+Pointer}} (zmq\+::socket\+\_\+t $\ast$sock, T $\ast$pointer)
 \begin{DoxyCompactList}\small\item\em Send a pointer over a ZMQ socket. \end{DoxyCompactList}\item 

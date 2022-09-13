@@ -114,6 +114,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDAQUtilities.html#a1534e41ecda9cfc0bb45712930fb4c69">MessageThread</a> (std::string ThreadName, std::string Message, bool block=true)</td></tr>
 <tr class="memdesc:a1534e41ecda9cfc0bb45712930fb4c69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send simple string to String thread. <br /></td></tr>
 <tr class="separator:a1534e41ecda9cfc0bb45712930fb4c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac31bea068f52744c39f6b00838a00568"><td class="memItemLeft" align="right" valign="top"><a id="ac31bea068f52744c39f6b00838a00568"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDAQUtilities.html#ac31bea068f52744c39f6b00838a00568">ReceiveMessages</a> (zmq::socket_t *sock, std::queue&lt; zmq::message_t &gt; &amp;messages)</td></tr>
+<tr class="memdesc:ac31bea068f52744c39f6b00838a00568"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive all messages on a socet and put them into a FIFO queue;. <br /></td></tr>
+<tr class="separator:ac31bea068f52744c39f6b00838a00568"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae714090b9d85aecfa1152eb2239a281"><td class="memTemplParams" colspan="2"><a id="aae714090b9d85aecfa1152eb2239a281"></a>
 template&lt;typename T &gt; </td></tr>
 <tr class="memitem:aae714090b9d85aecfa1152eb2239a281"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classDAQUtilities.html#aae714090b9d85aecfa1152eb2239a281">SendPointer</a> (zmq::socket_t *sock, T *pointer)</td></tr>
