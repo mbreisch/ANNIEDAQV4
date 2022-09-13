@@ -185,8 +185,10 @@ void VME::VME_Thread(Thread_args* arg){
   if(args->out.at(0).revents & ZMQ_POLLOUT && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Store(args);         /// data in buffer so send it to store writer 
    
   
-  if(clock()-(*args->ref_clock2) >= 60*CLOCKS_PER_SEC) VME_Stats_Send(args);   // on timer stats pub to main thread for triggering
-   
+  if(clock()-(*args->ref_clock2) >= 60*CLOCKS_PER_SEC){
+    VME_Stats_Send(args);   // on timer stats pub to main thread for triggering
+    *args->ref_clock2=clock();
+  }
 }
 
 void VME::Store_Thread(Thread_args* arg){
@@ -351,6 +353,12 @@ bool VME::Get_Data(VME_args* args){
 	      args->trigger_counter++;
 	    }
 	  }
+	  else{
+	    delete tmp_cards;
+	    delete tmp_trig;
+	    tmp_cards=0;
+	    tmp_trig=0;
+	  }
 	  
 	  //SEND AN AKN and MESSAGE NUMEBR ID;
 	  //BEN maybe add poll for outmessage to be sure otherwise will block
@@ -407,8 +415,6 @@ bool VME::VME_To_Store(VME_args* args){
 
 bool VME::VME_Stats_Send(VME_args* args){
 
-  *args->ref_clock2=clock();
-  
   Store* tmp= new Store;
   tmp->Set("data_counter",args->data_counter);
   tmp->Set("trigger_counter",args->trigger_counter);
@@ -418,6 +424,8 @@ bool VME::VME_Stats_Send(VME_args* args){
   
   if(!args->m_utils->SendPointer(args->m_trigger_pub, tmp)){
     args->m_logger->Log("ERROR:Failed to send vme status data");  
+    delete tmp;
+    tmp=0;    
     return false;
   }  //    send store pointer possbile mem leak here as pub socket and not garenteed that main thread will receive, maybe use string //its PAR not pub sub
   
@@ -477,30 +485,42 @@ bool VME::Store_Receive_Data(VME_args* args){
     
     if(key.str() == "D"){
       std::vector<CardData*>* tmp;
-      args->m_utils->ReceivePointer(args->m_data_receive, tmp);
-      
-      for(int i=0; i<tmp->size(); i++){
+      if(args->m_utils->ReceivePointer(args->m_data_receive, tmp)){
 	
-	args->PMTData->Set("CardData",*tmp);
-	args->PMTData->Save(args->da);
-	args->PMTData->Delete();
+	for(int i=0; i<tmp->size(); i++){
+	  
+	  args->PMTData->Set("CardData",*tmp);
+	  args->PMTData->Save(args->da);
+	  args->PMTData->Delete();
+	}
+
+	return true;
       }
-      return true;
+      else{
+	args->m_logger->Log("ERROR:VME Store Thread: failed to receive data pointer");
+	return false; 
+      }
     }
     
     else if(key.str() == "T"){
       std::vector<TriggerData*>* tmp;
-      args->m_utils->ReceivePointer(args->m_data_receive, tmp);
-      
-      for(int i=0; i<tmp->size(); i++){
+      if(args->m_utils->ReceivePointer(args->m_data_receive, tmp)){
 	
-	args->TrigData->Set("TrigData",*tmp);
-	args->TrigData->Save(args->ta);
-	args->TrigData->Delete();
+	for(int i=0; i<tmp->size(); i++){
+	  
+	  args->TrigData->Set("TrigData",*tmp);
+	  args->TrigData->Save(args->ta);
+	  args->TrigData->Delete();
+	  
+	}
+	
+	return true;
 	
       }
-
-      return true;
+      else{
+	args->m_logger->Log("ERROR:VME Store Thread: failed to receive trigger data pointer");
+	return false;      
+      }
     }     
     
     else args->m_logger->Log("ERROR:VME Store Thread: Unkown Key");

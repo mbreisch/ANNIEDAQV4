@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <map>
 #include <Store.h>
+#include <queue>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
@@ -86,7 +88,7 @@ class DAQUtilities: public Utilities{
   DAQThread_args* CreateThread(std::string ThreadName,  void (*func)(std::string));  //func = &my_int_func; ///< Create a simple thread that has string exchange with main thread
   bool MessageThread(DAQThread_args* args, std::string Message, bool block=true); ///< Send simple string to String thread
   bool MessageThread(std::string ThreadName, std::string Message, bool block=true); ///< Send simple string to String thread
-
+  bool ReceiveMessages(zmq::socket_t* sock, std::queue<zmq::message_t> &messages); ///<Receive all messages on a socet and put them into a FIFO queue;
 
   template <typename T>  bool SendPointer(zmq::socket_t* sock, T* pointer){
     

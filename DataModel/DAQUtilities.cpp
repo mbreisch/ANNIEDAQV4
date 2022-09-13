@@ -113,8 +113,9 @@ int DAQUtilities::UpdateConnections(std::string ServiceName, zmq::socket_t* sock
   if( (clock()-(*ref)) >= (period * CLOCKS_PER_SEC) ){
     UpdateConnections(ServiceName, sock, connections, port);
     *ref=clock();
+ 
  }
-  
+
   return connections.size();
     
 }
@@ -212,3 +213,19 @@ bool DAQUtilities::MessageThread(std::string ThreadName, std::string Message, bo
 }
 
 
+bool DAQUtilities::ReceiveMessages(zmq::socket_t* sock, std::queue<zmq::message_t> &messages){
+
+  while(!messages.empty()) messages.pop();
+  
+  messages.emplace();
+
+  while(sock->recv(&messages.back())){
+    if(messages.back().more())  messages.emplace();
+    else return true;
+  }
+  
+  messages.pop();
+
+  return false;
+  
+}

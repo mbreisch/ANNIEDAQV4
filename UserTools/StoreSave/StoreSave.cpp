@@ -41,6 +41,11 @@ bool StoreSave::Initialise(std::string configfile, DataModel &data){
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
 
   // BEN set up m_trigger_values and m_previous_values;
+  m_data->run=0;
+  m_data->subrun=0;
+  m_trigger_values["VME"]=100;
+  m_previous_values["VME"]=0;
+  ////////////////////////
 
   m_util=new DAQUtilities(m_data->context);
   args=new StoreSave_args();
