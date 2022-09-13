@@ -6,7 +6,7 @@ boostflag=1
 zmq=1
 final=1
 rootflag=0
-setup=1
+setup=0
 threads=`nproc --all`
 
 while [ ! $# -eq 0 ]
@@ -159,6 +159,22 @@ then
     
 fi
 
+if [ $libpqxx -eq 1 ]; then
+	mkdir -p pqxx/install
+	cd pqxx
+	# TODO put this on github
+	cp /home/moflaher/libpqxx-6.4.5_fixed.tar.gz ./
+	tar -zxf libpqxx-6.4.5_fixed.tar.gz 
+	rm libpqxx-6.4.5_fixed.tar.gz 
+	cd libpqxx-6.4.5/
+	export PKG_CONFIG_PATH=/usr/pgsql-12/lib/pkgconfig:$PKG_CONFIG_PATH
+	export PATH=/usr/pgsql-12/bin:$PATH
+	./configure --disable-documentation --enable-shared --prefix=$PWD/../install
+	make
+	make install
+	cd ../..
+fi
+
 if [ $tooldaq -eq 1 ]
 then
     git clone https://github.com/ToolDAQ/ToolDAQFramework.git
@@ -197,10 +213,11 @@ then
     git add ./Setup.sh
     git add ./src/main.cpp
     rm -f ./GetToolFramework.sh
-    sed -i 's/setup=1/setup=0/' ./GetToolDAQ.sh
+    sed -i 's/setup=0/setup=0/' ./GetToolDAQ.sh
 fi   
     make clean
     make -j $threads
     
     export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
 fi
+
