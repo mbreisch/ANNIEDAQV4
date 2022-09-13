@@ -124,18 +124,22 @@ $(function() {
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <a class="code" href="classPGHelper.html">PGHelper</a> postgres_helper; <span class="comment">// provides user methods to perform routine database operations</span></div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  std::vector&lt;std::string&gt; identities;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="comment">//std::map&lt;std::string,TTree*&gt; m_trees; </span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  std::map&lt;std::string,unsigned long&gt; triggers;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> run;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> subrun;</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;};</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="comment">//std::map&lt;std::string,TTree*&gt; m_trees; </span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;};</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:34</div></div>
 <div class="ttc" id="aclassDataModel_html_a2c6dfd692e50f90e55338970ea7f8d61"><div class="ttname"><a href="classDataModel.html#a2c6dfd692e50f90e55338970ea7f8d61">DataModel::context</a></div><div class="ttdeci">zmq::context_t * context</div><div class="ttdoc">ZMQ contex used for producing zmq sockets for inter thread, process, or computer communication.</div><div class="ttdef"><b>Definition:</b> DataModel.h:51</div></div>
 <div class="ttc" id="aclassDataModel_html_a4baac5fe364a7a23762d70d2c2216486"><div class="ttname"><a href="classDataModel.html#a4baac5fe364a7a23762d70d2c2216486">DataModel::vars</a></div><div class="ttdeci">Store vars</div><div class="ttdoc">This Store can be used for any variables. It is an inefficent ascii based storage.</div><div class="ttdef"><b>Definition:</b> DataModel.h:45</div></div>

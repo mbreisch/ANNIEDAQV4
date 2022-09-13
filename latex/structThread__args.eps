@@ -5,7 +5,7 @@
 %%For: 
 %Magnification: 1.00
 %%Orientation: Portrait
-%%BoundingBox: 0 0 500 57.142857
+%%BoundingBox: 0 0 500 47.619049
 %%Pages: 0
 %%BeginSetup
 %%EndSetup
@@ -19,13 +19,13 @@
 /marginwidth 10 def
 /distx 20 def
 /disty 40 def
-/boundaspect 8.750000 def  % aspect ratio of the BoundingBox (width/height)
+/boundaspect 10.500000 def  % aspect ratio of the BoundingBox (width/height)
 /boundx 500 def
 /boundy boundx boundaspect div def
 /xspacing 0 def
 /yspacing 0 def
 /rows 3 def
-/cols 5 def
+/cols 6 def
 /scalefactor 0 def
 /boxfont /Times-Roman findfont fontheight scalefont def
 
@@ -178,6 +178,7 @@ boxfont setfont
 (MyToolDynamicMultiThread_args) cw
 (MyToolMultiThread_args) cw
 (MyToolThread_args) cw
+(StoreSave_args) cw
 (MyToolZMQMultiThread_args) cw
 (VME_args) cw
 /boxwidth boxwidth marginwidth 2 mul add def
@@ -191,20 +192,21 @@ boundx scalefactor div boundy scalefactor div scale
 
 % ----- classes -----
 
- (Thread_args) 2.000000 2.000000 box
+ (Thread_args) 2.500000 2.000000 box
  (DAQThread_args) 0.500000 1.000000 box
  (MyToolDynamicMultiThread_args) 1.500000 1.000000 box
  (MyToolMultiThread_args) 2.500000 1.000000 box
  (MyToolThread_args) 3.500000 1.000000 box
+ (StoreSave_args) 4.500000 1.000000 box
  (MyToolZMQMultiThread_args) 0.000000 0.000000 box
  (VME_args) 1.000000 0.000000 box
 
 % ----- relations -----
 
 solid
-1 2.000000 1.250000 out
+1 2.500000 1.250000 out
 solid
-0.500000 3.500000 2.000000 conn
+0.500000 4.500000 2.000000 conn
 solid
 0 0.500000 1.750000 in
 solid
@@ -217,6 +219,8 @@ solid
 0 2.500000 1.750000 in
 solid
 0 3.500000 1.750000 in
+solid
+0 4.500000 1.750000 in
 solid
 0 0.000000 0.750000 in
 solid
