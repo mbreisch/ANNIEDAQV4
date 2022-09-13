@@ -1,0 +1,51 @@
+\hypertarget{classCardData}{}\doxysection{Card\+Data Class Reference}
+\label{classCardData}\index{CardData@{CardData}}
+Inheritance diagram for Card\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classCardData}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCardData_afe417801e8bf63a4a79d37116e3fb58b}\label{classCardData_afe417801e8bf63a4a79d37116e3fb58b}} 
+bool \mbox{\hyperlink{classCardData_afe417801e8bf63a4a79d37116e3fb58b}{Print}} ()
+\begin{DoxyCompactList}\small\item\em Simple virtual Pritn function to ensure inhereted classes have one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCardData_a7f07cd33fb0a5d136d5778512a4def30}\label{classCardData_a7f07cd33fb0a5d136d5778512a4def30}} 
+void {\bfseries Send} (zmq\+::socket\+\_\+t $\ast$socket, int flag=0)
+\item 
+\mbox{\Hypertarget{classCardData_a4a1b6dcf791ded2ddeb8c3fe2fa68e19}\label{classCardData_a4a1b6dcf791ded2ddeb8c3fe2fa68e19}} 
+bool {\bfseries Receive} (zmq\+::socket\+\_\+t $\ast$socket)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCardData_a36cb9c0f73fcf5eae251e0a2b1b2bd0f}\label{classCardData_a36cb9c0f73fcf5eae251e0a2b1b2bd0f}} 
+int {\bfseries Card\+ID}
+\item 
+\mbox{\Hypertarget{classCardData_a4fdf5313faebd27fee17096a31d0e28e}\label{classCardData_a4fdf5313faebd27fee17096a31d0e28e}} 
+int {\bfseries Sequence\+ID}
+\item 
+\mbox{\Hypertarget{classCardData_a2afc450651986c7e4f3d3615bf310ac4}\label{classCardData_a2afc450651986c7e4f3d3615bf310ac4}} 
+int {\bfseries Firmware\+Version}
+\item 
+\mbox{\Hypertarget{classCardData_abb7fa7d16bceac36f60a8278e80f3f26}\label{classCardData_abb7fa7d16bceac36f60a8278e80f3f26}} 
+std\+::vector$<$ uint32\+\_\+t $>$ {\bfseries Data}
+\item 
+\mbox{\Hypertarget{classCardData_a3f02696a655ab5a95072bfafe281d4a5}\label{classCardData_a3f02696a655ab5a95072bfafe281d4a5}} 
+int {\bfseries FIFOstate}
+\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCardData_ac98d07dd8f7b70e16ccb9a01abf56b9c}\label{classCardData_ac98d07dd8f7b70e16ccb9a01abf56b9c}} 
+class {\bfseries boost\+::serialization\+::access}
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Card\+Data.\+h\item 
+Data\+Model/Card\+Data.\+cpp\end{DoxyCompactItemize}

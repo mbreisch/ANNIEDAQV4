@@ -1,0 +1,78 @@
+\hypertarget{structVME__args}{}\doxysection{VME\+\_\+args Struct Reference}
+\label{structVME__args}\index{VME\_args@{VME\_args}}
+Inheritance diagram for VME\+\_\+args\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{structVME__args}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structVME__args_a4afb4a0ec704c584f063a3ff2b64e88e}\label{structVME__args_a4afb4a0ec704c584f063a3ff2b64e88e}} 
+zmq\+::socket\+\_\+t $\ast$ {\bfseries m\+\_\+trigger\+\_\+pub}
+\item 
+\mbox{\Hypertarget{structVME__args_ac1945efdf7622f67b36a9c9503430da1}\label{structVME__args_ac1945efdf7622f67b36a9c9503430da1}} 
+zmq\+::socket\+\_\+t $\ast$ {\bfseries m\+\_\+data\+\_\+receive}
+\item 
+\mbox{\Hypertarget{structVME__args_a42072dd7d65d88ae1a6df311dea36e6e}\label{structVME__args_a42072dd7d65d88ae1a6df311dea36e6e}} 
+zmq\+::socket\+\_\+t $\ast$ {\bfseries m\+\_\+data\+\_\+send}
+\item 
+\mbox{\Hypertarget{structVME__args_af1735f8ad3a6c3dbd9729996b76d09cd}\label{structVME__args_af1735f8ad3a6c3dbd9729996b76d09cd}} 
+std\+::vector$<$ zmq\+::pollitem\+\_\+t $>$ {\bfseries in}
+\item 
+\mbox{\Hypertarget{structVME__args_a0bce81f024b9c470c379704da60adf2f}\label{structVME__args_a0bce81f024b9c470c379704da60adf2f}} 
+std\+::vector$<$ zmq\+::pollitem\+\_\+t $>$ {\bfseries out}
+\item 
+\mbox{\Hypertarget{structVME__args_a8dc7e7a8b837c639fce23a2cc36c41eb}\label{structVME__args_a8dc7e7a8b837c639fce23a2cc36c41eb}} 
+\mbox{\hyperlink{classDAQUtilities}{DAQUtilities}} $\ast$ {\bfseries m\+\_\+utils}
+\item 
+\mbox{\Hypertarget{structVME__args_ad9809f9e65d32b5e1dd1e2cd413781f6}\label{structVME__args_ad9809f9e65d32b5e1dd1e2cd413781f6}} 
+Logging $\ast$ {\bfseries m\+\_\+logger}
+\item 
+\mbox{\Hypertarget{structVME__args_a7d92c5667742677a9542c469f46674dc}\label{structVME__args_a7d92c5667742677a9542c469f46674dc}} 
+clock\+\_\+t $\ast$ {\bfseries ref\+\_\+clock1}
+\item 
+\mbox{\Hypertarget{structVME__args_a6014ea3904059d781e9948ced53fa3d8}\label{structVME__args_a6014ea3904059d781e9948ced53fa3d8}} 
+clock\+\_\+t $\ast$ {\bfseries ref\+\_\+clock2}
+\item 
+\mbox{\Hypertarget{structVME__args_a780c0de90165e08f2874db4c0e42be94}\label{structVME__args_a780c0de90165e08f2874db4c0e42be94}} 
+std\+::map$<$ std\+::string, Store $\ast$ $>$ {\bfseries connections}
+\item 
+\mbox{\Hypertarget{structVME__args_a770b2faa88583da5e13cc51d7082add6}\label{structVME__args_a770b2faa88583da5e13cc51d7082add6}} 
+std\+::deque$<$ std\+::vector$<$ \mbox{\hyperlink{classCardData}{Card\+Data}} $\ast$ $>$ $\ast$ $>$ {\bfseries data\+\_\+buffer}
+\item 
+\mbox{\Hypertarget{structVME__args_abe8b7f156c78e82776c0905fb64707b5}\label{structVME__args_abe8b7f156c78e82776c0905fb64707b5}} 
+std\+::deque$<$ std\+::vector$<$ \mbox{\hyperlink{classTriggerData}{Trigger\+Data}} $\ast$ $>$ $\ast$ $>$ {\bfseries trigger\+\_\+buffer}
+\item 
+\mbox{\Hypertarget{structVME__args_a24cdbd2479b43cb30f914d7481b78996}\label{structVME__args_a24cdbd2479b43cb30f914d7481b78996}} 
+unsigned long {\bfseries data\+\_\+counter}
+\item 
+\mbox{\Hypertarget{structVME__args_a0a30b28d3e882fca24c78f837ab2e692}\label{structVME__args_a0a30b28d3e882fca24c78f837ab2e692}} 
+unsigned long {\bfseries trigger\+\_\+counter}
+\item 
+\mbox{\Hypertarget{structVME__args_a8199470ffdadbe20676bdae79ae7edb5}\label{structVME__args_a8199470ffdadbe20676bdae79ae7edb5}} 
+Boost\+Store $\ast$ {\bfseries PMTData}
+\item 
+\mbox{\Hypertarget{structVME__args_a4f9a51cc2d3d990f9ab4dca939cce1d4}\label{structVME__args_a4f9a51cc2d3d990f9ab4dca939cce1d4}} 
+Boost\+Store $\ast$ {\bfseries Trig\+Data}
+\item 
+\mbox{\Hypertarget{structVME__args_a1ce99e4221e7123f5740373571cd8ad0}\label{structVME__args_a1ce99e4221e7123f5740373571cd8ad0}} 
+std\+::string {\bfseries da}
+\item 
+\mbox{\Hypertarget{structVME__args_ad37501b808af80618746d1adf17c1c58}\label{structVME__args_ad37501b808af80618746d1adf17c1c58}} 
+std\+::string {\bfseries db}
+\item 
+\mbox{\Hypertarget{structVME__args_ae86d7285908fc35b01a67cd1e4df7a33}\label{structVME__args_ae86d7285908fc35b01a67cd1e4df7a33}} 
+std\+::string {\bfseries ta}
+\item 
+\mbox{\Hypertarget{structVME__args_ad0a599f3c1c197c273b798d2c778aa72}\label{structVME__args_ad0a599f3c1c197c273b798d2c778aa72}} 
+std\+::string {\bfseries tb}
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+VME/VME.\+h\item 
+User\+Tools/\+VME/VME.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,66 @@
+\hypertarget{classPostgres}{}\doxysection{Postgres Class Reference}
+\label{classPostgres}\index{Postgres@{Postgres}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structPostgres_1_1ExpandRow}{Expand\+Row}}
+\item 
+struct \mbox{\hyperlink{structPostgres_1_1ExpandRow_3_011_00_01T_01_4}{Expand\+Row$<$ 1, T $>$}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPostgres_a1d5b43c452f770a2444b5dd888801af7}\label{classPostgres_a1d5b43c452f770a2444b5dd888801af7}} 
+void {\bfseries Init} (std\+::string hostname\+\_\+in=\char`\"{}\char`\"{}, std\+::string hostip\+\_\+in=\char`\"{}\char`\"{}, int port\+\_\+in=-\/1, std\+::string user\+\_\+in=\char`\"{}\char`\"{}, std\+::string password\+\_\+in=\char`\"{}\char`\"{}, std\+::string dbname\+\_\+in=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classPostgres_ae31c29020f495f52d73e2569a7420732}\label{classPostgres_ae31c29020f495f52d73e2569a7420732}} 
+void {\bfseries Set\+Verbosity} (int verb)
+\item 
+\mbox{\Hypertarget{classPostgres_a0d9cd3902700af16dad2c0a6f123948b}\label{classPostgres_a0d9cd3902700af16dad2c0a6f123948b}} 
+pqxx\+::connection $\ast$ {\bfseries Open\+Connection} (std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a2c3c49e29255c018ea3f4013cf339009}\label{classPostgres_a2c3c49e29255c018ea3f4013cf339009}} 
+bool {\bfseries Close\+Connection} (std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_afb4a814bde77d1b4f0b4a1d6a1fd19b8}\label{classPostgres_afb4a814bde77d1b4f0b4a1d6a1fd19b8}} 
+bool {\bfseries Query} (std\+::string query, int nret, pqxx\+::result $\ast$res=nullptr, pqxx\+::row $\ast$row=nullptr, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a7694d5739cb88b6418b4330c7949dbe1}\label{classPostgres_a7694d5739cb88b6418b4330c7949dbe1}} 
+bool {\bfseries Query\+As\+Strings} (std\+::string query, std\+::vector$<$ std\+::string $>$ $\ast$results, char row\+\_\+or\+\_\+col, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a3f77b27cf1a60b46dc927d70f0e60399}\label{classPostgres_a3f77b27cf1a60b46dc927d70f0e60399}} 
+bool {\bfseries Query\+As\+Jsons} (std\+::string query, std\+::vector$<$ std\+::string $>$ $\ast$results, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a607a7ff2489192fa818468c426eed7ef}\label{classPostgres_a607a7ff2489192fa818468c426eed7ef}} 
+std\+::string {\bfseries pqxx\+\_\+quote\+\_\+name} (std\+::string name, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a51f5ba92265b8ff8dc71be36d58610d2}\label{classPostgres_a51f5ba92265b8ff8dc71be36d58610d2}} 
+std\+::string {\bfseries pqxx\+\_\+quote} (std\+::string string, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_af28a490c7cd9e58291e28e381b2d35d3}\label{classPostgres_af28a490c7cd9e58291e28e381b2d35d3}} 
+{\footnotesize template$<$typename T , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+arithmetic$<$ T $>$\+::value, bool $>$\+::type potato = true$>$ }\\std\+::string {\bfseries pqxx\+\_\+quote} (T number, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a50baf52802bc04feeee7c1fb9c1e890d}\label{classPostgres_a50baf52802bc04feeee7c1fb9c1e890d}} 
+bool {\bfseries Promote} (int wait\+\_\+seconds=60, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_ab4a1d8151dc7c806255bb0776a9e0db7}\label{classPostgres_ab4a1d8151dc7c806255bb0776a9e0db7}} 
+bool {\bfseries Demote} (int wait\+\_\+seconds=60, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPostgres_a037c044ae0e1e5e9d6ed286a1a91ae17}\label{classPostgres_a037c044ae0e1e5e9d6ed286a1a91ae17}} 
+bool {\bfseries Execute\+Query} (std\+::string query\+\_\+string)
+\item 
+\mbox{\Hypertarget{classPostgres_a9aeb5d4acfb002addc716d333bb80005}\label{classPostgres_a9aeb5d4acfb002addc716d333bb80005}} 
+{\footnotesize template$<$typename... Ts$>$ }\\bool {\bfseries Execute\+Query} (std\+::string query\+\_\+string, Ts \&\&... rets)
+\item 
+\mbox{\Hypertarget{classPostgres_a1004137fb31716729969cdafcaf5a0a5}\label{classPostgres_a1004137fb31716729969cdafcaf5a0a5}} 
+{\footnotesize template$<$typename... Rest$>$ }\\bool {\bfseries Insert} (std\+::string tablename, std\+::vector$<$ std\+::string $>$ \&fields, std\+::string $\ast$err, Rest... args)
+\item 
+\mbox{\Hypertarget{classPostgres_a3f8c3a1adc34b1cf4b70874550e060a6}\label{classPostgres_a3f8c3a1adc34b1cf4b70874550e060a6}} 
+{\footnotesize template$<$typename... Rest$>$ }\\bool {\bfseries Update} (std\+::string tablename, std\+::vector$<$ std\+::string $>$ \&fields, std\+::vector$<$ std\+::string $>$ \&criterions, std\+::vector$<$ char $>$ \&comparators, std\+::string $\ast$err, Rest... args)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Postgres.\+h\item 
+Data\+Model/Postgres.\+cpp\end{DoxyCompactItemize}

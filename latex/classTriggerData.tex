@@ -1,0 +1,63 @@
+\hypertarget{classTriggerData}{}\doxysection{Trigger\+Data Class Reference}
+\label{classTriggerData}\index{TriggerData@{TriggerData}}
+Inheritance diagram for Trigger\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classTriggerData}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classTriggerData_ace39ab13c6df11c0cf0654b19f720ee3}\label{classTriggerData_ace39ab13c6df11c0cf0654b19f720ee3}} 
+bool \mbox{\hyperlink{classTriggerData_ace39ab13c6df11c0cf0654b19f720ee3}{Print}} ()
+\begin{DoxyCompactList}\small\item\em Simple virtual Pritn function to ensure inhereted classes have one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classTriggerData_a550835739ac698711924f55afc2a1384}\label{classTriggerData_a550835739ac698711924f55afc2a1384}} 
+void {\bfseries Send} (zmq\+::socket\+\_\+t $\ast$socket, int flag=0)
+\item 
+\mbox{\Hypertarget{classTriggerData_a5bbe1c5a62d54a28f98caa134ae2be69}\label{classTriggerData_a5bbe1c5a62d54a28f98caa134ae2be69}} 
+bool {\bfseries Receive} (zmq\+::socket\+\_\+t $\ast$socket)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classTriggerData_a593c652c69eb83fe013d67fafe8b319c}\label{classTriggerData_a593c652c69eb83fe013d67fafe8b319c}} 
+int {\bfseries Firmware\+Version}
+\item 
+\mbox{\Hypertarget{classTriggerData_acae82d17ea1bdbe3048241fae86ebf77}\label{classTriggerData_acae82d17ea1bdbe3048241fae86ebf77}} 
+int {\bfseries Sequence\+ID}
+\item 
+\mbox{\Hypertarget{classTriggerData_a7c13529a24b36ab82e2da37de38f8497}\label{classTriggerData_a7c13529a24b36ab82e2da37de38f8497}} 
+int {\bfseries Event\+Size}
+\item 
+\mbox{\Hypertarget{classTriggerData_a3b83c20d3e2f0c9fc77c8f075f9841e5}\label{classTriggerData_a3b83c20d3e2f0c9fc77c8f075f9841e5}} 
+std\+::vector$<$ uint16\+\_\+t $>$ {\bfseries Event\+IDs}
+\item 
+\mbox{\Hypertarget{classTriggerData_a25a38a96a18c481f2a3300e6bf8d26c3}\label{classTriggerData_a25a38a96a18c481f2a3300e6bf8d26c3}} 
+std\+::vector$<$ uint64\+\_\+t $>$ {\bfseries Event\+Times}
+\item 
+\mbox{\Hypertarget{classTriggerData_acf41f9e0a4e2ef7e6fad6ead05a14701}\label{classTriggerData_acf41f9e0a4e2ef7e6fad6ead05a14701}} 
+int {\bfseries Time\+Stamp\+Size}
+\item 
+\mbox{\Hypertarget{classTriggerData_ac3beebc686abcefff6713a0e47e4b7ff}\label{classTriggerData_ac3beebc686abcefff6713a0e47e4b7ff}} 
+std\+::vector$<$ uint32\+\_\+t $>$ {\bfseries Time\+Stamp\+Data}
+\item 
+\mbox{\Hypertarget{classTriggerData_a9ddd4ad096ecb52574ca8adc3699033c}\label{classTriggerData_a9ddd4ad096ecb52574ca8adc3699033c}} 
+int {\bfseries FIFOOverflow}
+\item 
+\mbox{\Hypertarget{classTriggerData_aed4ef6bba8d573abaa5f72a4fd73a1ec}\label{classTriggerData_aed4ef6bba8d573abaa5f72a4fd73a1ec}} 
+int {\bfseries Driver\+Overflow}
+\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classTriggerData_ac98d07dd8f7b70e16ccb9a01abf56b9c}\label{classTriggerData_ac98d07dd8f7b70e16ccb9a01abf56b9c}} 
+class {\bfseries boost\+::serialization\+::access}
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Trigger\+Data.\+h\item 
+Data\+Model/Trigger\+Data.\+cpp\end{DoxyCompactItemize}

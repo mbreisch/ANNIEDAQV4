@@ -1,0 +1,63 @@
+\hypertarget{classVME}{}\doxysection{VME Class Reference}
+\label{classVME}\index{VME@{VME}}
+
+
+{\ttfamily \#include $<$VME.\+h$>$}
+
+Inheritance diagram for VME\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classVME}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classVME_a8cf1806ee94ee116c771a6d4485eb6e6}\label{classVME_a8cf1806ee94ee116c771a6d4485eb6e6}} 
+\mbox{\hyperlink{classVME_a8cf1806ee94ee116c771a6d4485eb6e6}{VME}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classVME_a1e3c416c0b3dc51ef708673420a6d082}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classVME_aa60b9755999902036e3a7bf64d4698ff}\label{classVME_aa60b9755999902036e3a7bf64d4698ff}} 
+bool \mbox{\hyperlink{classVME_aa60b9755999902036e3a7bf64d4698ff}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool perpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classVME_a30a1b311997db2f9feecfef0ed598ba9}\label{classVME_a30a1b311997db2f9feecfef0ed598ba9}} 
+bool \mbox{\hyperlink{classVME_a30a1b311997db2f9feecfef0ed598ba9}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This is a template for a Tool that produces a single thread that can be assigned a function seperate to the main thread. Please fill out the descripton and author information.
+
+\begin{DoxyParagraph}{Author}
+B.\+Richards 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2019/05/28 10\+:44\+:00 
+\end{DoxyParagraph}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classVME_a1e3c416c0b3dc51ef708673420a6d082}\label{classVME_a1e3c416c0b3dc51ef708673420a6d082}} 
+\index{VME@{VME}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!VME@{VME}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool VME\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+VME/VME.\+h\item 
+User\+Tools/\+VME/VME.\+cpp\end{DoxyCompactItemize}
