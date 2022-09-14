@@ -304,3 +304,79 @@ bool TriggerData::Receive(zmq::socket_t *socket){
 
   return true;
 }
+
+bool TriggerData::Receive(std::queue<zmq::message_t> &message_queue){
+                    
+  if(message_queue.size() <9) return false;
+                         
+  FirmwareVersion=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"FV="<<FirmwareVersion<<std::endl;
+  
+  SequenceID=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();  
+  //std::cout<<"SID="<<SequenceID<<std::endl;
+  
+  EventSize=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"ES="<<EventSize<<std::endl;  
+    
+  TimeStampSize=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"TS="<<TimeStampSize<<std::endl;
+ 
+
+  FIFOOverflow=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"FO="<<FIFOOverflow<<std::endl;
+	
+  DriverOverflow=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"DO="<<DriverOverflow<<std::endl;
+  
+  int tmp=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop(); 
+  //std::cout<<"tmp 1="<<tmp<<std::endl;
+  
+  if(tmp>0 && message_queue.size()>=3){
+    EventIDs.resize(message_queue.front().size()/sizeof(uint16_t));
+    std::memcpy(&EventIDs[0], message_queue.front().data(), message_queue.front().size());
+    message_queue.pop();
+  }
+  else{
+    std::cout<<"CardData Receive ERROR: Bad EventIDs or no more message parts"<<std::endl;
+    return false;
+  }		 
+  
+  tmp=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();  
+  //std::cout<<"tmp 2="<<tmp<<std::endl;
+  
+  if(tmp>0  && message_queue.size()>=2){
+    EventTimes.resize(message_queue.front().size()/sizeof(uint64_t));
+    std::memcpy(&EventTimes[0], message_queue.front().data(), message_queue.front().size());
+    message_queue.pop();  
+  }
+  else{
+    std::cout<<"CardData Receive ERROR: bad EventTimes data or more parts"<<std::endl;
+    return false;
+  }
+		      
+  
+  tmp=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();  
+//std::cout<<"tmp 4="<<tmp<<std::endl;  
+  
+  if(tmp>0  && message_queue.size()>=1){
+    TimeStampData.resize(message_queue.front().size()/sizeof(uint32_t));
+    std::memcpy(&TimeStampData[0], message_queue.front().data(), message_queue.front().size());
+    message_queue.pop();
+  }
+  else{
+    std::cout<<"CardData Receive ERROR: bad TimeStampData or more message parts than expected"<<std::endl;
+    return false;
+  }  
+
+
+  return true;
+}

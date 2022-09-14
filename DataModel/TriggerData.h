@@ -6,6 +6,7 @@
 #include <vector>
 #include <zmq.hpp>
 #include <SerialisableObject.h>
+#include <queue>
 
 //#include <boost/iostreams/stream.hpp>
 //#include <boost/iostreams/device/back_inserter.hpp>
@@ -38,6 +39,7 @@ class TriggerData : public SerialisableObject{
   bool Print(){};  
   void  Send(zmq::socket_t *socket, int flag=0);
   bool Receive(zmq::socket_t *socket);        
+  bool Receive(std::queue<zmq::message_t> &message_queue);
   
  private:
 

@@ -177,3 +177,51 @@ bool CardData::Receive(zmq::socket_t *socket){
   return true;
   
 }
+
+bool CardData::Receive(std::queue<zmq::message_t> &message_queue){
+                  
+                       
+  if(message_queue.size() <5) return false;
+
+
+  //std::cout<<"z2"<<std::endl; 
+  CardID=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"CardID="<<CardID<<std::endl;
+   
+  SequenceID=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();  
+  //std::cout<<"SequenceID="<<SequenceID<<std::endl;
+
+ 
+  FirmwareVersion=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"FirmwareVersion="<<FirmwareVersion<<std::endl;
+ 
+  int tmp=0;
+  tmp=*(reinterpret_cast<int*>(message_queue.front().data()));  
+  message_queue.pop();
+  //std::cout<<"z5b size="<<tmp<<std::endl;
+  
+  if(tmp>0 && message_queue.size()>=2){
+
+    Data.resize(message_queue.front().size()/sizeof(uint32_t));
+    std::memcpy(&Data[0], message_queue.front().data(), message_queue.front().size());
+    message_queue.pop();
+    //std::cout<<"Data.at(0) : Data.at(size-1)="<<Data.at(0)<<" : "<<Data.at(tmp-1)<<std::endl;
+    //    for(int k=0;k<tmp;k++){
+    // std::cout<<"Data["<<k<<"]="<<Data.at(k)<<std::endl;
+    // }
+
+  }
+  else return false;
+  
+  
+  FIFOstate=*(reinterpret_cast<int*>(message_queue.front().data()));
+  message_queue.pop();
+  //std::cout<<"FiFIO="<<FIFOstate<<std::endl;
+  
+  //std::cout<<"z8"<<std::endl; 
+  return true;
+  
+}

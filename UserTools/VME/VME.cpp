@@ -173,9 +173,9 @@ bool VME::Finalise(){
 void VME::VME_Thread(Thread_args* arg){
   
   VME_args* args=reinterpret_cast<VME_args*>(arg);
-  
+   
   args->m_utils->UpdateConnections("VME", args->m_data_receive, args->connections, 300, args->ref_clock1);
-  
+   
   zmq::poll(args->in, 10);
   
   if(args->in.at(0).revents & ZMQ_POLLIN) Get_Data(args); //new data comming in buffer it and send akn
@@ -183,7 +183,7 @@ void VME::VME_Thread(Thread_args* arg){
   zmq::poll(args->out, 10);
   
   if(args->out.at(0).revents & ZMQ_POLLOUT && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Store(args);         /// data in buffer so send it to store writer 
-   
+  
   
   if(clock()-(*args->ref_clock2) >= 60*CLOCKS_PER_SEC){
     VME_Stats_Send(args);   // on timer stats pub to main thread for triggering
@@ -293,6 +293,126 @@ bool VME::Store_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, 
  
 
 bool VME::Get_Data(VME_args* args){  
+
+  std::queue<zmq::message_t> message_queue;
+  if(args->m_utils->ReceiveMessages(args->m_data_receive, message_queue)){
+
+    if(message_queue.size()>=4){
+
+      zmq::message_t identity;
+      identity.copy(&message_queue.front());
+      message_queue.pop();
+      zmq::message_t id;
+      id.copy(&message_queue.front());
+      message_queue.pop(); 
+      std::istringstream data_type(static_cast<char*>(message_queue.front().data()));
+      message_queue.pop();
+      int cards=0;
+      memcpy (&cards, message_queue.front().data(), message_queue.front().size()); 
+
+      std::vector<CardData*>* tmp_cards=0;
+      std::vector<TriggerData*>* tmp_trig=0;
+      
+      if(data_type.str() == "D") tmp_cards = new std::vector<CardData*>;
+      if(data_type.str() == "T") tmp_trig = new std::vector<TriggerData*>;
+      
+      bool error=false;
+
+      for(int i=0; i<cards; i++){
+	
+	if(data_type.str() == "D"){
+	  
+	  CardData* data=new CardData;
+	  if(data->Receive(message_queue)){;   //havent added error checking and buffer flush
+	    tmp_cards->push_back(data);
+	  }
+	  else{
+	    delete data;
+	    args->m_logger->Log("ERROR: Receiving CardData");
+	    error=true;   
+	    break;  
+	  }
+	}
+	
+	else if(data_type.str() == "T"){
+	  
+	  TriggerData* data=new TriggerData;  
+	  if(data->Receive(message_queue)){ 
+	    tmp_trig->push_back(data);		  
+	  }
+	  else{
+	    delete data;
+	    args->m_logger->Log("ERROR: Receiving TriggerData"); 
+	    error=true;
+	    break;  
+	  }
+	}
+	else{
+	  error=true;
+	  break;
+	}
+      }
+      
+      //SEND AN AKN and MESSAGE NUMEBR ID;
+      //BEN maybe add poll for outmessage to be sure otherwise will block
+      if(error || !args->m_data_receive->send(identity) || !args->m_data_receive->send(id)){
+	args->m_logger->Log("ERROR: Cant send data aknoledgement",0,0);  
+	error=true;	
+      }
+      
+      if (!message_queue.size() && !error && cards!=0){
+	
+	if(data_type.str() == "D"){
+	  args->data_buffer.push_back(tmp_cards);                                               
+	  args->data_counter++;
+	}
+	
+	if(data_type.str() == "T"){
+	  args->trigger_buffer.push_back(tmp_trig);                                             
+	  args->trigger_counter++;
+	}
+	
+      
+	else error=true;
+      }
+     
+      if (message_queue.size() || error || cards==0){
+	
+	for(int i=0; i<tmp_cards->size(); i++){
+	  delete tmp_cards->at(i);
+	  tmp_cards->at(i)=0;
+	}
+	tmp_cards->clear();
+	
+	for(int i=0; i<tmp_trig->size(); i++){
+	  delete tmp_trig->at(i);
+	  tmp_trig->at(i)=0;
+	}
+	tmp_trig->clear();
+	
+	args->m_logger->Log("ERROR: With message format/contents");       
+	return false;
+      }
+    
+    }
+	
+    else{
+      args->m_logger->Log("ERROR: not enough message parts");
+      return false;
+    }
+    
+    
+  }
+  else{
+    args->m_logger->Log("ERROR:  error getting data from vme crate");      
+    return false;
+  }
+
+  return true;
+}
+
+
+/*bool VME::Get_Data(VME_args* args){  
   
   zmq::message_t identity;
   if(args->m_data_receive->recv(&identity) && identity.more()){
@@ -380,6 +500,7 @@ bool VME::Get_Data(VME_args* args){
   return true; 
 }
 
+*/
 
 bool VME::VME_To_Store(VME_args* args){ 
   
@@ -434,7 +555,7 @@ bool VME::VME_Stats_Send(VME_args* args){
 
 bool VME::Store_Send_Data(VME_args* args){
    
-  zmq::message_t message;
+   zmq::message_t message;
   
   if(args->m_data_send->recv(&message) && !message.more()){
     // send store pointer 
@@ -446,11 +567,16 @@ bool VME::Store_Send_Data(VME_args* args){
       
       snprintf ((char *) key.data(), 3 , "%s" , "VME");
       args->m_data_send->send(key, ZMQ_SNDMORE);
-      
+    
+      int entries=0;
+      args->PMTData->Header->Get("TotalEntries",entries);
+      if (entries==0){
+	delete args->PMTData;
+	args->PMTData=0;
+      }   
       args->m_utils->SendPointer(args->m_data_send, args->PMTData);
-      
+    
       args->PMTData=new BoostStore(false, 2);
-      
       std::string dn=args->db;
       args->db=args->da;
       args->da=dn;   
@@ -459,6 +585,12 @@ bool VME::Store_Send_Data(VME_args* args){
       snprintf ((char *) key2.data(), 4 , "%s" , "TRIG");
       args->m_data_send->send(key2, ZMQ_SNDMORE);
       
+      entries=0;
+      args->TrigData->Header->Get("TotalEntries",entries);
+      if (entries==0){
+	delete args->PMTData;
+	args->PMTData=0;
+      }
       args->m_utils->SendPointer(args->m_data_send, args->TrigData);  
       
       args->TrigData=new BoostStore(false, 2);

@@ -9,6 +9,7 @@
 #include "zmq.hpp"
 #include <SerialisableObject.h>
 #include "BoostStore.h"
+#include <queue>
 
 class CardData : public SerialisableObject{
 
@@ -27,6 +28,7 @@ class CardData : public SerialisableObject{
 
   void  Send(zmq::socket_t *socket, int flag=0);
   bool Receive(zmq::socket_t *socket);
+  bool Receive(std::queue<zmq::message_t> &message_queue);
 
  private:
 

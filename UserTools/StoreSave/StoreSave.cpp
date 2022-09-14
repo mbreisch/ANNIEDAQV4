@@ -88,7 +88,7 @@ bool StoreSave::Execute(){
     }
   
   }
-  
+
   return true;
 }
 
@@ -97,6 +97,7 @@ bool StoreSave::Finalise(){
 
   args->trigger=true;
 
+  while(args->trigger) usleep(100);
   m_util->KillThread(args);
 
   delete args;
@@ -104,6 +105,8 @@ bool StoreSave::Finalise(){
 
   delete m_util;
   m_util=0;
+
+  m_data->identities.clear();
 
   return true;
 }
@@ -113,14 +116,18 @@ void StoreSave::Thread(Thread_args* arg){
   StoreSave_args* args=reinterpret_cast<StoreSave_args*>(arg);
 
   if(args->trigger){
+    
+    args->trigger=false;
 
-    zmq::message_t msg(1);
+    zmq::message_t msg(0);
+    zmq::message_t msg2(1);
 
     for(int i=0; i<args->identities->size(); i++){
       
       zmq::message_t identity(args->identities->at(i).length());
-      snprintf ((char *) identity.data(), args->identities->at(i).length() , "%s" , args->identities->at(i).c_str());      
+      memcpy (identity.data(), args->identities->at(i).c_str(), args->identities->at(i).length());         
       args->receive->send(identity, ZMQ_SNDMORE);
+      // args->receive->send(msg, ZMQ_SNDMORE);
       args->receive->send(msg);
 
       bool loop=true;
@@ -129,6 +136,7 @@ void StoreSave::Thread(Thread_args* arg){
 	
 	loop=false;
 	zmq::message_t key_msg;
+
 	args->receive->recv(&key_msg);
 	std::istringstream key(static_cast<char*>(key_msg.data()));
 
@@ -136,7 +144,9 @@ void StoreSave::Thread(Thread_args* arg){
 
 	  BoostStore* tmp;
 	  args->m_utils->ReceivePointer(args->receive, tmp);
-	  args->outstore->Set(key.str(),*tmp);
+	  
+	  if(tmp!=0) args->outstore->Set(key.str(),*tmp);
+	  
       }
 
 
@@ -154,6 +164,7 @@ void StoreSave::Thread(Thread_args* arg){
 
  
   }
+  else usleep(100);
 
 
 }
