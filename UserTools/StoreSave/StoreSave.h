@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <mutex>
 
 #include "Tool.h"
 
@@ -23,6 +24,7 @@ struct StoreSave_args:Thread_args{
   zmq::socket_t* receive;
 
   BoostStore* outstore;
+  Logging* m_logger;
 
   std::string OutPath;
   std::string OutFile;
@@ -35,6 +37,8 @@ struct StoreSave_args:Thread_args{
   std::vector<std::string>* identities;
 
   DAQUtilities* m_utils;
+
+  std::mutex mtx;
 
 };
 

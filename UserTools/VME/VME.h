@@ -30,8 +30,8 @@ struct VME_args:DAQThread_args{
   DAQUtilities* m_utils;
   Logging* m_logger;
 
-  clock_t* ref_clock1;
-  clock_t* ref_clock2;
+  time_t* ref_time1; 
+  time_t* ref_time2;
 
   std::map<std::string,Store*> connections;
 

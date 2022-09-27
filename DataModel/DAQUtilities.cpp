@@ -103,16 +103,22 @@ int DAQUtilities::UpdateConnections(std::string ServiceName, zmq::socket_t* sock
     return connections.size();
   }
 
-int DAQUtilities::UpdateConnections(std::string ServiceName, zmq::socket_t* sock, std::map<std::string,Store*> &connections, int period, clock_t* ref, std::string port){
+int DAQUtilities::UpdateConnections(std::string ServiceName, zmq::socket_t* sock, std::map<std::string,Store*> &connections, int period, time_t* ref, std::string port){
 
   if(!ref){
-    ref=new clock_t;
-    *ref=clock() - (period * CLOCKS_PER_SEC);
+    //    ref=new clock_t;
+    // *ref=clock() - (period * CLOCKS_PER_SEC);
+    ref=new time_t;
+    time(ref);
+    *ref-= period;
   }
-  
-  if( (clock()-(*ref)) >= (period * CLOCKS_PER_SEC) ){
+ 
+  if(difftime(time(NULL),*ref) >= period){
     UpdateConnections(ServiceName, sock, connections, port);
-    *ref=clock();
+    *ref=time(NULL);
+    //      if( (clock()-(*ref)) >= (period * CLOCKS_PER_SEC) ){
+    //UpdateConnections(ServiceName, sock, connections, port);
+    //*ref=clock();
  
  }
 

@@ -7,8 +7,8 @@ VME_args::VME_args():DAQThread_args(){
   m_data_send=0;
   m_utils=0;
   m_logger=0;
-  ref_clock1=0;
-  ref_clock2=0;
+  ref_time1=0;
+  ref_time2=0;
   data_counter=0;
   trigger_counter=0;  
   PMTData=0;
@@ -36,16 +36,17 @@ VME_args::~VME_args(){
   m_utils=0;
   m_logger=0;
 
-  delete ref_clock1;
-  delete ref_clock2;
-  ref_clock1=0;
-  ref_clock2=0;
+  delete ref_time1;
+  delete ref_time2;
+  ref_time1=0;
+  ref_time2=0;
   
+
   for (std::map<std::string,Store*>::iterator it=connections.begin(); it!=connections.end(); ++it){
     delete it->second;
     it->second=0;
   }
-  
+
   connections.clear();
   
   for(int i=0; i<data_buffer.size(); i++){
@@ -54,15 +55,17 @@ VME_args::~VME_args(){
       data_buffer.at(i)->at(j)=0;
     }
   }
+
   data_buffer.clear();
   
-  
+
   for( int i=0; i<trigger_buffer.size(); i++){
     for (int j=0; j<trigger_buffer.at(i)->size(); j++){
       delete trigger_buffer.at(i)->at(j);
       trigger_buffer.at(i)->at(j)=0;
     }
   }
+
   trigger_buffer.clear();
   
   delete PMTData;
@@ -71,7 +74,6 @@ VME_args::~VME_args(){
   PMTData=0;
   TrigData=0;
   
-   
 }
 
 
@@ -80,13 +82,28 @@ VME::VME():Tool(){}
 
 bool VME::Initialise(std::string configfile, DataModel &data){
 
-  if(configfile!="")  m_variables.Initialise(configfile);
-  //m_variables.Print();
-
   m_data= &data;
   m_log= m_data->Log;
 
+  if(m_tool_name=="") m_tool_name="VME";
+  
+  // get tool config from database
+  std::string configtext;
+  bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
+  if(!get_ok){
+    Log(m_tool_name+" Failed to get Tool config from database!",0,0);
+    return false;
+  }
+  // parse the configuration to populate the m_variables Store.
+  std::stringstream configstream(configtext);
+  if(configtext!="") m_variables.Initialise(configstream);
+  
+  // allow overrides from local config file
+  if(configfile!="")  m_variables.Initialise(configfile);
+
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+
+  //m_variables.Print();
 
   m_util=new DAQUtilities(m_data->context);
 
@@ -155,16 +172,14 @@ bool VME::Finalise(){
     delete m_args.at(i);
     m_args.at(i)=0;
   }
-  
+
   m_args.clear();
-  
+
   delete trigger_sub;
   trigger_sub=0;
-  
+
   delete m_util;
   m_util=0;
-  
-  
   
   return true;
 }
@@ -174,7 +189,7 @@ void VME::VME_Thread(Thread_args* arg){
   
   VME_args* args=reinterpret_cast<VME_args*>(arg);
    
-  args->m_utils->UpdateConnections("VME", args->m_data_receive, args->connections, 300, args->ref_clock1);
+  args->m_utils->UpdateConnections("VME", args->m_data_receive, args->connections, 300, args->ref_time1, "98989");
    
   zmq::poll(args->in, 10);
   
@@ -182,13 +197,14 @@ void VME::VME_Thread(Thread_args* arg){
   
   zmq::poll(args->out, 10);
   
-  if(args->out.at(0).revents & ZMQ_POLLOUT && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Store(args);         /// data in buffer so send it to store writer 
+  if((args->out.at(0).revents & ZMQ_POLLOUT) && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Store(args);         /// data in buffer so send it to store writer 
   
-  
-  if(clock()-(*args->ref_clock2) >= 60*CLOCKS_PER_SEC){
+  if(difftime(time(NULL), *args->ref_time2) >= 60) {
+
     VME_Stats_Send(args);   // on timer stats pub to main thread for triggering
-    *args->ref_clock2=clock();
+    *args->ref_time2=time(NULL);
   }
+
 }
 
 void VME::Store_Thread(Thread_args* arg){
@@ -200,8 +216,6 @@ void VME::Store_Thread(Thread_args* arg){
   if(args->in.at(1).revents & ZMQ_POLLIN) Store_Send_Data(args); /// received store data request
   
   if(args->in.at(0).revents & ZMQ_POLLIN) Store_Receive_Data(args); // received new data for adding to stores
-
-
 
 }
 
@@ -220,10 +234,10 @@ bool VME::VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DA
   tmp_args->m_data_send->bind("inproc://VMEtobuffer");
   tmp_args->m_utils = m_util;
   tmp_args->m_logger = m_log;
-  tmp_args->ref_clock1=new clock_t;
-  tmp_args->ref_clock2=new clock_t;
-  *tmp_args->ref_clock1=clock();
-  *tmp_args->ref_clock2=clock();
+  tmp_args->ref_time1=new time_t;
+  tmp_args->ref_time2=new time_t;
+  *tmp_args->ref_time1=time(NULL);
+  *tmp_args->ref_time2=time(NULL);
 
   zmq::pollitem_t tmp_item;
   tmp_item.socket=*tmp_args->m_data_receive;
@@ -523,8 +537,8 @@ bool VME::VME_To_Store(VME_args* args){
     zmq::message_t tmp(2);           
     snprintf ((char *) tmp.data(), 2 , "%s" , "D") ;
     if(args->m_data_send->send(tmp) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
-      args->trigger_buffer.at(0)=0;       
-      args->trigger_buffer.pop_front();        	
+      args->data_buffer.at(0)=0;       
+      args->data_buffer.pop_front();        	
     }
     else args->m_logger->Log("ERROR:Failed to send data pointer to VME Store Thread");
     
@@ -563,36 +577,36 @@ bool VME::Store_Send_Data(VME_args* args){
     
     if(args->out.at(0).revents & ZMQ_POLLOUT){
       
-      zmq::message_t key(3);                                                                       
+      zmq::message_t key(4);                                                                       
       
-      snprintf ((char *) key.data(), 3 , "%s" , "VME");
+      snprintf ((char *) key.data(), 4 , "%s" , "VME");
       args->m_data_send->send(key, ZMQ_SNDMORE);
     
-      int entries=0;
-      args->PMTData->Header->Get("TotalEntries",entries);
-      if (entries==0){
-	delete args->PMTData;
-	args->PMTData=0;
-      }   
+      if (args->data_counter==0){
+      	delete args->PMTData;
+      	args->PMTData=0;
+      }
+      
       args->m_utils->SendPointer(args->m_data_send, args->PMTData);
-    
+      
+      args->data_counter=0;
       args->PMTData=new BoostStore(false, 2);
       std::string dn=args->db;
       args->db=args->da;
       args->da=dn;   
       
-      zmq::message_t key2(4);
-      snprintf ((char *) key2.data(), 4 , "%s" , "TRIG");
+      zmq::message_t key2(5);
+      snprintf ((char *) key2.data(), 5 , "%s" , "TRIG");
       args->m_data_send->send(key2, ZMQ_SNDMORE);
       
-      entries=0;
-      args->TrigData->Header->Get("TotalEntries",entries);
-      if (entries==0){
-	delete args->PMTData;
-	args->PMTData=0;
+      if (args->trigger_counter==0){
+      	delete args->TrigData;
+      	args->TrigData=0;
       }
+      
       args->m_utils->SendPointer(args->m_data_send, args->TrigData);  
       
+      args->trigger_counter=0;
       args->TrigData=new BoostStore(false, 2);
       std::string tn=args->tb;
       args->tb=args->ta;
@@ -624,7 +638,14 @@ bool VME::Store_Receive_Data(VME_args* args){
 	  args->PMTData->Set("CardData",*tmp);
 	  args->PMTData->Save(args->da);
 	  args->PMTData->Delete();
+	  args->data_counter++;
+	  delete tmp->at(i);
+	  tmp->at(i)=0;
 	}
+
+	tmp->clear();
+	delete tmp;
+	tmp=0;
 
 	return true;
       }
@@ -643,9 +664,15 @@ bool VME::Store_Receive_Data(VME_args* args){
 	  args->TrigData->Set("TrigData",*tmp);
 	  args->TrigData->Save(args->ta);
 	  args->TrigData->Delete();
-	  
+	  args->trigger_counter++;
+	  delete tmp->at(i);
+	  tmp->at(i)=0;
 	}
 	
+	tmp->clear();
+	delete tmp;
+	tmp=0;
+
 	return true;
 	
       }

@@ -1,0 +1,62 @@
+WIENER Plein & Baus GmbH / JTEC Instruments
+
+VM-USB Firmware release information
+
+**** vmeusb_0401.bit 08/12/05
+
+**** vmeusb_0402.bit 08/15/05
+1. User inputs and outputs new defined:
+	Top yellow LED  - USB packet received
+	Red LED - event readout triggered (works only in acquisition mode)
+	Green LED - Acquisition on.
+	Bottom yellow LED - VM-USB not in slot 1 (jumpers setting  |= 0).
+	Top NIM Out- Busy ( aquiring event)
+	Bottom NIM Out - USB Start..
+2. Delay and gate generator for NIM outputs added
+
+**** vmeusb_0403.bit 08/27/05
+1. 16 bit read corrected
+
+
+**** vmeusb_0404.bit 09/01/05
+
+
+**** vmeusb_0405.bit 09/28/05
+
+**** vmeusb_0503.bit 02/28/06
+
+
+All Firmware versions 6 and higher:
+Serial numbers <23 need CPLD upgrade (check: flashing "FAIL" LED during firmware upgrade)
+Serial numbers 23 and up are ok
+
+**** vmeusb_0601.bit 03/21/06
+1) supports interrupts 
+requires CPLD upgrade (flashing "FAIL" LED during firmware upgrade)
+
+
+**** vmeusb_0602.bit 04/18/06
+
+**** vmeusb_0603.bit 04/23/06
+
+**** vmeusb_0701.bit 07/28/06
+1. option of event markers added
+2. bug fix for hang-ups when leaving DAQ mode
+3. fix addressing problem for VME addresses0x08000000 to 0x10000000
+
+All Firmware versions 8 and higher:
+to use IRQ masking a CPLD upgrade is necessary, other functions are backwards compatible
+Serial numbers <44 need CPLD upgrade 
+Serial numbers 44 and up are ok
+
+**** vmeusb_0801.bit 08/15/06
+Firmware 86000801 has an improved handling of bus arbitration and IRQ handling. It allows one to handle 
+multi-master systems more reliably than the older firmware. 
+It is a recommended  update, as it has a potentially harmful bug removed. The highlight are as follows:
+
+1.	Several masters can handle IRQs, as the individual masters can mask out IRQ levels that are to be handled 
+	by other masters.
+2.	Non-slot 1 VM-USB can handle IRQs.
+3.	Removed a bug that had the potential to cause problems in multi-master systems utilizing IRQs – 
+  	the IRQ process did not arbitrate for bus during IACK stage. Now it does. 
+

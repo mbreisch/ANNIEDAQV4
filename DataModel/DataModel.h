@@ -12,12 +12,16 @@
 #include "DAQLogging.h"
 #include "DAQUtilities.h"
 
-#include "Postgres.h"
+#include "PGClient.h"
 #include "PGHelper.h"
 #include <CardData.h>
 #include <TriggerData.h>
 
 #include <zmq.hpp>
+
+#include "MRDData.h"
+#include "MRDOut.h"
+#include <PsecData.h>
 
 /**
  * \class DataModel
@@ -61,7 +65,7 @@ class DataModel {
   */
 
   // database manager
-  Postgres postgres;        // manages interface with the database
+  PGClient pgclient;        // manages interface with the database
   PGHelper postgres_helper; // provides user methods to perform routine database operations
 
   std::vector<std::string> identities;
@@ -69,6 +73,10 @@ class DataModel {
 
   unsigned long run;
   unsigned long subrun;
+  int RunTypeID;
+  std::string RunType;
+  float RunTypeVersion;
+  unsigned long NumEvents;
   
  private:
 

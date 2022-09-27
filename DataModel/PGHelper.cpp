@@ -13,7 +13,39 @@ void PGHelper::SetVerbosity(int verb){
 	verbosity=verb;
 }
 
+bool PGHelper::GetToolConfig(std::string toolname, std::string& configtext){
+    std::string system;
+    m_data->vars.Get("SystemName",system);
+    std::string dbname="rundb";
+    std::string err;
+    std::string result;
+    int timeout=1000;
+    std::string query_string="SELECT contents FROM configfiles WHERE system='"
+                            +system+"' AND tool='"+toolname+"' AND version="
+                            "(SELECT max(version) FROM configfiles WHERE system='"
+                            +system+"' AND tool='"+toolname+"')";
+    std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
+    bool ok = m_data->pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
+    if(!ok){
+            m_data->Log->Log("Failed to get configtext for tool "+toolname+" using query"
+                             +query_string+", returned with error "+err,0,0);
+    } else {
+            Store tmp;
+            std::cout<<"PGHelper getting toolconfig by parsing json '"+configtext+"'"<<std::endl;
+            tmp.JsonParser(result);
+            ok = tmp.Get("contents",configtext);
+            if(!ok){
+                    m_data->Log->Log("Failed to retrieve toolconfig contents for tool "
+                                     +toolname+", query returned '"+result+"'",0,0);
+            }
+    }
+    
+    return ok;
+}
+
+
 bool PGHelper::GetCurrentRun(int& runnum, int* runconfig, std::string* err){
+/*
 	if(verbosity>v_debug) std::cout<<"Getting current run"<<std::endl;
 	
 	// query the latest run number from the run database
@@ -30,7 +62,7 @@ bool PGHelper::GetCurrentRun(int& runnum, int* runconfig, std::string* err){
 	
 	// if we're given somewhere to put the runconfig, get that as well while we're at it.
 	if(runconfig){
-		query_string = "SELECT runconfig FROM run WHERE runnum = "+pqxx::to_string(runnum);
+		query_string = "SELECT runconfig FROM run WHERE runnum = "+std::to_string(runnum);
 		if(verbosity>v_debug) std::cout<<"Getting runconfig with query: \n"<<query_string<<"\n";
 		get_ok = m_data->postgres.ExecuteQuery(query_string, *runconfig);
 		if(not get_ok){
@@ -41,12 +73,14 @@ bool PGHelper::GetCurrentRun(int& runnum, int* runconfig, std::string* err){
 		}
 		if(verbosity>v_debug) std::cout<<"run config ID: "<<runconfig<<std::endl;
 	}
+*/
 	
 	// return success
 	return true;
 }
 
 bool PGHelper::GetRunConfig(int& runconfig, int* runnum_in, std::string* err){
+/*
 	// Get the run config ID for a given run number. If no run number is given,
 	// the run config ID in m_data->vars will be used.
 	
@@ -74,7 +108,7 @@ bool PGHelper::GetRunConfig(int& runconfig, int* runnum_in, std::string* err){
 	if(verbosity>v_debug) std::cout<<"getting runconfig for run "<<runnum<<std::endl;
 	
 	// else given a run number to use; query db for corresponding runconfig.
-	std::string query_string = "SELECT runconfig FROM run WHERE runnum = "+ pqxx::to_string(runnum)+";";
+	std::string query_string = "SELECT runconfig FROM run WHERE runnum = "+ std::to_string(runnum)+";";
 	get_ok = m_data->postgres.ExecuteQuery(query_string, runconfig);
 	if(not get_ok){
 		std::string errmsg="failed to get runconfig for run "+std::to_string(runnum);
@@ -83,11 +117,12 @@ bool PGHelper::GetRunConfig(int& runconfig, int* runnum_in, std::string* err){
 		return false;
 	}
 	if(verbosity>v_debug) std::cout<<"run config ID: "<<runconfig<<std::endl;
-	
+*/	
 	return true;
 }
 
 bool PGHelper::GetSystemConfig(int& systemconfig, std::string* systemname_in, int* runnum_in, int* runconfig_in, std::string* err){
+/*
 	// get the ID of the system configuration for a given runconfig.
 	// if system name is given, use it, otherwise use the system name in m_data->vars.
 	// if runconfig is given, look up system config for that run configuration.
@@ -145,11 +180,12 @@ bool PGHelper::GetSystemConfig(int& systemconfig, std::string* systemname_in, in
 		if(err) *err = errmsg;
 		return false;
 	}
-	
+*/	
 	return true;
 }
 
 bool PGHelper::GetToolsConfig(std::string& toolsconfig, std::string* systemname_in, int* runnum_in, int* runconfig_in, int* systemconfig_in, std::string* err){
+/*
 	// get the text representing list of tools and their configfile version nums
 	// if runconfig is given, toolsconfig for that runconfig will be used
 	// else if runnum is given, toolsconfig for that runconfig will be used.
@@ -183,10 +219,11 @@ bool PGHelper::GetToolsConfig(std::string& toolsconfig, std::string* systemname_
 		if(err) *err = errmsg;
 		return false;
 	}
-	
+*/	
 	return true;
 }
 
+/*
 bool PGHelper::GetToolConfig(std::string toolname, std::string& toolconfig, std::string* systemname_in, int* runnum_in, int* runconfig_in, int* systemconfig_in, std::string* err){
 	// Get the tool configuration for the given tool in the given toolchain
 	
@@ -221,7 +258,6 @@ bool PGHelper::GetToolConfig(std::string toolname, std::string& toolconfig, std:
 	if(verbosity>v_debug) std::cout<<"querying configuration for tool "<<toolname
 	                               <<", version "<<versionnum<<std::endl;
 	get_ok = GetToolConfig(toolconfig, systemname, toolname, versionnum, err);
-	
 	return get_ok;
 }
 
@@ -247,11 +283,12 @@ bool PGHelper::GetToolConfig(std::string& toolconfig, std::string systemname, st
 		if(err) *err = errmsg;
 		return false;
 	}
-	
 	return true;
 }
+*/
 
 int PGHelper::InsertToolConfig(Store config, std::string toolname, std::string author, std::string description, std::string* systemname_in, std::string* err){
+/*
 	// insert a new Tool configuration entry
 	
 	// each entry in the configfiles table contains:
@@ -314,11 +351,12 @@ int PGHelper::InsertToolConfig(Store config, std::string toolname, std::string a
 	                                                                     description,
 	                                                                     json_string
 	                                                                     );
-	
+*/	
 	return get_ok; // return if we succeeded - if not error will already be populated
 }
 
 bool PGHelper::ParseToolsConfig(std::string toolsconfig, BoostStore& configStore, std::string* err){
+/*
 	std::string errmsg="errors occurred converting config version to double for tools: ";
 	std::string line;
 	std::string uniqueName, className, versionNum;
@@ -350,6 +388,7 @@ bool PGHelper::ParseToolsConfig(std::string toolsconfig, BoostStore& configStore
 		std::cerr<<errmsg<<std::endl;
 		if(err) *err=errmsg;
 	}
+*/
 	return get_ok;
 }
 

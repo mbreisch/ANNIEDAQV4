@@ -1,7 +1,6 @@
 #ifndef PGHELPER_H
 #define PGHELPER_H
 
-#include "Postgres.h"
 #include "Store.h"
 #include "BoostStore.h"
 
@@ -17,11 +16,25 @@ class PGHelper{
 	bool GetRunConfig(int& runconfig, int* runnum_in=nullptr, std::string* err=nullptr);
 	bool GetSystemConfig(int& systemconfig, std::string* systemname_in=nullptr, int* runnum_in=nullptr, int* runconfig_in=nullptr, std::string* err=nullptr);
 	bool GetToolsConfig(std::string& toolsconfig, std::string* systemname_in=nullptr, int* runnum_in=nullptr, int* runconfig_in=nullptr, int* systemconfig_in=nullptr, std::string* err=nullptr);
-	bool GetToolConfig(std::string toolname, std::string& toolconfig, std::string* systemname_in=nullptr, int* runnum_in=nullptr, int* runconfig_in=nullptr, int* systemconfig_in=nullptr, std::string* err=nullptr);
-	bool GetToolConfig(std::string& toolconfig, std::string systemname, std::string className, double version, std::string* err=nullptr);
+	//bool GetToolConfig(std::string toolname, std::string& toolconfig, std::string* systemname_in=nullptr, int* runnum_in=nullptr, int* runconfig_in=nullptr, int* systemconfig_in=nullptr, std::string* err=nullptr);
+	//bool GetToolConfig(std::string& toolconfig, std::string systemname, std::string className, double version, std::string* err=nullptr);
 	bool ParseToolsConfig(std::string toolsconfig, BoostStore& configStore, std::string* err); ///< parse the toolsconfig string into a Store where key is the unique toolname and value is a std::pair< std::string ToolClassName, int ToolConfigFileVersion >
 
 	int InsertToolConfig(Store config, std::string toolname, std::string author, std::string description, std::string* systemname_in=nullptr, std::string* err=nullptr);
+	
+	template <typename... Ts>
+	bool ExecuteQuery(std::string query_string, Ts&&... args){
+		// TODO
+		return true;
+	}
+	
+	bool GetToolConfig(std::string toolname, std::string& configtext);
+	
+	template <typename... Ts>
+	bool Insert(std::string table, std::vector<std::string> fields, std::string* err, Ts&&... vals){
+		// TODO
+		return true;
+	}
 	
 	private:
 	DataModel* m_data;

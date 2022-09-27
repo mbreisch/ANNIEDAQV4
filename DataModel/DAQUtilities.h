@@ -8,6 +8,7 @@
 #include <map>
 #include <Store.h>
 #include <queue>
+#include <time.h>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp> // generators
@@ -31,6 +32,8 @@ struct DAQThread_args : public Thread_args{
 
   DAQThread_args(){ ///< Simple constructor 
     kill=false;
+    sock=0;
+    context=0;
   }
 
   DAQThread_args(zmq::context_t* contextin, std::string threadname,  void (*funcin)(std::string)){ ///< Construtor for thread with string
@@ -38,7 +41,8 @@ struct DAQThread_args : public Thread_args{
     context=contextin;
     ThreadName=threadname;
     func_with_string=funcin;
-    kill=false; 
+    kill=false;
+    sock=0; 
   }
 
   DAQThread_args(zmq::context_t* contextin, std::string threadname,  void (*funcin)(Thread_args*)){ ///< Constrcutor for thread with args
@@ -47,6 +51,7 @@ struct DAQThread_args : public Thread_args{
     ThreadName=threadname;
     func=funcin;
     kill=false;
+    sock=0;
   }      
 
   virtual ~DAQThread_args(){ ///< virtual constructor 
@@ -84,7 +89,7 @@ class DAQUtilities: public Utilities{
   bool AddService(std::string ServiceName, unsigned int port, bool StatusQuery=false); ///< Broadcasts an available service (only in remote mode)
   bool RemoveService(std::string ServiceName); ///< Removes service broadcasts for a service
   int UpdateConnections(std::string ServiceName, zmq::socket_t* sock, std::map<std::string,Store*> &connections, std::string port=""); ///< Dynamically connects a socket tp services broadcast with a specific name
-  int UpdateConnections(std::string ServiceName, zmq::socket_t* sock, std::map<std::string,Store*> &connections, int period, clock_t* ref, std::string port=""); ///< runs Update connections only if fixed period (in seconds) has elapsed.  
+  int UpdateConnections(std::string ServiceName, zmq::socket_t* sock, std::map<std::string,Store*> &connections, int period, time_t* ref, std::string port=""); ///< runs Update connections only if fixed period (in seconds) has elapsed.  
   DAQThread_args* CreateThread(std::string ThreadName,  void (*func)(std::string));  //func = &my_int_func; ///< Create a simple thread that has string exchange with main thread
   bool MessageThread(DAQThread_args* args, std::string Message, bool block=true); ///< Send simple string to String thread
   bool MessageThread(std::string ThreadName, std::string Message, bool block=true); ///< Send simple string to String thread

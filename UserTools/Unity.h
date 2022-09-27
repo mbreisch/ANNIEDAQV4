@@ -1,5 +1,8 @@
-///< Unity header to provide a clean Tool header list for factory and scripts ot add new Tools to
-#include "DummyTool.h"
-#include "VME.h"
-#include "PGTool.h"
-#include "StoreSave.h"
+#include <CAMAC.h>
+#include <DummyTool.h>
+#include <LAPPD.h>
+#include <PGStarter.h>
+#include <RunControl.h>
+#include <SlackBot.h>
+#include <StoreSave.h>
+#include <VME.h>
