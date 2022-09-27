@@ -1,10 +1,13 @@
 var searchData=
 [
-  ['thread_53',['Thread',['../classUtilities.html#a29b7f99dcb44ddb9a519c3e441a7fa2b',1,'Utilities']]],
-  ['thread_54',['thread',['../structThread__args.html#a4f71beb11e75d05269fc63ca7c19a8a9',1,'Thread_args']]],
-  ['thread_5fargs_55',['Thread_args',['../structThread__args.html',1,'Thread_args'],['../structThread__args.html#a399b672e0f4f137fe52c141bd8c38eb1',1,'Thread_args::Thread_args()']]],
-  ['threadname_56',['ThreadName',['../structThread__args.html#a594f831be7ce66015a7606e023b24cf4',1,'Thread_args']]],
-  ['threads_57',['Threads',['../classUtilities.html#a26ebd7308ea895452c4c1066dc5834e5',1,'Utilities']]],
-  ['triggerdata_58',['TriggerData',['../classTriggerData.html',1,'']]],
-  ['type_59',['type',['../classSerialisableObject.html#a893f965e41ad7f09b4066cb07fecef8e',1,'SerialisableObject']]]
+  ['sendpointer_60',['SendPointer',['../classDAQUtilities.html#aae714090b9d85aecfa1152eb2239a281',1,'DAQUtilities']]],
+  ['serialisableobject_61',['SerialisableObject',['../classSerialisableObject.html',1,'']]],
+  ['serialise_62',['serialise',['../classSerialisableObject.html#a4635f9e80623df463bcca2c88b10fc67',1,'SerialisableObject']]],
+  ['serialize_63',['serialize',['../classSerialisableObject.html#a7c9ec7bf87b5921957768f4467c6143a',1,'SerialisableObject']]],
+  ['slackbot_64',['SlackBot',['../classSlackBot.html',1,'']]],
+  ['sock_65',['sock',['../structDAQThread__args.html#a89b48265530e4fc576578e08c3dcb400',1,'DAQThread_args']]],
+  ['stores_66',['Stores',['../classDataModel.html#ad1ffc080c3b263bf3ee382a531321ad4',1,'DataModel']]],
+  ['storesave_67',['StoreSave',['../classStoreSave.html',1,'StoreSave'],['../classStoreSave.html#ab4a6acd918f047f5ae695f62cd52415a',1,'StoreSave::StoreSave()']]],
+  ['storesave_5fargs_68',['StoreSave_args',['../structStoreSave__args.html',1,'']]],
+  ['storesave_5fargs_5fargs_69',['StoreSave_args_args',['../structStoreSave__args__args.html',1,'']]]
 ];

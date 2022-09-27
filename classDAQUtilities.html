@@ -98,11 +98,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDAQUtilities.html#a1a2f0b8dc11c83e4153de3e53770ea76">UpdateConnections</a> (std::string ServiceName, zmq::socket_t *sock, std::map&lt; std::string, Store * &gt; &amp;connections, std::string port=&quot;&quot;)</td></tr>
 <tr class="memdesc:a1a2f0b8dc11c83e4153de3e53770ea76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dynamically connects a socket tp services broadcast with a specific name. <br /></td></tr>
 <tr class="separator:a1a2f0b8dc11c83e4153de3e53770ea76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a30168c27f1638f48ac05394ef6a4ad74"><td class="memItemLeft" align="right" valign="top"><a id="a30168c27f1638f48ac05394ef6a4ad74"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDAQUtilities.html#a30168c27f1638f48ac05394ef6a4ad74">UpdateConnections</a> (std::string ServiceName, zmq::socket_t *sock, std::map&lt; std::string, Store * &gt; &amp;connections, int period, clock_t *ref, std::string port=&quot;&quot;)</td></tr>
-<tr class="memdesc:a30168c27f1638f48ac05394ef6a4ad74"><td class="mdescLeft">&#160;</td><td class="mdescRight">runs Update connections only if fixed period (in seconds) has elapsed. <br  />
+<tr class="memitem:a6cac3c6ff1342eef8039fa4615b240ed"><td class="memItemLeft" align="right" valign="top"><a id="a6cac3c6ff1342eef8039fa4615b240ed"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDAQUtilities.html#a6cac3c6ff1342eef8039fa4615b240ed">UpdateConnections</a> (std::string ServiceName, zmq::socket_t *sock, std::map&lt; std::string, Store * &gt; &amp;connections, int period, time_t *ref, std::string port=&quot;&quot;)</td></tr>
+<tr class="memdesc:a6cac3c6ff1342eef8039fa4615b240ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">runs Update connections only if fixed period (in seconds) has elapsed. <br  />
  <br /></td></tr>
-<tr class="separator:a30168c27f1638f48ac05394ef6a4ad74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a6cac3c6ff1342eef8039fa4615b240ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3249ea0e0fd1aa48aa8044a7d551aa3"><td class="memItemLeft" align="right" valign="top"><a id="af3249ea0e0fd1aa48aa8044a7d551aa3"></a>
 <a class="el" href="structDAQThread__args.html">DAQThread_args</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>CreateThread</b> (std::string ThreadName, void(*func)(std::string))</td></tr>
 <tr class="separator:af3249ea0e0fd1aa48aa8044a7d551aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>

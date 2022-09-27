@@ -92,12 +92,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetSystemConfig</b> (
 <tr class="memitem:aff16f8c84798c77e00e18a11cbbf253a"><td class="memItemLeft" align="right" valign="top"><a id="aff16f8c84798c77e00e18a11cbbf253a"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetToolsConfig</b> (std::string &amp;toolsconfig, std::string *systemname_in=nullptr, int *runnum_in=nullptr, int *runconfig_in=nullptr, int *systemconfig_in=nullptr, std::string *err=nullptr)</td></tr>
 <tr class="separator:aff16f8c84798c77e00e18a11cbbf253a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae3f3edd8af57632d3b488bc56b862e04"><td class="memItemLeft" align="right" valign="top"><a id="ae3f3edd8af57632d3b488bc56b862e04"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetToolConfig</b> (std::string toolname, std::string &amp;toolconfig, std::string *systemname_in=nullptr, int *runnum_in=nullptr, int *runconfig_in=nullptr, int *systemconfig_in=nullptr, std::string *err=nullptr)</td></tr>
-<tr class="separator:ae3f3edd8af57632d3b488bc56b862e04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2bc5fa12cef0a118224141e02578c6f4"><td class="memItemLeft" align="right" valign="top"><a id="a2bc5fa12cef0a118224141e02578c6f4"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetToolConfig</b> (std::string &amp;toolconfig, std::string systemname, std::string className, double version, std::string *err=nullptr)</td></tr>
-<tr class="separator:a2bc5fa12cef0a118224141e02578c6f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796b0d120aee0af14d1a4df0c360ac25"><td class="memItemLeft" align="right" valign="top"><a id="a796b0d120aee0af14d1a4df0c360ac25"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPGHelper.html#a796b0d120aee0af14d1a4df0c360ac25">ParseToolsConfig</a> (std::string toolsconfig, BoostStore &amp;configStore, std::string *err)</td></tr>
 <tr class="memdesc:a796b0d120aee0af14d1a4df0c360ac25"><td class="mdescLeft">&#160;</td><td class="mdescRight">parse the toolsconfig string into a Store where key is the unique toolname and value is a std::pair&lt; std::string ToolClassName, int ToolConfigFileVersion &gt; <br /></td></tr>
@@ -105,6 +99,17 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a6b3baeda5b830d5cc2aede923ae78048"><td class="memItemLeft" align="right" valign="top"><a id="a6b3baeda5b830d5cc2aede923ae78048"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertToolConfig</b> (Store config, std::string toolname, std::string author, std::string description, std::string *systemname_in=nullptr, std::string *err=nullptr)</td></tr>
 <tr class="separator:a6b3baeda5b830d5cc2aede923ae78048"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a882c355cdb377cf73d4491a8a04621b0"><td class="memTemplParams" colspan="2"><a id="a882c355cdb377cf73d4491a8a04621b0"></a>
+template&lt;typename... Ts&gt; </td></tr>
+<tr class="memitem:a882c355cdb377cf73d4491a8a04621b0"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>ExecuteQuery</b> (std::string query_string, Ts &amp;&amp;... args)</td></tr>
+<tr class="separator:a882c355cdb377cf73d4491a8a04621b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adac9e69acbe6f7008f31ce17c2eb8ef5"><td class="memItemLeft" align="right" valign="top"><a id="adac9e69acbe6f7008f31ce17c2eb8ef5"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetToolConfig</b> (std::string toolname, std::string &amp;configtext)</td></tr>
+<tr class="separator:adac9e69acbe6f7008f31ce17c2eb8ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e6daa2aa7bfa6303c0129961f3b3b57"><td class="memTemplParams" colspan="2"><a id="a1e6daa2aa7bfa6303c0129961f3b3b57"></a>
+template&lt;typename... Ts&gt; </td></tr>
+<tr class="memitem:a1e6daa2aa7bfa6303c0129961f3b3b57"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Insert</b> (std::string table, std::vector&lt; std::string &gt; fields, std::string *err, Ts &amp;&amp;... vals)</td></tr>
+<tr class="separator:a1e6daa2aa7bfa6303c0129961f3b3b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>DataModel/<a class="el" href="PGHelper_8h_source.html">PGHelper.h</a></li>

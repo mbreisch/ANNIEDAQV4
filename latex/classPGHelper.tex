@@ -24,17 +24,20 @@ bool {\bfseries Get\+System\+Config} (int \&systemconfig, std\+::string $\ast$sy
 \mbox{\Hypertarget{classPGHelper_aff16f8c84798c77e00e18a11cbbf253a}\label{classPGHelper_aff16f8c84798c77e00e18a11cbbf253a}} 
 bool {\bfseries Get\+Tools\+Config} (std\+::string \&toolsconfig, std\+::string $\ast$systemname\+\_\+in=nullptr, int $\ast$runnum\+\_\+in=nullptr, int $\ast$runconfig\+\_\+in=nullptr, int $\ast$systemconfig\+\_\+in=nullptr, std\+::string $\ast$err=nullptr)
 \item 
-\mbox{\Hypertarget{classPGHelper_ae3f3edd8af57632d3b488bc56b862e04}\label{classPGHelper_ae3f3edd8af57632d3b488bc56b862e04}} 
-bool {\bfseries Get\+Tool\+Config} (std\+::string toolname, std\+::string \&toolconfig, std\+::string $\ast$systemname\+\_\+in=nullptr, int $\ast$runnum\+\_\+in=nullptr, int $\ast$runconfig\+\_\+in=nullptr, int $\ast$systemconfig\+\_\+in=nullptr, std\+::string $\ast$err=nullptr)
-\item 
-\mbox{\Hypertarget{classPGHelper_a2bc5fa12cef0a118224141e02578c6f4}\label{classPGHelper_a2bc5fa12cef0a118224141e02578c6f4}} 
-bool {\bfseries Get\+Tool\+Config} (std\+::string \&toolconfig, std\+::string systemname, std\+::string class\+Name, double version, std\+::string $\ast$err=nullptr)
-\item 
 \mbox{\Hypertarget{classPGHelper_a796b0d120aee0af14d1a4df0c360ac25}\label{classPGHelper_a796b0d120aee0af14d1a4df0c360ac25}} 
 bool \mbox{\hyperlink{classPGHelper_a796b0d120aee0af14d1a4df0c360ac25}{Parse\+Tools\+Config}} (std\+::string toolsconfig, Boost\+Store \&config\+Store, std\+::string $\ast$err)
 \begin{DoxyCompactList}\small\item\em parse the toolsconfig string into a Store where key is the unique toolname and value is a std\+::pair$<$ std\+::string Tool\+Class\+Name, int Tool\+Config\+File\+Version $>$ \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{classPGHelper_a6b3baeda5b830d5cc2aede923ae78048}\label{classPGHelper_a6b3baeda5b830d5cc2aede923ae78048}} 
 int {\bfseries Insert\+Tool\+Config} (Store config, std\+::string toolname, std\+::string author, std\+::string description, std\+::string $\ast$systemname\+\_\+in=nullptr, std\+::string $\ast$err=nullptr)
+\item 
+\mbox{\Hypertarget{classPGHelper_a882c355cdb377cf73d4491a8a04621b0}\label{classPGHelper_a882c355cdb377cf73d4491a8a04621b0}} 
+{\footnotesize template$<$typename... Ts$>$ }\\bool {\bfseries Execute\+Query} (std\+::string query\+\_\+string, Ts \&\&... args)
+\item 
+\mbox{\Hypertarget{classPGHelper_adac9e69acbe6f7008f31ce17c2eb8ef5}\label{classPGHelper_adac9e69acbe6f7008f31ce17c2eb8ef5}} 
+bool {\bfseries Get\+Tool\+Config} (std\+::string toolname, std\+::string \&configtext)
+\item 
+\mbox{\Hypertarget{classPGHelper_a1e6daa2aa7bfa6303c0129961f3b3b57}\label{classPGHelper_a1e6daa2aa7bfa6303c0129961f3b3b57}} 
+{\footnotesize template$<$typename... Ts$>$ }\\bool {\bfseries Insert} (std\+::string table, std\+::vector$<$ std\+::string $>$ fields, std\+::string $\ast$err, Ts \&\&... vals)
 \end{DoxyCompactItemize}
 
 

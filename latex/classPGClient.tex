@@ -1,0 +1,56 @@
+\hypertarget{classPGClient}{}\doxysection{PGClient Class Reference}
+\label{classPGClient}\index{PGClient@{PGClient}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPGClient_a4eb664adeff2bee42292681923a02138}\label{classPGClient_a4eb664adeff2bee42292681923a02138}} 
+void {\bfseries Set\+Data\+Model} (\mbox{\hyperlink{classDataModel}{Data\+Model}} $\ast$m\+\_\+data\+\_\+in)
+\item 
+\mbox{\Hypertarget{classPGClient_a4ddc4f1c102f38e5ab7d368aedf6ac07}\label{classPGClient_a4ddc4f1c102f38e5ab7d368aedf6ac07}} 
+void {\bfseries Log} (std\+::string msg, int msg\+\_\+verb, int verbosity)
+\item 
+\mbox{\Hypertarget{classPGClient_adecdabd9b8159a17e400b9f2f8e2eef2}\label{classPGClient_adecdabd9b8159a17e400b9f2f8e2eef2}} 
+bool {\bfseries Initialise} (std\+::string configfile)
+\item 
+\mbox{\Hypertarget{classPGClient_a40d3d06996bcb3bb2e230c1f16a64870}\label{classPGClient_a40d3d06996bcb3bb2e230c1f16a64870}} 
+bool {\bfseries Finalise} ()
+\item 
+\mbox{\Hypertarget{classPGClient_abe4bd4f7de3b4a84d4a5e33535f2a17f}\label{classPGClient_abe4bd4f7de3b4a84d4a5e33535f2a17f}} 
+bool {\bfseries Init\+ZMQ} ()
+\item 
+\mbox{\Hypertarget{classPGClient_a583171082b9aec19a43f9594113e2273}\label{classPGClient_a583171082b9aec19a43f9594113e2273}} 
+bool {\bfseries Init\+Service\+Discovery} ()
+\item 
+\mbox{\Hypertarget{classPGClient_a30b00d4e9bda04781f450514bd139802}\label{classPGClient_a30b00d4e9bda04781f450514bd139802}} 
+bool {\bfseries Init\+Logging} ()
+\item 
+\mbox{\Hypertarget{classPGClient_a0b1d56ff44a922ad9a86841a190e6eea}\label{classPGClient_a0b1d56ff44a922ad9a86841a190e6eea}} 
+bool {\bfseries Register\+Services} ()
+\item 
+\mbox{\Hypertarget{classPGClient_af994937ce3e1a24043ad8466865f15dd}\label{classPGClient_af994937ce3e1a24043ad8466865f15dd}} 
+bool {\bfseries Find\+New\+Clients} ()
+\item 
+\mbox{\Hypertarget{classPGClient_ad20bf0327749deef63761cc0906edb08}\label{classPGClient_ad20bf0327749deef63761cc0906edb08}} 
+bool {\bfseries Send\+Query} (std\+::string dbname, std\+::string query\+\_\+string, std\+::vector$<$ std\+::string $>$ $\ast$results, int $\ast$timeout\+\_\+ms, std\+::string $\ast$err)
+\item 
+\mbox{\Hypertarget{classPGClient_a5abcf45716967fc9a32bb785797f55f9}\label{classPGClient_a5abcf45716967fc9a32bb785797f55f9}} 
+bool {\bfseries Send\+Query} (std\+::string dbname, std\+::string query\+\_\+string, std\+::string $\ast$results, int $\ast$timeout\+\_\+ms, std\+::string $\ast$err)
+\item 
+\mbox{\Hypertarget{classPGClient_a118ad9e37c37aa18985780c6c1d258de}\label{classPGClient_a118ad9e37c37aa18985780c6c1d258de}} 
+bool {\bfseries Do\+Query} (\mbox{\hyperlink{structQuery}{Query}} qry, std\+::promise$<$ \mbox{\hyperlink{structQuery}{Query}} $>$)
+\item 
+\mbox{\Hypertarget{classPGClient_a83eb14e0c7d5f597b896ea06e39b1942}\label{classPGClient_a83eb14e0c7d5f597b896ea06e39b1942}} 
+bool {\bfseries Send\+Next\+Query} ()
+\item 
+\mbox{\Hypertarget{classPGClient_a01786fd9795f66bd335320b4f760bd1a}\label{classPGClient_a01786fd9795f66bd335320b4f760bd1a}} 
+bool {\bfseries Get\+Next\+Response} ()
+\item 
+\mbox{\Hypertarget{classPGClient_a07baa50ed094e2ce7b99ba724f2d9f71}\label{classPGClient_a07baa50ed094e2ce7b99ba724f2d9f71}} 
+bool {\bfseries Test\+Me} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/PGClient.\+h\item 
+Data\+Model/PGClient.\+cpp\end{DoxyCompactItemize}

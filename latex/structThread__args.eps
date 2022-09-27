@@ -174,11 +174,13 @@
 boxfont setfont
 1 boundaspect scale
 (Thread_args) cw
+(CAMAC_args) cw
 (DAQThread_args) cw
 (MyToolDynamicMultiThread_args) cw
 (MyToolMultiThread_args) cw
 (MyToolThread_args) cw
 (StoreSave_args) cw
+(LAPPD_args) cw
 (MyToolZMQMultiThread_args) cw
 (VME_args) cw
 /boxwidth boxwidth marginwidth 2 mul add def
@@ -193,35 +195,41 @@ boundx scalefactor div boundy scalefactor div scale
 % ----- classes -----
 
  (Thread_args) 2.500000 2.000000 box
- (DAQThread_args) 0.500000 1.000000 box
- (MyToolDynamicMultiThread_args) 1.500000 1.000000 box
- (MyToolMultiThread_args) 2.500000 1.000000 box
- (MyToolThread_args) 3.500000 1.000000 box
- (StoreSave_args) 4.500000 1.000000 box
- (MyToolZMQMultiThread_args) 0.000000 0.000000 box
- (VME_args) 1.000000 0.000000 box
+ (CAMAC_args) 0.000000 1.000000 box
+ (DAQThread_args) 1.000000 1.000000 box
+ (MyToolDynamicMultiThread_args) 2.000000 1.000000 box
+ (MyToolMultiThread_args) 3.000000 1.000000 box
+ (MyToolThread_args) 4.000000 1.000000 box
+ (StoreSave_args) 5.000000 1.000000 box
+ (LAPPD_args) 0.000000 0.000000 box
+ (MyToolZMQMultiThread_args) 1.000000 0.000000 box
+ (VME_args) 2.000000 0.000000 box
 
 % ----- relations -----
 
 solid
 1 2.500000 1.250000 out
 solid
-0.500000 4.500000 2.000000 conn
+0.000000 5.000000 2.000000 conn
 solid
-0 0.500000 1.750000 in
+0 0.000000 1.750000 in
 solid
-1 0.500000 0.250000 out
+0 1.000000 1.750000 in
 solid
-0.000000 1.000000 1.000000 conn
+1 1.000000 0.250000 out
 solid
-0 1.500000 1.750000 in
+0.000000 2.000000 1.000000 conn
 solid
-0 2.500000 1.750000 in
+0 2.000000 1.750000 in
 solid
-0 3.500000 1.750000 in
+0 3.000000 1.750000 in
 solid
-0 4.500000 1.750000 in
+0 4.000000 1.750000 in
+solid
+0 5.000000 1.750000 in
 solid
 0 0.000000 0.750000 in
 solid
 0 1.000000 0.750000 in
+solid
+0 2.000000 0.750000 in

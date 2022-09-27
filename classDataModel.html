@@ -101,9 +101,9 @@ Logging *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href=
 zmq::context_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataModel.html#a2c6dfd692e50f90e55338970ea7f8d61">context</a></td></tr>
 <tr class="memdesc:a2c6dfd692e50f90e55338970ea7f8d61"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZMQ contex used for producing zmq sockets for inter thread, process, or computer communication. <br /></td></tr>
 <tr class="separator:a2c6dfd692e50f90e55338970ea7f8d61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c9f6068c8afe58ecd3d6bd6a4610544"><td class="memItemLeft" align="right" valign="top"><a id="a4c9f6068c8afe58ecd3d6bd6a4610544"></a>
-<a class="el" href="classPostgres.html">Postgres</a>&#160;</td><td class="memItemRight" valign="bottom"><b>postgres</b></td></tr>
-<tr class="separator:a4c9f6068c8afe58ecd3d6bd6a4610544"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45789efe0f97c28151704dd8afc26899"><td class="memItemLeft" align="right" valign="top"><a id="a45789efe0f97c28151704dd8afc26899"></a>
+<a class="el" href="classPGClient.html">PGClient</a>&#160;</td><td class="memItemRight" valign="bottom"><b>pgclient</b></td></tr>
+<tr class="separator:a45789efe0f97c28151704dd8afc26899"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a485ff089c9766544af024d7b57f6859e"><td class="memItemLeft" align="right" valign="top"><a id="a485ff089c9766544af024d7b57f6859e"></a>
 <a class="el" href="classPGHelper.html">PGHelper</a>&#160;</td><td class="memItemRight" valign="bottom"><b>postgres_helper</b></td></tr>
 <tr class="separator:a485ff089c9766544af024d7b57f6859e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -119,6 +119,18 @@ unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>run</b></td>
 <tr class="memitem:a440fb9bdbac6231aa43c08f044f1fca3"><td class="memItemLeft" align="right" valign="top"><a id="a440fb9bdbac6231aa43c08f044f1fca3"></a>
 unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>subrun</b></td></tr>
 <tr class="separator:a440fb9bdbac6231aa43c08f044f1fca3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84196039921ebcbc92e32f7b6c6d41a1"><td class="memItemLeft" align="right" valign="top"><a id="a84196039921ebcbc92e32f7b6c6d41a1"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>RunTypeID</b></td></tr>
+<tr class="separator:a84196039921ebcbc92e32f7b6c6d41a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa907c09f96f3dc36899347873d43799c"><td class="memItemLeft" align="right" valign="top"><a id="aa907c09f96f3dc36899347873d43799c"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>RunType</b></td></tr>
+<tr class="separator:aa907c09f96f3dc36899347873d43799c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44b1de8c18c158aad69af2f9ebf2e05c"><td class="memItemLeft" align="right" valign="top"><a id="a44b1de8c18c158aad69af2f9ebf2e05c"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>RunTypeVersion</b></td></tr>
+<tr class="separator:a44b1de8c18c158aad69af2f9ebf2e05c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a407f3b4b73e7eaa88fb15eb83a041da2"><td class="memItemLeft" align="right" valign="top"><a id="a407f3b4b73e7eaa88fb15eb83a041da2"></a>
+unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>NumEvents</b></td></tr>
+<tr class="separator:a407f3b4b73e7eaa88fb15eb83a041da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This class Is a transient data model class for your Tools within the ToolChain. If Tools need to comunicate they pass all data objects through the data model. There fore inter tool data objects should be deffined in this class.</p>

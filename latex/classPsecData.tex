@@ -1,0 +1,68 @@
+\hypertarget{classPsecData}{}\doxysection{Psec\+Data Class Reference}
+\label{classPsecData}\index{PsecData@{PsecData}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPsecData_a978d926bc6c11cd6bb8246e1e88cfb09}\label{classPsecData_a978d926bc6c11cd6bb8246e1e88cfb09}} 
+{\bfseries Psec\+Data} (unsigned int id)
+\item 
+\mbox{\Hypertarget{classPsecData_ae0a60e67626bc3d258826c691c38250d}\label{classPsecData_ae0a60e67626bc3d258826c691c38250d}} 
+bool {\bfseries Send} (zmq\+::socket\+\_\+t $\ast$sock)
+\item 
+\mbox{\Hypertarget{classPsecData_a3c5cf65aea977187dfdcad348a935c89}\label{classPsecData_a3c5cf65aea977187dfdcad348a935c89}} 
+bool {\bfseries Receive} (zmq\+::socket\+\_\+t $\ast$sock)
+\item 
+\mbox{\Hypertarget{classPsecData_a3863c4ce668f8412a583fa7c13d343be}\label{classPsecData_a3863c4ce668f8412a583fa7c13d343be}} 
+bool {\bfseries Receive} (std\+::queue$<$ zmq\+::message\+\_\+t $>$ \&message\+\_\+queue)
+\item 
+\mbox{\Hypertarget{classPsecData_ad97c432c4a0356496817590f5cdebdf5}\label{classPsecData_ad97c432c4a0356496817590f5cdebdf5}} 
+bool {\bfseries Print} ()
+\item 
+\mbox{\Hypertarget{classPsecData_a8562751590b517de1ce8b50fc004f4fc}\label{classPsecData_a8562751590b517de1ce8b50fc004f4fc}} 
+bool {\bfseries Set\+Defaults} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPsecData_ae41a10dfcf79f113b13acb55ba87c99a}\label{classPsecData_ae41a10dfcf79f113b13acb55ba87c99a}} 
+unsigned int {\bfseries Version\+Number}
+\item 
+\mbox{\Hypertarget{classPsecData_ac38df0a7016eefe42b5fc31048339e96}\label{classPsecData_ac38df0a7016eefe42b5fc31048339e96}} 
+unsigned int {\bfseries LAPPD\+\_\+\+ID}
+\item 
+\mbox{\Hypertarget{classPsecData_a2245a077fa692e30b5d4e4e89936747a}\label{classPsecData_a2245a077fa692e30b5d4e4e89936747a}} 
+string {\bfseries Timestamp}
+\item 
+\mbox{\Hypertarget{classPsecData_a9d3acc66f2748e6ce9d1061ed9f7b8ed}\label{classPsecData_a9d3acc66f2748e6ce9d1061ed9f7b8ed}} 
+vector$<$ unsigned short $>$ {\bfseries Receive\+Data}
+\item 
+\mbox{\Hypertarget{classPsecData_abccc6c78dcdc30f2b02f8db13592a8c9}\label{classPsecData_abccc6c78dcdc30f2b02f8db13592a8c9}} 
+vector$<$ int $>$ {\bfseries Board\+Index}
+\item 
+\mbox{\Hypertarget{classPsecData_aa1a66c8c07cd76647012deee7edfe471}\label{classPsecData_aa1a66c8c07cd76647012deee7edfe471}} 
+vector$<$ unsigned short $>$ {\bfseries Acc\+Info\+Frame}
+\item 
+\mbox{\Hypertarget{classPsecData_a61d9927b27996a77c6f61682e5a2a29b}\label{classPsecData_a61d9927b27996a77c6f61682e5a2a29b}} 
+vector$<$ unsigned short $>$ {\bfseries Raw\+Waveform}
+\item 
+\mbox{\Hypertarget{classPsecData_a8d7a7e263ff00d64f2608cb05af4f591}\label{classPsecData_a8d7a7e263ff00d64f2608cb05af4f591}} 
+vector$<$ unsigned int $>$ {\bfseries errorcodes}
+\item 
+\mbox{\Hypertarget{classPsecData_adf1915dd3f5a1a8e8be108d8d17ce209}\label{classPsecData_adf1915dd3f5a1a8e8be108d8d17ce209}} 
+int {\bfseries Failed\+Read\+Counter}
+\item 
+\mbox{\Hypertarget{classPsecData_aeaf8da77163afacb6fd021c3ff3fce22}\label{classPsecData_aeaf8da77163afacb6fd021c3ff3fce22}} 
+int {\bfseries read\+Retval}
+\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPsecData_ac98d07dd8f7b70e16ccb9a01abf56b9c}\label{classPsecData_ac98d07dd8f7b70e16ccb9a01abf56b9c}} 
+class {\bfseries boost\+::serialization\+::access}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Psec\+Data.\+h\item 
+Data\+Model/Psec\+Data.\+cpp\end{DoxyCompactItemize}

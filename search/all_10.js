@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['_7edaqthread_5fargs_68',['~DAQThread_args',['../structDAQThread__args.html#a58daec71517805d0dc10e7d9d39aa872',1,'DAQThread_args']]],
-  ['_7ethread_5fargs_69',['~Thread_args',['../structThread__args.html#ad786e0c55b4e44bc04d9ba3b813bace1',1,'Thread_args']]]
+  ['xxusb_5fcc_5fcommand_5ftype_96',['XXUSB_CC_COMMAND_TYPE',['../structXXUSB__CC__COMMAND__TYPE.html',1,'']]],
+  ['xxusb_5fdevice_5ftyp_97',['xxusb_device_typ',['../structxxusb__device__typ.html',1,'']]],
+  ['xxusb_5fstack_98',['XXUSB_STACK',['../structXXUSB__STACK.html',1,'']]]
 ];
