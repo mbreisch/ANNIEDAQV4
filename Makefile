@@ -19,14 +19,11 @@ ZMQInclude= -I $(Dependencies)/zeromq-4.0.7/include/
 BoostLib= -L $(Dependencies)/boost_1_66_0/install/lib -lboost_date_time -lboost_serialization -lboost_iostreams
 BoostInclude= -I $(Dependencies)/boost_1_66_0/install/include
 
-PostgresLib= -L $(Dependencies)/pqxx/install/lib -lpqxx -L /usr/pgsql-12/lib -lpq
-PostgresInclude= -I $(Dependencies)/pqxx/install/include
+DataModelInclude = -I$(HOME)/pkg/include  -I/opt/menlinux/INCLUDE/NATIVE  -I $(Dependencies)/uc500adc/include/ -I $(Dependencies)/annietrigger/include/
+DataModelLib = -lvme4l_api -lrt
 
-DataModelInclude = $(PostgresInclude)
-DataModelLib = $(PostgresLib)
-
-MyToolsInclude = $(PostgresInclude)
-MyToolsLib = $(PostgresLib)
+MyToolsInclude =
+MyToolsLib = -L -lvme4l_api -lrt
 
 debug: all
 
@@ -74,11 +71,13 @@ clean:
 
 lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libDAQLogging.so lib/libStore.so $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))
 	@echo -e "\e[38;5;226m\n*************** Making " $@ "****************\e[0m"
+	cp $(Dependencies)/uc500adc/include/*.h include/
+	cp $(Dependencies)/annietrigger/include/*.h include/
 	g++ $(CXXFLAGS) -shared DataModel/*.o -I include -L lib -lStore -lLogging -lDAQLogging -o lib/libDataModel.so $(DataModelInclude) $(DataModelLib) $(ZMQLib) $(ZMQInclude) $(BoostLib) $(BoostInclude)
 
 lib/libMyTools.so: UserTools/*/* UserTools/* include/Tool.h  lib/libLogging.so lib/libDAQLogging.so lib/libStore.so UserTools/Factory/Factory.o |lib/libDataModel.so
 	@echo -e "\e[38;5;226m\n*************** Making " $@ "****************\e[0m"
-	g++ $(CXXFLAGS) -shared UserTools/*/*.o -I include -L lib -lStore -lDataModel -lLogging -lDAQLogging -o lib/libMyTools.so $(MyToolsInclude) $(DataModelInclude) $(MyToolsLib) $(DataModelLib) $(ZMQLib) $(ZMQInclude) $(BoostLib) $(BoostInclude)
+	g++ $(CXXFLAGS) -shared UserTools/*/*.o $(Dependencies)/annietrigger/src/*.cc $(Dependencies)/uc500adc/src/*.cc -I include -L lib -lStore -lDataModel -lLogging -lDAQLogging -o lib/libMyTools.so $(MyToolsInclude) $(DataModelInclude) $(MyToolsLib) $(DataModelLib) $(ZMQLib) $(ZMQInclude) $(BoostLib) $(BoostInclude)
 
 RemoteControl: $(Dependencies)/ToolDAQFramework/src/RemoteControl/* lib/libServiceDiscovery.so lib/libStore.so
 	cd $(Dependencies)/ToolDAQFramework/ && $(MAKE) $(MAKEFLAGS) RemoteControl

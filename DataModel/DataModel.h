@@ -12,10 +12,11 @@
 #include "DAQLogging.h"
 #include "DAQUtilities.h"
 
-#include "Postgres.h"
-#include "PGHelper.h"
 #include <CardData.h>
 #include <TriggerData.h>
+
+#include "UC500ADCInterface.h"
+#include "ANNIETriggerInterface.h"
 
 #include <zmq.hpp>
 
@@ -60,16 +61,21 @@ class DataModel {
     };
   */
 
-  // database manager
-  Postgres postgres;        // manages interface with the database
-  PGHelper postgres_helper; // provides user methods to perform routine database operations
 
-  std::vector<std::string> identities;
-  std::map<std::string,unsigned long> triggers;
-
-  unsigned long run;
-  unsigned long subrun;
+  long RunNumber;
+  long SubRunNumber;
+  std::string RunType;
+  long NumEvents;
+  bool running;
   
+  std::vector<CardData> carddata;
+  TriggerData* triggerdata;
+
+  int crate_num;
+  bool*  SoftTrigger;
+
+  std::map<std::string, unsigned long> triggers;
+
  private:
 
   //std::map<std::string,TTree*> m_trees; 

@@ -1,22 +1,14 @@
 #ifndef CARDDATA_H
 #define CARDDATA_H
 
-//#include <stdint.h>
+#include <stdint.h>
 #include <iostream>
 #include <vector>
-//#include <array>
+#include <array>
 #include <stdlib.h>
 #include "zmq.hpp"
-#include <SerialisableObject.h>
-#include "BoostStore.h"
-#include <queue>
 
-class CardData : public SerialisableObject{
-
-  friend class boost::serialization::access;
-
- public:
-
+struct CardData{
   int CardID;
   int SequenceID;
   int FirmwareVersion;
@@ -24,22 +16,9 @@ class CardData : public SerialisableObject{
   int FIFOstate;  
   ~CardData();
 
-  bool Print(){};
-
-  void  Send(zmq::socket_t *socket, int flag=0);
-  bool Receive(zmq::socket_t *socket);
-  bool Receive(std::queue<zmq::message_t> &message_queue);
-
- private:
-
-  template <class Archive> void serialize(Archive& ar, const unsigned int version){
-
-    ar & CardID;
-    ar & SequenceID;
-    ar & FirmwareVersion;
-    ar & Data;
-    ar & FIFOstate;
-  }
+  int  Send(zmq::socket_t *socket, int flag=0, std::vector<CardData>* hint=0);
+  void Receive(zmq::socket_t *socket);
+  int size;
   
 };
 

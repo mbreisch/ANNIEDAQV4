@@ -5,8 +5,6 @@
 #include <iostream>
 #include <vector>
 #include <zmq.hpp>
-#include <SerialisableObject.h>
-#include <queue>
 
 //#include <boost/iostreams/stream.hpp>
 //#include <boost/iostreams/device/back_inserter.hpp>
@@ -15,50 +13,38 @@
 //#include <boost/serialization/vector.hpp>
 
 
-class TriggerData : public SerialisableObject{
-
-  friend class boost::serialization::access;
-
- public:
-  
-  //  friend class boost::serialization::access;
+struct TriggerData{
+//  friend class boost::serialization::access;
   int FirmwareVersion;
   int SequenceID;
   int EventSize;
   std::vector<uint16_t> EventIDs;
   std::vector<uint64_t> EventTimes;  // units of nanoseconds.
-  //  int TriggerSize; 
   int TimeStampSize;
-  //std::vector<uint32_t> TriggerMasks;
+  //int TriggerSize; 
+  //  std::vector<uint32_t> TriggerMasks;
   //std::vector<uint32_t> TriggerCounters;
   std::vector<uint32_t> TimeStampData;
   int FIFOOverflow;
   int DriverOverflow;
   ~TriggerData();
 
-  bool Print(){};  
-  void  Send(zmq::socket_t *socket, int flag=0);
-  bool Receive(zmq::socket_t *socket);        
-  bool Receive(std::queue<zmq::message_t> &message_queue);
-  
- private:
+  int Send(zmq::socket_t *socket, int flag=0, TriggerData* hint=0);
+  void Receive(zmq::socket_t *socket);        
 
-  template <class Archive> void serialize(Archive& ar, const unsigned int version){
-
-      ar & FirmwareVersion;
-      ar & SequenceID;
-      ar & EventSize;
-      //      ar & TriggerSize;
-      ar & TimeStampSize;
-      ar & FIFOOverflow;
-      ar & DriverOverflow;
-      ar & EventIDs;
-      ar & EventTimes;
-      // ar & TriggerMasks;
-      //ar & TriggerCounters;
-      ar & TimeStampData; 
-    }
-    
+  int size7,size8,size9,size10;
+//  template<class Archive>
+//  void serialize(Archive & ar, const unsigned int version) {
+//    ar & FirmwareVersion;
+//    ar & SequenceID;
+//    ar & eventsize;
+//    ar & Events;
+//    ar & datasize;
+//    ar & Data;
+//    ar & FIFOOverflow;
+//    ar & DriverOverflow;
+//  }
+//  
 };
 
 //template <class T>

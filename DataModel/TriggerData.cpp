@@ -2,28 +2,49 @@
 
 void bencleanup2 (void *data, void *hint) { 
 }
+void bencleanup2b (void *data, void *hint) { 
+
+  if(hint!=0){
+    TriggerData* tmp=reinterpret_cast<TriggerData*>(hint);
+    delete tmp;
+  }
+  
+  
+}
 
 TriggerData::~TriggerData(){
 
 }
 
-void  TriggerData::Send(zmq::socket_t *socket, int flag){
-  
-  //  std::cout<<"d0"<<std::endl;
+int  TriggerData::Send(zmq::socket_t *socket, int flag, TriggerData* hint){
+  int ret=1;
+  //std::cout<<"d0"<<std::endl;
   zmq::message_t ms1(&FirmwareVersion,sizeof FirmwareVersion, bencleanup2);
-  // std::cout<<"d0.1"<<std::endl;  
-zmq::message_t ms2(&SequenceID,sizeof SequenceID, bencleanup2);
-//std::cout<<"d0.2"<<std::endl;
-
- zmq::message_t ms3(&EventSize,sizeof EventSize, bencleanup2);
-  //std::cout<<"d0.3"<<std::endl;
-
- zmq::message_t ms4(&TimeStampSize,sizeof TimeStampSize, bencleanup2);
- //  zmq::message_t ms4(&TriggerSize,sizeof TriggerSize, bencleanup2);
-  //std::cout<<"d0.4"<<std::endl;
-
+  //std::cout<<"d0.1 FV="<< FirmwareVersion<<std::endl;  
+  zmq::message_t ms2(&SequenceID,sizeof SequenceID, bencleanup2);
+  //std::cout<<"d0.2 SID="<<SequenceID<<std::endl;
+  
+  zmq::message_t ms3(&EventSize,sizeof EventSize, bencleanup2);
+  //std::cout<<"d0.3 ES="<<EventSize<<std::endl;
+  
+  //  zmq::message_t ms4(&TriggerSize,sizeof TriggerSize, bencleanup2);  
+  zmq::message_t ms4(&TimeStampSize,sizeof TimeStampSize, bencleanup2);
+//std::cout<<"d0.4 TS="<<TriggerSize<<std::endl;
+  
   zmq::message_t ms5(&FIFOOverflow,sizeof FIFOOverflow, bencleanup2);
+  //std::cout<<"d0.5 FO="<<FIFOOverflow<<std::endl;
+  
   zmq::message_t ms6(&DriverOverflow,sizeof DriverOverflow, bencleanup2);
+  //std::cout<<"d0.6 D0="<<DriverOverflow<<std::endl;
+
+  ret *= socket->send(ms1,ZMQ_SNDMORE);
+  ret *= socket->send(ms2,ZMQ_SNDMORE);
+  ret *= socket->send(ms3,ZMQ_SNDMORE);
+  ret *= socket->send(ms4,ZMQ_SNDMORE);
+  ret *= socket->send(ms5,ZMQ_SNDMORE);
+  ret *= socket->send(ms6,ZMQ_SNDMORE);                              
+  
+  //
   //std::cout<<"triggercounts snd size check = "<<triggerCounts.size()<<" card = "<< CardID<<std::endl;
   //std::cout<<"data.size = "<<Data.size()<<std::endl;
   //std::cout<<"d0.5"<<std::endl;
@@ -49,16 +70,83 @@ zmq::message_t ms2(&SequenceID,sizeof SequenceID, bencleanup2);
   //zmq::message_t ms11(&eventsize,sizeof eventsize, bencleanup2);
   //std::cout<<"d0.11"<<std::endl;
 
-  //zmq::message_t ms3(&FirmwareVersion,sizeof FirmwareVersion, bencleanup2); 
-  zmq::message_t ms7(&(EventIDs.at(0)), sizeof(uint16_t)*EventIDs.size(), bencleanup2);
-  zmq::message_t ms8(&(EventTimes.at(0)), sizeof(uint64_t)*EventTimes.size(), bencleanup2);
+  //zmq::message_t ms3(&FirmwareVersion,sizeof FirmwareVersion, bencleanup2);
+  size7=EventIDs.size(); 
+  //std::cout<<"size7="<<size7<<std::endl; 
+  zmq::message_t ms7a(&size7,sizeof size7, bencleanup2);
+  if(size7>0){
+    //std::cout<<"size7>0 = "<<size7<< std::endl;
+    socket->send(ms7a,ZMQ_SNDMORE);
+    zmq::message_t ms7b(&(EventIDs.at(0)), sizeof(uint16_t)*EventIDs.size(), bencleanup2);
+    socket->send(ms7b,ZMQ_SNDMORE);  
+  }
+  else socket->send(ms7a,ZMQ_SNDMORE);
   
-  //zmq::message_t ms9(&(TriggerMasks.at(0)), sizeof(uint32_t)*TriggerMasks.size(), bencleanup2);
+  
+  //std::cout<<"d0.7"<<std::endl;
+  size8=EventTimes.size(); 
+  //std::cout<<"size8="<<size8<<std::endl;
+  zmq::message_t ms8a(&size8,sizeof size8, bencleanup2);
+  if(size8>0){
+    //std::cout<<"size8>0 = "<<size8<< std::endl;
+    ret *= socket->send(ms8a,ZMQ_SNDMORE);
+    zmq::message_t ms8b(&(EventTimes.at(0)), sizeof(uint64_t)*EventTimes.size(), bencleanup2);
+    ret *= socket->send(ms8b,ZMQ_SNDMORE);
+  }
+  else ret *= socket->send(ms8a,ZMQ_SNDMORE);
+  
+  /*
+  
+  //std::cout<<"d0.8"<<std::endl;
+  size9=TriggerMasks.size();
+  //std::cout<<"size9="<<size9<<std::endl; 
+  zmq::message_t ms9a(&size9,sizeof size9, bencleanup2);  
+  if(size9>0){
+    //std::cout<<"size9>0 = "<<size9<< std::endl;
+    ret *= socket->send(ms9a,ZMQ_SNDMORE);
+    zmq::message_t ms9b(&(TriggerMasks.at(0)), sizeof(uint32_t)*TriggerMasks.size(), bencleanup2);
+    ret *= socket->send(ms9b,ZMQ_SNDMORE);
+  }
+  else ret *= socket->send(ms9a,ZMQ_SNDMORE);
+  
+  
+  //std::cout<<"d0.9"<<std::endl;
+  size10=TriggerCounters.size();
+  //std::cout<<"size10="<<size10<<std::endl; 
+  if(size10>0){
+    zmq::message_t ms10a(&size10,sizeof size10, bencleanup2);    
+    //std::cout<<"size10>0 = "<<size10<< std::endl;
+    ret *= socket->send(ms10a,ZMQ_SNDMORE);
+    zmq::message_t ms10b(&(TriggerCounters.at(0)), sizeof(uint32_t)*TriggerCounters.size(), bencleanup2b,hint);
+    ret *= socket->send(ms10b,flag);
+  }
+  else{
+    zmq::message_t ms10a(&size10,sizeof size10, bencleanup2b,hint);
+    ret *= socket->send(ms10a,flag);
+  }
+  */
 
-  //zmq::message_t ms10(&(TriggerCounters.at(0)), sizeof(uint32_t)*TriggerCounters.size(), bencleanup2);
-  zmq::message_t ms10(&(TimeStampData.at(0)), sizeof(uint32_t)*TimeStampData.size(), bencleanup2);
+
+  //std::cout<<"d0.9"<<std::endl;
+  size10=TimeStampData.size();
+  //std::cout<<"size10="<<size10<<std::endl; 
+  if(size10>0){
+    zmq::message_t ms10a(&size10,sizeof size10, bencleanup2);    
+    //std::cout<<"size10>0 = "<<size10<< std::endl;
+    ret *= socket->send(ms10a,ZMQ_SNDMORE);
+    zmq::message_t ms10b(&(TimeStampData.at(0)), sizeof(uint32_t)*TimeStampData.size(), bencleanup2b,hint);
+    ret *= socket->send(ms10b,flag);
+  }
+  else{
+    zmq::message_t ms10a(&size10,sizeof size10, bencleanup2b,hint);
+    ret *= socket->send(ms10a,flag);
+  }
+
+  
+  //std::cout<<"d0.10"<<std::endl;
+  
   //  std::cout<<"d0.12"<<std::endl;
-
+  
   //  std::cout<<"data.size = "<<Data.size()<<std::endl;
   // std::cout<<"data.size2 = "<<Data.size()*sizeof(uint16_t)<<std::endl;
   //std::cout<<"d1"<<std::endl;  
@@ -69,17 +157,9 @@ if(Data.at(i)==0)    std::cout<<" data.at("<<i<<")="<<Data.at(i);
   std::cout<<std::endl;
   */
   //zmq::message_t ms8(&fullbuffsize,sizeof fullbuffsize, bencleanup2);
+  //std::cout<<"sending"<<std::endl;
+  //std::cout<<"sent"<<std::endl;
 
-  socket->send(ms1,ZMQ_SNDMORE);
-  socket->send(ms2,ZMQ_SNDMORE);
-  socket->send(ms3,ZMQ_SNDMORE);
-  socket->send(ms4,ZMQ_SNDMORE);
-  socket->send(ms5,ZMQ_SNDMORE);
-  socket->send(ms6,ZMQ_SNDMORE);                              
-  socket->send(ms7,ZMQ_SNDMORE);
-  socket->send(ms8,ZMQ_SNDMORE);
-  //socket->send(ms9,ZMQ_SNDMORE);
-  socket->send(ms10,flag);
   // socket->send(ms11,ZMQ_SNDMORE);
   // socket->send(ms12);
   // std::cout<<"d2"<<std::endl;
@@ -116,10 +196,11 @@ if(Data.at(i)==0)    std::cout<<" data.at("<<i<<")="<<Data.at(i);
 
   //socket->send(ms6);
 
+  return ret;
 
 }
 
-bool TriggerData::Receive(zmq::socket_t *socket){
+void TriggerData::Receive(zmq::socket_t *socket){
   /*
   int more;                                                                   
   size_t more_size = sizeof (more);                                           
@@ -131,252 +212,48 @@ bool TriggerData::Receive(zmq::socket_t *socket){
   while (true){                                
     IF(Receive->recv(&message)){   
   */  
-   
+   /*
   zmq::message_t message;
 
-  if(socket->recv(&message) && message.more()){
-    FirmwareVersion=*(reinterpret_cast<int*>(message.data()));
-    //std::cout<<"FV="<<FirmwareVersion<<std::endl;
-    if(socket->recv(&message) && message.more()){
-      SequenceID=*(reinterpret_cast<int*>(message.data()));
-      //std::cout<<"SID="<<SequenceID<<std::endl;
-      if(socket->recv(&message) && message.more()){
-	EventSize=*(reinterpret_cast<int*>(message.data()));
-	//std::cout<<"ES="<<EventSize<<std::endl;  
-	if(socket->recv(&message) && message.more()){
-	  TimeStampSize=*(reinterpret_cast<int*>(message.data()));
-	  //  TriggerSize=*(reinterpret_cast<int*>(message.data()));
-	  //std::cout<<"TS="<<TriggerSize<<std::endl; 
-	  if(socket->recv(&message) && message.more()){
-	    FIFOOverflow=*(reinterpret_cast<int*>(message.data()));
-	    //std::cout<<"FO="<<FIFOOverflow<<std::endl;
-	    if(socket->recv(&message) && message.more()){
-	      DriverOverflow=*(reinterpret_cast<int*>(message.data()));
-	      //std::cout<<"DO="<<DriverOverflow<<std::endl;
-	      //std::cout<<"triggercounts rec size check = "<<message.size()<<std::endl;
-	      
-	      zmq::message_t message2;
-	      if(socket->recv(&message2) && message2.more()){
-		int tmp=*(reinterpret_cast<int*>(message2.data()));
-		//std::cout<<"tmp 1="<<tmp<<std::endl;
-		if(tmp>0){
-		  if(socket->recv(&message) && message.more()){
-		    EventIDs.resize(message.size()/sizeof(uint16_t));
-		    std::memcpy(&EventIDs[0], message.data(), message.size());
-		  }
-		  else{
-		    std::cout<<"CardData Receive ERROR: Bad EventIDs or no more message parts"<<std::endl;
-		    return false;
-		  }		 
-		
-		  zmq::message_t message3;
-				
-		  if(socket->recv(&message3) && message3.more()){
-		      tmp=*(reinterpret_cast<int*>(message3.data()));
-		      //std::cout<<"tmp 2="<<tmp<<std::endl;
-		      if(tmp>0){
-			if(socket->recv(&message) && message.more()){
-			  EventTimes.resize(message.size()/sizeof(uint64_t));
-			  std::memcpy(&EventTimes[0], message.data(), message.size());
-			}
-			else{
-			  std::cout<<"CardData Receive ERROR: bad EventTimes data or more parts"<<std::endl;
-			  return false;
-			}
-		      
-			/*
-			  zmq::message_t message4;
-			  socket->recv(&message4);
-			  tmp=*(reinterpret_cast<int*>(message4.data()));
-			  //std::cout<<"tmp 3="<<tmp<<std::endl;  
-			  if(tmp>0){
-			  if(socket->recv(&message) && message.more()){
-			  TriggerMasks.resize(message.size()/sizeof(uint32_t));
-			  std::memcpy(&TriggerMasks[0], message.data(), message.size());
-			  }
-			  
-			  zmq::message_t message5;
-			  socket->recv(&message5);
-			  tmp=*(reinterpret_cast<int*>(message5.data()));
-			  //std::cout<<"tmp 4="<<tmp<<std::endl;  
-			  if(tmp>0){
-			  if(socket->recv(&message) && message.more()){
-			  TriggerCounters.resize(message.size()/sizeof(uint32_t));
-			  std::memcpy(&TriggerCounters[0], message.data(), message.size());
-			  }
-			*/
-			
-			zmq::message_t message5;
-			if(socket->recv(&message5)){
-			  tmp=*(reinterpret_cast<int*>(message5.data()));
-			  //std::cout<<"tmp 4="<<tmp<<std::endl;  
-			  if(tmp>0){
-			    if(socket->recv(&message) && !message.more()){
-			      TimeStampData.resize(message.size()/sizeof(uint32_t));
-			      std::memcpy(&TimeStampData[0], message.data(), message.size());
-			    }
-			    else{
-			      std::cout<<"CardData Receive ERROR: bad TimeStampData or more message parts than expected"<<std::endl;
-			      return false;
-			    }
-			    /*
-			      CardID=*(reinterpret_cast<int*>(message.data()));
-			      std::cout<<"CardID = "<<CardID<<std::endl;
-			      if(socket->recv(&message) && message.more()){
-			      channels=*(reinterpret_cast<int*>(message.data()));
-			      if(socket->recv(&message) && message.more()){
-			      buffersize=*(reinterpret_cast<int*>(message.data()));
-			      if(socket->recv(&message) && message.more()){
-			      eventsize=*(reinterpret_cast<int*>(message.data()));
-			      if(socket->recv(&message) && message.more()){
-			      Data.resize(message.size());
-			      fullbuffsize=message.size();
-			      std::memcpy(&Data[0], message.data(), message.size());
-			    */
-			    /*
-			      Receive->getsockopt(ZMQ_RCVMORE, &more, &more_size);                    
-			      
-			      }
-			      
-			      if(more==0) break;
-			    */
-			    
-			  }
-			  else if( message5.more()){
-			    std::cout<<"CardData Receive ERROR: no TimeStampData but extra message parts"<<std::endl;
-			    return false;
-			  }
-			  else std::cout<<"CardData Receive Warning: no TimeStampData"<<std::endl;
-			}
-			else {
-			  std::cout<<"CardData Receive ERROR: no TimeStampData size"<<std::endl;
-			  return false;
-			}
-		      }
-		      else std::cout<<"CardData Receive Warning: no EventTimes"<<std::endl;
-		    }
-		    else{
-		      std::cout<<"CardData Receive ERROR: bas EventTimes size or no more message parts"<<std::endl;
-		      return false;
-		    }
-		    
-		} 
-		else std::cout<<"CardData Receive Warning: no EventIDs"<<std::endl;
-
-	      }
-	      else{
-		std::cout<<"CardData Receive ERROR: bad EventIDs size or no more message parts"<<std::endl;
-		return false;
-	      }
-	    }
-	    else{
-	      std::cout<<"CardData Receive ERROR: bad DriverOverflow or no more message parts"<<std::endl;
-	      return false;
-	    }
-	  }
-	  else{
-	    std::cout<<"CardData Receive ERROR: bad FIFOOverflow or no more message parts"<<std::endl;
-	    return false;
-	  }
-	}
-	else{
-	  std::cout<<"CardData Receive ERROR: bad TimeStampSize or no more message parts"<<std::endl;
-	  return false;
-	}
-      }
-      else{
-	std::cout<<"CardData Receive ERROR: bad EventSize or no more message parts"<<std::endl;
-	return false;
-      }
-    }
-    else{
-      std::cout<<"CardData Receive ERROR: bad SequenceID or no more message parts"<<std::endl;
-      return false;
-    }
-  }
-  else{
-    std::cout<<"CardData Receive ERROR: bad FirmwareVersion or no more message parts"<<std::endl;
-    return false;
-  }
-
-  
-
-
-  return true;
+  socket->recv(&message);
+  LastSync=*(reinterpret_cast<uint64_t*>(message.data()));
+  socket->recv(&message);
+  SequenceID=*(reinterpret_cast<int*>(message.data()));
+  socket->recv(&message);
+  StartTimeSec=*(reinterpret_cast<int*>(message.data()));
+  socket->recv(&message);
+  StartTimeNSec=*(reinterpret_cast<int*>(message.data()));
+  socket->recv(&message);
+  StartCount=*(reinterpret_cast<uint64_t*>(message.data()));
+  socket->recv(&message);
+  //std::cout<<"triggercounts rec size check = "<<message.size()<<std::endl;
+  triggerCounts.resize(message.size());
+  triggerNumber=message.size();
+  std::memcpy(&triggerCounts[0], message.data(), message.size());
+  socket->recv(&message);
+  Rates.resize(message.size());
+  std::memcpy(&Rates[0], message.data(), message.size());
+  socket->recv(&message);
+  CardID=*(reinterpret_cast<int*>(message.data()));
+  std::cout<<"CardID = "<<CardID<<std::endl;
+  socket->recv(&message);
+  channels=*(reinterpret_cast<int*>(message.data()));
+  socket->recv(&message);
+  buffersize=*(reinterpret_cast<int*>(message.data()));
+  socket->recv(&message);
+  eventsize=*(reinterpret_cast<int*>(message.data()));
+  socket->recv(&message);
+  Data.resize(message.size());
+  fullbuffsize=message.size();
+  std::memcpy(&Data[0], message.data(), message.size());
+  */  
+      /*
+      Receive->getsockopt(ZMQ_RCVMORE, &more, &more_size);                    
+          
 }
-
-bool TriggerData::Receive(std::queue<zmq::message_t> &message_queue){
-                    
-  if(message_queue.size() <9) return false;
-                         
-  FirmwareVersion=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  //std::cout<<"FV="<<FirmwareVersion<<std::endl;
-  
-  SequenceID=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();  
-  //std::cout<<"SID="<<SequenceID<<std::endl;
-  
-  EventSize=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  //std::cout<<"ES="<<EventSize<<std::endl;  
-    
-  TimeStampSize=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  //std::cout<<"TS="<<TimeStampSize<<std::endl;
- 
-
-  FIFOOverflow=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  //std::cout<<"FO="<<FIFOOverflow<<std::endl;
-	
-  DriverOverflow=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  //std::cout<<"DO="<<DriverOverflow<<std::endl;
-  
-  int tmp=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop(); 
-  //std::cout<<"tmp 1="<<tmp<<std::endl;
-  
-  if(tmp>0 && message_queue.size()>=3){
-    EventIDs.resize(message_queue.front().size()/sizeof(uint16_t));
-    std::memcpy(&EventIDs[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();
-  }
-  else{
-    std::cout<<"CardData Receive ERROR: Bad EventIDs or no more message parts"<<std::endl;
-    return false;
-  }		 
-  
-  tmp=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();  
-  //std::cout<<"tmp 2="<<tmp<<std::endl;
-  
-  if(tmp>0  && message_queue.size()>=2){
-    EventTimes.resize(message_queue.front().size()/sizeof(uint64_t));
-    std::memcpy(&EventTimes[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();  
-  }
-  else{
-    std::cout<<"CardData Receive ERROR: bad EventTimes data or more parts"<<std::endl;
-    return false;
-  }
-		      
-  
-  tmp=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();  
-//std::cout<<"tmp 4="<<tmp<<std::endl;  
-  
-  if(tmp>0  && message_queue.size()>=1){
-    TimeStampData.resize(message_queue.front().size()/sizeof(uint32_t));
-    std::memcpy(&TimeStampData[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();
-  }
-  else{
-    std::cout<<"CardData Receive ERROR: bad TimeStampData or more message parts than expected"<<std::endl;
-    return false;
-  }  
+                                                        
+    if(more==0) break;
+      */
 
 
-  return true;
 }
