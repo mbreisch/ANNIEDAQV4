@@ -1,0 +1,5 @@
+#test1 DummyTool configfiles/VME/DummyToolConfig
+#test2 DummyTool configfiles/VME/DummyToolConfig
+RunControl RunControl Null
+CrateReaderStream3 CrateReaderStream3 NULL
+VMESendDataStream2 VMESendDataStream2 NULL

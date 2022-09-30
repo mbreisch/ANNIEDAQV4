@@ -85,7 +85,7 @@ class CrateReaderStream3: public Tool {
 
   static void Thread(Thread_args* arg); ///< Function to be run by the thread in a loop. Make sure not to block in it
   
-  bool Thread_Setup(CrateReaderStream3_args* m_args);
+  bool Thread_Setup(CrateReaderStream3_args* &m_args);
   static bool Get_Data(CrateReaderStream3_args* args);
   static bool VME_To_Send(CrateReaderStream3_args* args);
   static bool VME_Stats_Send(CrateReaderStream3_args* args);

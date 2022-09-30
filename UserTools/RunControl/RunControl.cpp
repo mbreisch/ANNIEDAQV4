@@ -39,7 +39,7 @@ bool RunControl::Execute(){
     sock->recv(&msg);
 
     memcpy(&m_data->running, msg.data(), sizeof(m_data->running));
-
+    std::cout<<"got "<< m_data->running<<std::endl;
   }
 
 

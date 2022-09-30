@@ -93,33 +93,36 @@ bool CrateReaderStream3::Initialise(std::string configfile, DataModel &data){
 
   if(configfile!="")  m_variables.Initialise(configfile);
   //m_variables.Print();
-
+  std::cout<<"d1"<<std::endl;
   m_data= &data;
   m_log= m_data->Log;
-
+  std::cout<<"d2"<<std::endl;
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
-
-  if(!m_variables.Get("Crate_Num",m_data->crate_num)) return false;
-
+  std::cout<<"d3"<<std::endl;
+  if(!m_variables.Get("Crate_Num",m_data->crate_num)) m_data->crate_num=1;
+    //return false;
+  std::cout<<"d4"<<std::endl;
   m_util=new DAQUtilities(m_data->context);
-
+  std::cout<<"d5"<<std::endl;
   //setting up main thread socket
 
   trigger_sub = new zmq::socket_t(*m_data->context, ZMQ_PAIR);
   trigger_sub->bind("inproc://Crate_status");
-
+  std::cout<<"d6"<<std::endl;
 
   items[0].socket=*trigger_sub;
   items[0].fd=0;
   items[0].events=ZMQ_POLLIN;
   items[0].revents=0;
 
-
+  std::cout<<"d7"<<std::endl;
 
   if(!Thread_Setup(args)){
     Log("ERROR: Tool error setting up crate thread",0,m_verbose);
     return false;// Setting UP Store Thread (BEN error on return)
   }
+  std::cout<<"d8"<<std::endl;
+  //  m_data->running=true;
   
   return true;
 }
@@ -180,7 +183,7 @@ void CrateReaderStream3::Thread(Thread_args* arg){
   CrateReaderStream3_args* args=reinterpret_cast<CrateReaderStream3_args*>(arg);
 
   if(*args->running != args->old_running){
-    
+    printf("CrateReaderStream3::Thread next loop\n");
     args->old_running=*args->running;
 
      args->Crate->PresetCounters();
@@ -189,10 +192,13 @@ void CrateReaderStream3::Thread(Thread_args* arg){
      else  args->Crate->Initialise(args->stop_variables);      
     
     if(args->crate_num==1){
+      printf("i1.5\n");
        args->TriggerCard->PresetCounters();
        if(*args->running){
+	 printf("i1.6\n");
 	 args->TriggerCard->Initialise(args->start_variables);
 	 args->TriggerCard->EnableTrigger();
+	 usleep(1000000);
        }
        else  args->TriggerCard->Initialise(args->stop_variables);
        
@@ -200,13 +206,20 @@ void CrateReaderStream3::Thread(Thread_args* arg){
   }
   
   
-  if(args->running){  
-   
+  if(*args->running){  
+    printf("CrateReaderStream3::Thread calling GetData\n");
     Get_Data(args); //new data comming in buffer it and send akn
-    
+    printf("CrateReaderStream3::GetData returned\n");
+
     zmq::poll(args->out, 10);
     
-    if(args->out.at(0).revents & ZMQ_POLLOUT && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Send(args);         /// data in buffer so send it to store writer 
+    if(args->out.at(0).revents & ZMQ_POLLOUT && (args->data_buffer.size() || args->trigger_buffer.size()) ){
+      printf("CrateReaderStream3 calling VME_To_Send with \n buffersize=%d:%d\n", args->data_buffer.size(),args->trigger_buffer.size());
+      VME_To_Send(args);         /// data in buffer so send it to store writer 
+      printf("i4\n uffersize=%d:%d\n", args->data_buffer.size(),args->trigger_buffer.size());   
+     } else if(!(args->out.at(0).revents & ZMQ_POLLOUT)){
+      printf("CrateReaderStream3 skipping VME_To_Send call as no listener on inproc::tobuffer pair socket\n");
+     }
     
     if(difftime(time(NULL), *args->ref_time) > 60){
       //    if(clock()-(*args->ref_clock2) >= 60*CLOCKS_PER_SEC){
@@ -216,16 +229,18 @@ void CrateReaderStream3::Thread(Thread_args* arg){
     }
     
   }
-  else{   } //delete databuffered ???
+  //else{   } //delete databuffered ???
   
 }
 
 
-bool CrateReaderStream3::Thread_Setup(CrateReaderStream3_args* arg){
+bool CrateReaderStream3::Thread_Setup(CrateReaderStream3_args* &arg){
 
 
-
+  std::cout<<"s1"<<std::endl;
   arg=new CrateReaderStream3_args();
+
+  std::cout<<"s2"<<std::endl;
 
   //Ben add timeout and linger settings;
   arg->m_trigger_pub = new zmq::socket_t(*m_data->context, ZMQ_PAIR);
@@ -236,30 +251,41 @@ bool CrateReaderStream3::Thread_Setup(CrateReaderStream3_args* arg){
   arg->m_logger = m_log;
   arg->ref_time=new time_t;
   *arg->ref_time=time(NULL);
+  std::cout<<"m_data->crate_num="<<m_data->crate_num<<std::endl;
+  std::cout<<"arg->crate_num="<<arg->crate_num<<std::endl;
   arg->crate_num=m_data->crate_num;
+  std::cout<<"m_data->crate_num="<<m_data->crate_num<<std::endl;
+  std::cout<<"arg->crate_num="<<arg->crate_num<<std::endl;
   /// Ben add linger DataSend->setsockopt(ZMQ_LINGER, 0);  
 
+  std::cout<<"s3"<<std::endl;
+  std::cout<<"arg->crate_num="<<arg->crate_num<<std::endl;
   //BEN load variables from DB
-
-
+  arg->start_variables.Initialise("/home/annie/ANNIEDAQV4/configfiles/TriggerConfig");
+  arg->stop_variables.Initialise("/home/annie/ANNIEDAQV4/configfiles/TriggerConfig");
+  arg->start_variables.Print();
+  std::cout<<"s4"<<std::endl;
+  std::cout<<"arg->crate_num="<<arg->crate_num<<std::endl;
   zmq::pollitem_t tmp_item2;
   tmp_item2.socket=*arg->m_data_send;
   tmp_item2.fd=0;
   tmp_item2.events=ZMQ_POLLOUT;
   tmp_item2.revents=0;
   arg->out.push_back(tmp_item2);
+  std::cout<<"s5 cratenum="<<arg->crate_num<<std::endl;
   
-  
-  arg->Crate= new UC500ADCInterface(args->crate_num);
-  arg->TriggerCard= new ANNIETriggerInterface(args->crate_num);
-  
+  arg->Crate= new UC500ADCInterface(arg->crate_num);
+  std::cout<<"s5.5"<<std::endl;
+  arg->TriggerCard= new ANNIETriggerInterface(arg->crate_num);
+  std::cout<<"s6"<<std::endl;
   
   arg->running=&m_data->running;
   arg->soft=false;
+  std::cout<<"s7"<<std::endl;
 
   arg->old_running=m_data->running;
 
-
+  std::cout<<"s8"<<std::endl;
   return  m_util->CreateThread("Crate", &Thread, args);
       
 }
@@ -268,18 +294,19 @@ bool CrateReaderStream3::Thread_Setup(CrateReaderStream3_args* arg){
 bool CrateReaderStream3::Get_Data(CrateReaderStream3_args* args){  
 
   bool ret=false;
-
-  //  usleep(10000);
-  
+  std::cout<<"CrateReaderStream3::GetData, checking Crate->Triggered"<<std::endl;
+   usleep(10000);
+   //std::cout<<"m3"<<std::endl;
   if(args->Crate->Triggered()){ // check if crate has been triggered
-    //std::cout<<"m3"<<std::endl;
+    std::cout<<"CrateReaderStream3 Crate is Triggered"<<std::endl;
       
       
     std::vector<CardData>* tmpcarddata=new std::vector<CardData>; //BEN shes leaking nned to either check state of pointer before calling new or better store in a vector so that if messages are unsent they can be sent again in the future
+    std::cout<<"CrateReaderStream3 calling GetCardData"<<std::endl;
     *(tmpcarddata)=args->Crate->GetCardData();
-	
+    std::cout<<"CrateReaderStream3 GetCardData returned"<<std::endl;
     if(tmpcarddata->size()==0){
-      //std::cout<<"no carddata"<<std::endl;
+      std::cout<<"no carddata"<<std::endl;
       delete tmpcarddata;
       tmpcarddata=0;
     }
@@ -290,36 +317,41 @@ bool CrateReaderStream3::Get_Data(CrateReaderStream3_args* args){
       
       //if(carddata->at(k).Data.size()==0) std::cout<<"wegot one "<< std::endl;
       //}
-      //std::cout<<"m4"<<std::endl;
+      std::cout<<"got carddata"<<std::endl;
       args->data_counter++;
       ret=true;
     }
   }
   
   else if(args->soft && args->crate_num==1){
-    //std::cout<<"m7"<<std::endl;
+    std::cout<<"m7"<<std::endl;
     
     args->TriggerCard->ForceTriggerNow();
+    usleep(100);
   }
 
   
   if(args->crate_num==1){
-    //std::cout<<"z2"<<std::endl;
+    std::cout<<"CrateReaderStream3 calling TriggerCard->HasData"<<std::endl;
     if(args->TriggerCard->HasData()){
-      //std::cout<<"m8"<<std::endl;
+      std::cout<<"TriggerCard->HasData() returned true, calling GetTriggerData"<<std::endl;
       
       
       TriggerData* tmptriggerdata=args->TriggerCard->GetTriggerData();
-      
+      std::cout<<"m9"<<std::endl;    
+  
       if(tmptriggerdata->TimeStampData.size()==0){
-	//std::cout<<"no trigger data"<<std::endl;
+	std::cout<<"no trigger data"<<std::endl;
 	delete tmptriggerdata;
       }
       else{
+        std::cout<<"got trigger data"<<std::endl;
 	args->trigger_buffer.push_back(tmptriggerdata);
 	args->trigger_counter++;
 	ret=true;
       }
+    } else {
+        std::cout<<"TriggerCard::HasData returned false"<<std::endl;
     }
   }
   
@@ -332,10 +364,11 @@ bool CrateReaderStream3::Get_Data(CrateReaderStream3_args* args){
 bool CrateReaderStream3::VME_To_Send(CrateReaderStream3_args* args){ 
   
   if(args->trigger_buffer.size()){
+    std::cout<<"CrateReaderStream3 Sending trigger pointer"<<std::endl;
     //send trigger pointer
     zmq::message_t tmp(2);
     snprintf ((char *) tmp.data(), 2 , "%s" , "T") ;
-    if(args->m_data_send->send(tmp) && args->m_utils->SendPointer(args->m_data_send, args->trigger_buffer.at(0))){
+    if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->trigger_buffer.at(0))){
       args->trigger_buffer.at(0)=0;
       args->trigger_buffer.pop_front();
     }
@@ -346,15 +379,18 @@ bool CrateReaderStream3::VME_To_Send(CrateReaderStream3_args* args){
   
   
   else if(args->data_buffer.size()){
+    std::cout<<"CrateReaderStream3 sending data pointer"<<std::endl;
     //send data pointer
     zmq::message_t tmp(2);           
     snprintf ((char *) tmp.data(), 2 , "%s" , "D") ;
-    if(args->m_data_send->send(tmp) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
-      args->trigger_buffer.at(0)=0;       
-      args->trigger_buffer.pop_front();        	
+    if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
+      args->data_buffer.at(0)=0;       
+      args->data_buffer.pop_front();        	
     }
     else args->m_logger->Log("ERROR:Failed to send data pointer to VME Store Thread");
     
+  } else {
+    std::cerr<<"CrateReaderStream3::VME_To_Send called with no data in buffers?"<<std::endl;
   }
  
   return true; //BEN do this better

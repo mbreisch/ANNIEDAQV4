@@ -53,7 +53,7 @@ class VMESendDataStream2: public Tool {
 
  private:
 
-  bool Thread_Setup(VMESendDataStream2_args* arg);
+  bool Thread_Setup(VMESendDataStream2_args* &arg);
 
   static void Thread(Thread_args* arg);
 
