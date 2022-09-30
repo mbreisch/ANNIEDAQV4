@@ -11,6 +11,8 @@ bool RunControl::Initialise(std::string configfile, DataModel &data){
   m_data= &data;
   m_log= m_data->Log;
 
+  m_data->running=false;
+
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
 
   sock = new zmq::socket_t(*m_data->context, ZMQ_SUB);
