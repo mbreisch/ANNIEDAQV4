@@ -6,5 +6,7 @@ UserTools/*/*.o
 DataModel/*.o
 Dependencies
 main
+NodeDaemon
+RemoteControl
 *.d
 *.root

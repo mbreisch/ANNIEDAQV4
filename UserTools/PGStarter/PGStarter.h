@@ -1,5 +1,5 @@
-#ifndef RunControl_H
-#define RunControl_H
+#ifndef PGStarter_H
+#define PGStarter_H
 
 #include <string>
 #include <iostream>
@@ -8,7 +8,7 @@
 
 
 /**
- * \class RunControl
+ * \class PGStarter
  *
  * This is a balnk template for a Tool used by the script to generate a new custom tool. Please fill out the descripton and author information.
 *
@@ -16,23 +16,27 @@
 * $Date: 2019/05/28 10:44:00 $
 */
 
-class RunControl: public Tool {
+class PGStarter: public Tool {
 
 
  public:
 
-  RunControl(); ///< Simple constructor
+  PGStarter(); ///< Simple constructor
   bool Initialise(std::string configfile,DataModel &data); ///< Initialise Function for setting up Tool resorces. @param configfile The path and name of the dynamic configuration file to read in. @param data A reference to the transient data class used to pass information between Tools.
   bool Execute(); ///< Executre function used to perform Tool perpose. 
   bool Finalise(); ///< Finalise funciton used to clean up resorces.
 
 
  private:
+  int verbosity;
+  // verbosity levels: if 'verbosity' < this level, the message type will be logged.
+  int v_error=0;
+  int v_warning=1;
+  int v_message=2;
+  int v_debug=3;
+  int get_ok;
 
-  zmq::socket_t* sock;
 
-  zmq::pollitem_t items[1];
-  bool old_running;
 
 
 };

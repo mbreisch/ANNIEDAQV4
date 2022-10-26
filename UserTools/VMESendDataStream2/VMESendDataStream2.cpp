@@ -52,12 +52,26 @@ VMESendDataStream2::VMESendDataStream2():Tool(){}
 
 bool VMESendDataStream2::Initialise(std::string configfile, DataModel &data){
 
-
-  if(configfile!="")  m_variables.Initialise(configfile);
-  //m_variables.Print();
-
   m_data= &data;
   m_log= m_data->Log;
+
+  if(m_tool_name=="") m_tool_name="VMESendDataStream2";
+  
+  // get tool config from database
+  std::string configtext;
+  bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
+  if(!get_ok){
+    Log(m_tool_name+" Failed to get Tool config from database!",0,0);
+    //return false;
+  }
+  // parse the configuration to populate the m_variables Store.
+  std::stringstream configstream(configtext);
+  if(configtext!="") m_variables.Initialise(configstream);
+  
+  // allow overrides from local config file
+  if(configfile!="")  m_variables.Initialise(configfile);
+  
+  //m_variables.Print();
 
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
 
@@ -108,26 +122,26 @@ void VMESendDataStream2::Thread(Thread_args* arg){
   if(*args->running){  
     //printf("k1\n");
     zmq::poll(args->out, 10);
-     printf("VMESendDataStream2::Thread loop\n");
+     //printf("VMESendDataStream2::Thread loop\n");
     if(args->out.at(0).revents & ZMQ_POLLOUT){
-      printf("VMESendDataStream2::Thread has listener\n");
+      //printf("VMESendDataStream2::Thread has listener\n");
       zmq::poll(args->in, 10);
-      printf("has inproc connection\n");
+      //printf("has inproc connection\n");
       if(args->in.at(0).revents & ZMQ_POLLIN){
-	printf("VMESendDataStream2 receiving data from CrateReaderStream\n");
+	//printf("VMESendDataStream2 receiving data from CrateReaderStream\n");
 	if(Receive_Data(args)){
-	  printf("VMESendDataStream2 sending received data\n");
+	  //printf("VMESendDataStream2 sending received data\n");
 	  Send_Data(args);
-	  printf("VMESendDataStream2 sent\n");
+	  //printf("VMESendDataStream2 sent\n");
 	} else {
-          printf("Received no data?\n");
+          //printf("Received no data?\n");
         }
 	
       } else {
-         printf("VMESendDataStream2::Thread no new data from CrateReaderStream\n");
+         //printf("VMESendDataStream2::Thread no new data from CrateReaderStream\n");
       }    
     } else {
-      printf("VMESendDataStream2::Thread no listener on output dealer socket tcp://*98989\n");
+      //printf("VMESendDataStream2::Thread no listener on output dealer socket tcp://*98989\n");
     }
   }
     // else {
@@ -146,15 +160,17 @@ bool VMESendDataStream2::Thread_Setup(VMESendDataStream2_args* &arg){
 
   //Ben add timeout and linger settings;
   arg->m_data_send = new zmq::socket_t(*m_data->context, ZMQ_DEALER);
+  arg->m_data_send->setsockopt(ZMQ_LINGER,10);
+  arg->m_data_send->setsockopt(ZMQ_RCVTIMEO,100);
+  arg->m_data_send->setsockopt(ZMQ_SNDTIMEO,100);
   arg->m_data_send->bind("tcp://*:98989");
   arg->m_data_receive = new zmq::socket_t(*m_data->context, ZMQ_PAIR);
+  arg->m_data_receive->setsockopt(ZMQ_LINGER,10);
+  arg->m_data_receive->setsockopt(ZMQ_RCVTIMEO,10);
   arg->m_data_receive->connect("inproc://tobuffer");
   arg->m_utils = m_util;
   arg->m_logger = m_log;
   arg->id=0;
- 
-  /// Ben add linger DataSend->setsockopt(ZMQ_LINGER, 0);  
-
 
   zmq::pollitem_t tmp_item1;
   tmp_item1.socket=*arg->m_data_receive;
@@ -198,7 +214,7 @@ bool VMESendDataStream2::Receive_Data(VMESendDataStream2_args* args){
     args->data_buffer.push_back(tmp);
 
   } else {
-    printf("VMESendDataStream2::Receive_Data unknown data type '%s'\n",type.str().c_str());
+    //printf("VMESendDataStream2::Receive_Data unknown data type '%s'\n",type.str().c_str());
   }
 
 
@@ -225,18 +241,18 @@ bool VMESendDataStream2::Send_Data(VMESendDataStream2_args* args){
     memcpy(cards.data(), &size, sizeof(size));
     args->m_data_send->send(cards, ZMQ_SNDMORE);
 
-    printf("VMESendDataStream2 sending next trigger_buffer entry\n");
+    //printf("VMESendDataStream2 sending next trigger_buffer entry\n");
     args->trigger_buffer.at(0)->Send(args->m_data_send);
 
     zmq::message_t akn;
     if(args->m_data_send->recv(&akn)){
-      printf("y2\n");
+      //printf("y2\n");
       delete args->trigger_buffer.at(0);
-      printf("y3\n");      
+      //printf("y3\n");      
       args->trigger_buffer.at(0)=0;
-      printf("y4\n");
+      //printf("y4\n");
       args->trigger_buffer.pop_front();
-      printf("y5\n");
+      //printf("y5\n");
     }
 
 
@@ -254,31 +270,31 @@ bool VMESendDataStream2::Send_Data(VMESendDataStream2_args* args){
     snprintf ((char *) type.data(), 2 , "%s" , "D") ;
     args->m_data_send->send(type, ZMQ_SNDMORE);
     
-    printf("VMESendDataStream2 sending next data_buffer entry\n");
+    //printf("VMESendDataStream2 sending next data_buffer entry\n");
     int size= args->data_buffer.at(0)->size();
-    printf("y8\n");
+    //printf("y8\n");
 
     zmq::message_t cards(sizeof(size));
     memcpy(cards.data(), &size, sizeof(size));
     args->m_data_send->send(cards, ZMQ_SNDMORE);
 
     for(int i=0; i<size; i++){
-      printf("y9\n");
+      //printf("y9\n");
       if(i<size-1) args->data_buffer.at(0)->at(i).Send(args->m_data_send, ZMQ_SNDMORE);
       else  args->data_buffer.at(0)->at(i).Send(args->m_data_send);
-      printf("y10\n");
+      //printf("y10\n");
     }
 
-    printf("y10.5\n");   
+    //printf("y10.5\n");   
     zmq::message_t akn;
     if(args->m_data_send->recv(&akn)){
-      printf("y11\n");
+      //printf("y11\n");
       delete args->data_buffer.at(0);
       args->data_buffer.at(0)=0;
       args->data_buffer.pop_front();
-      printf("y12\n");
+      //printf("y12\n");
     }
-    printf("y13\n");   
+    //printf("y13\n");   
 
 
   }

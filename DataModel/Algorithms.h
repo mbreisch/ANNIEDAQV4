@@ -14,4 +14,7 @@ void Print(std::ostream& out, Arg&& arg, Args&&... args){
     (void)expander{0, (void(out << ',' << std::forward<Args>(args)), 0)...};
 }
 
+bool CheckPath(std::string p, std::string& t);
+bool checkfileexists(std::string);
+
 #endif

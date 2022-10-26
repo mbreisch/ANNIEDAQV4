@@ -1,5 +1,5 @@
 #  Trigger config file
-
+DriverVersion v3.0
 verbose 1
 VME_service_name VME_service
 numVME 3

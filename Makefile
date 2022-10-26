@@ -70,7 +70,7 @@ clean:
 	rm -f UserTools/*/*.o
 	rm -f DataModel/*.o
 
-lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libDAQLogging.so lib/libStore.so $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))
+lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libDAQLogging.so lib/libStore.so lib/libServiceDiscovery.so $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))
 	@echo -e "\e[38;5;226m\n*************** Making " $@ "****************\e[0m"
 	cp $(Dependencies)/uc500adc/include/HardwareInterface.h include/
 	cp $(Dependencies)/uc500adc/include/CardSync.h include/

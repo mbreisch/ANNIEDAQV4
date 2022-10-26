@@ -8,5 +8,6 @@ if (tool=="CrateReaderStream3") ret=new CrateReaderStream3;
 if (tool=="DummyTool") ret=new DummyTool;
 if (tool=="RunControl") ret=new RunControl;
 if (tool=="VMESendDataStream2") ret=new VMESendDataStream2;
+if (tool=="PGStarter") ret=new PGStarter;
 return ret;
 }

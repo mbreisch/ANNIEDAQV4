@@ -11,6 +11,8 @@
 #include "BoostStore.h"
 #include "DAQLogging.h"
 #include "DAQUtilities.h"
+#include "PGClient.h"
+#include "PGHelper.h"
 
 #include <CardData.h>
 #include <TriggerData.h>
@@ -62,9 +64,6 @@ class DataModel {
   */
 
 
-  long RunNumber;
-  long SubRunNumber;
-  std::string RunType;
   long NumEvents;
   bool running;
   
@@ -75,6 +74,16 @@ class DataModel {
   bool*  SoftTrigger;
 
   std::map<std::string, unsigned long> triggers;
+  
+  // for accessing database for tool configs
+  PGClient pgclient;
+  PGHelper postgres_helper;
+  // associated with identifying which configuration entry tools should use
+  unsigned long run;
+  unsigned long subrun;
+  int RunConfig;
+  std::string RunType;
+  float RunTypeVersion;
 
  private:
 
