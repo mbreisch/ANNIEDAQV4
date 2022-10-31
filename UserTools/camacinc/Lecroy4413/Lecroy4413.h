@@ -9,6 +9,7 @@
 #define LeCroy4413_H
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <map>
@@ -60,6 +61,8 @@ class LeCroy4413 : public CamacCrate
   ///////////////////////////
 
   LeCroy4413(int NSlot, std::string config, int i = 0);// : CamacCrate(i);//Constructor !
+  LeCroy4413(int NSlot, std::istream* config, int i = 0);// : CamacCrate(i);//Constructor !
+  void Init(int NSlot, std::istream* config, int i = 0);// : CamacCrate(i);
 
   int ReadThreshold(int& threshold);//F(1)·A(0)
   int ReadThreshold();//F(1)·A(0)
@@ -81,6 +84,7 @@ class LeCroy4413 : public CamacCrate
   int GetSlot();//Return Slot
   
   void SetConfig(std::string config);//Set register from configfile
+  void SetConfig(std::istream* config);//Set register from configfile contents
   
  private:
   

@@ -17,6 +17,13 @@ VME_args::VME_args():DAQThread_args(){
   db="";
   ta="";
   tb="";
+  servicename="";
+  portnum=0;
+  update_conns_period=0;
+  statsperiod=0;
+  polltimeout=0;
+  storesendpolltimeout=0;
+  ramdiskpath="";
 
 }
 
@@ -154,6 +161,14 @@ bool VME::Execute(){
 
     m_data->triggers["VME"]= VME_readouts;
     m_data->triggers["Trig"]= TRIG_readouts;
+
+    unsigned long VME_buffer;
+    tmp->Get("data_buffer",VME_buffer);
+    unsigned long TRIG_buffer;
+    tmp->Get("trigger_buffer",TRIG_buffer);
+
+    m_data->buffers["VME"]= VME_buffer;
+    m_data->buffers["Trig"]= TRIG_buffer;
    
     delete tmp;
     tmp=0;
@@ -189,17 +204,18 @@ void VME::VME_Thread(Thread_args* arg){
   
   VME_args* args=reinterpret_cast<VME_args*>(arg);
    
-  args->m_utils->UpdateConnections("VME", args->m_data_receive, args->connections, 300, args->ref_time1, "98989");
-   
-  zmq::poll(args->in, 10);
+  if(args->connections.size())  args->m_utils->UpdateConnections(args->servicename, args->m_data_receive, args->connections, args->update_conns_period, args->ref_time1, std::to_string(args->portnum));
+  else  args->m_utils->UpdateConnections(args->servicename, args->m_data_receive, args->connections, 5 , args->ref_time1, std::to_string(args->portnum));
+
+  zmq::poll(args->in, args->polltimeout);
   
   if(args->in.at(0).revents & ZMQ_POLLIN) Get_Data(args); //new data comming in buffer it and send akn
   
-  zmq::poll(args->out, 10);
+  zmq::poll(args->out, args->polltimeout);
   
   if((args->out.at(0).revents & ZMQ_POLLOUT) && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Store(args);         /// data in buffer so send it to store writer 
   
-  if(difftime(time(NULL), *args->ref_time2) >= 60) {
+  if(difftime(time(NULL), *args->ref_time2) >= args->statsperiod) {
 
     VME_Stats_Send(args);   // on timer stats pub to main thread for triggering
     *args->ref_time2=time(NULL);
@@ -211,7 +227,7 @@ void VME::Store_Thread(Thread_args* arg){
   
   VME_args* args=reinterpret_cast<VME_args*>(arg);
   
-  zmq::poll(args->in, 10);
+  zmq::poll(args->in, args->polltimeout);
   
   if(args->in.at(1).revents & ZMQ_POLLIN) Store_Send_Data(args); /// received store data request
   
@@ -238,6 +254,17 @@ bool VME::VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DA
   tmp_args->ref_time2=new time_t;
   *tmp_args->ref_time1=time(NULL);
   *tmp_args->ref_time2=time(NULL);
+  
+  tmp_args->servicename="VME";
+  tmp_args->portnum=98989;
+  tmp_args->update_conns_period=300;
+  m_variables.Get("servicename",tmp_args->servicename);
+  m_variables.Get("portnum",tmp_args->portnum);
+  m_variables.Get("updateconnsperiod",tmp_args->update_conns_period);
+  
+  tmp_args->statsperiod=60;
+  m_variables.Get("statsperiod",tmp_args->statsperiod);
+
 
   zmq::pollitem_t tmp_item;
   tmp_item.socket=*tmp_args->m_data_receive;
@@ -253,6 +280,17 @@ bool VME::VME_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, DA
   tmp_item2.revents=0;
   tmp_args->out.push_back(tmp_item2);
 
+  zmq::pollitem_t tmp_item3;
+  tmp_item3.socket=*tmp_args->m_data_receive;
+  tmp_item3.fd=0;
+  tmp_item3.events=ZMQ_POLLOUT;
+  tmp_item3.revents=0;
+  tmp_args->out.push_back(tmp_item3);
+
+  tmp_args->polltimeout=10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
+  tmp_args->m_data_receive->setsockopt(ZMQ_RCVTIMEO, tmp_args->polltimeout);  // FIXME make unique
+  tmp_args->m_data_receive->setsockopt(ZMQ_SNDTIMEO, tmp_args->polltimeout);  // poll times
 
   return m_util->CreateThread("VME", &VME_Thread, tmp_args); ///Ben improve return with catches for socket setup failures
 
@@ -295,11 +333,20 @@ bool VME::Store_Thread_Setup(DataModel* m_data, std::vector<VME_args*> &m_args, 
   tmp_item5.events=ZMQ_POLLOUT;
   tmp_item5.revents=0;
   tmp_args->out.push_back(tmp_item5);
+
+  tmp_args->polltimeout = 10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
   
-  tmp_args->da="/mnt/ramdisk/da";
-  tmp_args->db="/mnt/ramdisk/db";
-  tmp_args->ta="/mnt/ramdisk/ta";
-  tmp_args->tb="/mnt/ramdisk/tb";
+  // we also have a longer poll timeout used for sending store data
+  tmp_args->storesendpolltimeout = 10000;
+  m_variables.Get("storesendpolltimeout",tmp_args->storesendpolltimeout);
+
+  std::string ramdiskpath="/mnt/ramdisk";
+  m_variables.Get("ramdiskpath",ramdiskpath);
+  tmp_args->da=ramdiskpath+"/da";
+  tmp_args->db=ramdiskpath+"/db";
+  tmp_args->ta=ramdiskpath+"/ta";
+  tmp_args->tb=ramdiskpath+"/tb";
   
   return m_util->CreateThread("Store", &Store_Thread, tmp_args); // Ben Setup error return correctly
   
@@ -369,7 +416,11 @@ bool VME::Get_Data(VME_args* args){
       
       //SEND AN AKN and MESSAGE NUMEBR ID;
       //BEN maybe add poll for outmessage to be sure otherwise will block
-      if(error || !args->m_data_receive->send(identity) || !args->m_data_receive->send(id)){
+      int ok = zmq::poll(&args->out.at(1),1,args->polltimeout);
+      
+      if( ok<0 || (args->out.at(1).revents & ZMQ_POLLOUT)==0) error=true;
+      
+      if(error || !args->m_data_receive->send(identity, ZMQ_SNDMORE) || !args->m_data_receive->send(id)){
 	args->m_logger->Log("ERROR: Cant send data aknoledgement",0,0);  
 	error=true;	
       }
@@ -573,7 +624,7 @@ bool VME::Store_Send_Data(VME_args* args){
   
   if(args->m_data_send->recv(&message) && !message.more()){
     // send store pointer 
-    zmq::poll(args->out, 10000);
+    zmq::poll(args->out, args->storesendpolltimeout);
     
     if(args->out.at(0).revents & ZMQ_POLLOUT){
       

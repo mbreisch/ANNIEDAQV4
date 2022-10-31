@@ -94,7 +94,7 @@ bool PGClient::Initialise(std::string configfile){
 	
 	/*            General Variables              */
 	/* ----------------------------------------- */
-	verbosity = 3;
+	verbosity = 1;
 	max_retries = 3;
 	m_variables.Get("verbosity",verbosity);
 	m_variables.Get("max_retries",max_retries);
@@ -137,6 +137,10 @@ bool PGClient::Initialise(std::string configfile){
 	} else {
 		hostname = std::string(buf);
 	}
+
+	// initialise the message IDs based on the current time in unix seconds
+	msg_id = (int)time(NULL);
+	std::cout<<"initialising message ID to "<<msg_id<<std::endl;
 	
 	// kick off a thread to do actual send and receive of messages
 	std::future<void> signal = terminator.get_future();
@@ -589,6 +593,17 @@ bool PGClient::GetNextResponse(){
 		qry.query_response.push_back(resp);
 	}
 	
+	if(verbosity>3){
+		std::stringstream logmsg;
+		logmsg << "PGClient received response to query "<<message_id_rcvd
+	               <<"; status "<<qry.success<<", response '";
+		for(auto& apart : qry.query_response){
+			logmsg<<"["<<apart<<"]";
+		}
+		logmsg<<"'"<<std::endl;
+		Log(logmsg.str(),v_debug,verbosity);
+	}
+	
 	// get the ticket associated with this message id
 	if(waiting_recipients.count(message_id_rcvd)){
 		std::promise<Query>* ticket = &waiting_recipients.at(message_id_rcvd);
@@ -619,6 +634,11 @@ bool PGClient::SendNextQuery(){
 	send_queue_mutex.unlock();
 	Query& qry = next_qry.first;
 	//std::cout<<"PGClient: sending query "<<qry.msg_id<<std::endl;
+	if(verbosity>3){
+		std::stringstream logmsg;
+		logmsg<<"Sending query "<<qry.msg_id<<", \""<<qry.query_string<<"\""<<std::endl;
+		//Log(logmsg.str(),v_debug,verbosity);
+	}
 	
 	// write queries go to the pub socket, read queries to the dealer
 	zmq::socket_t* thesocket = (qry.type=='w') ? clt_pub_socket : clt_dlr_socket;

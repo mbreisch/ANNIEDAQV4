@@ -24,20 +24,25 @@ bool PGHelper::GetToolConfig(std::string toolname, std::string& configtext){
                             +system+"' AND tool='"+toolname+"' AND version="
                             "(SELECT max(version) FROM configfiles WHERE system='"
                             +system+"' AND tool='"+toolname+"')";
-    std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
+    //std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
     bool ok = m_data->pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
     if(!ok){
-            m_data->Log->Log("Failed to get configtext for tool "+toolname+" using query"
-                             +query_string+", returned with error "+err,0,0);
+            m_data->Log->Log("Failed to get configtext for tool "+toolname
+                            +", returned with error "+err,0,0);
     } else {
-            Store tmp;
-            std::cout<<"PGHelper getting toolconfig by parsing json '"+configtext+"'"<<std::endl;
-            tmp.JsonParser(result);
-            ok = tmp.Get("contents",configtext);
+            //std::cout<<"PGHelper getting toolconfig by parsing json '"+result+"'"<<std::endl;
+            BoostStore store;
+            parser.Parse(result, store);
+            //std::cout<<"temporary store contents: "; store.Print(false);
+            //Store store;
+            //store.JsonParser(result);
+            //std::cout<<"temporary store contents: "; store.Print(); //false);
+            ok = store.Get("contents",configtext);
             if(!ok){
                     m_data->Log->Log("Failed to retrieve toolconfig contents for tool "
                                      +toolname+", query returned '"+result+"'",0,0);
             }
+            //std::cout<<"returning configuration text: '"<<configtext<<"'"<<std::endl;
     }
     
     return ok;

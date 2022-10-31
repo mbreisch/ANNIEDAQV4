@@ -30,6 +30,8 @@ struct CAMAC_args:Thread_args{
 
   std::vector<zmq::pollitem_t> in;
   std::vector<zmq::pollitem_t> out;
+  int polltimeout;
+  int storesendpolltimeout;
 
   DAQUtilities* m_utils;
   Logging* m_logger;
@@ -51,8 +53,11 @@ struct CAMAC_args:Thread_args{
 
   BoostStore* CCData;
 
+  std::string ramdiskpath;
   std::string ma;
   std::string mb;
+
+  int statsperiod;
 
   std::map<std::string, MRDData::Card>::iterator inn;
   std::vector<MRDData::Channel>::iterator is; 
@@ -95,6 +100,8 @@ class CAMAC: public Tool {
   static bool Store_Send_Data(CAMAC_args* args);
 
   inline CamacCrate* Create(std::string cardname, std::string config, int cardslot, int crate);
+  inline CamacCrate* Create(std::string cardname, std::istream* config, int cardslot, int crate);
+  
   bool SetupCards();
 
   DAQUtilities* m_util;  ///< Pointer to utilities class to help with threading
@@ -109,7 +116,8 @@ class CAMAC: public Tool {
   
   //int verb;
   int perc;
-  std::string configcc;
+  std::string configcc="";
+  std::string configcctype=""; // 'local' (file) or 'remote' (DB)
   bool trg_mode;
   int trg_pos;
   
@@ -128,8 +136,6 @@ class CAMAC: public Tool {
   std::vector<std::string> Type;
   //  ULong64_t TimeStamp;
   std::string StartTime;
-
-
 
 
 };

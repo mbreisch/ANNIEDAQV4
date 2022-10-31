@@ -2,7 +2,24 @@
 #include "CamacCrate.h"
 #include "Lecroy4413.h"
 
+LeCroy4413::LeCroy4413(int NSlot, std::istream* config, int i) : CamacCrate(i)//Subclass constructor, n of Slot given
+{
+	Init(NSlot, config, i);
+}
+
 LeCroy4413::LeCroy4413(int NSlot, std::string config, int i) : CamacCrate(i)//Subclass constructor, n of Slot given
+{
+	std::ifstream fin(config.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"LeCroy4413 constructor failed to open config file "<<config<<std::endl;
+		//return;
+	}
+	Init(NSlot, &fin, i);
+	if(fin.is_open()) fin.close();
+}
+
+
+void LeCroy4413::Init(int NSlot, std::istream* config, int i)
 {
   int gotQresp;
   Slot.push_back(NSlot);
@@ -289,7 +306,18 @@ int LeCroy4413::GetSlot()//Return n of Slot of module
 // not really applicable, but set any internal configurations with settings from file
 void LeCroy4413::SetConfig(std::string config)
 {
-  std::ifstream fin (config.c_str());
+	std::ifstream fin(config.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"LeCroy4413::SetConfig failed to open file "<<config<<std::endl;
+		return;
+	} else {
+		SetConfig(&fin);
+		fin.close();
+	}
+}
+
+void LeCroy4413::SetConfig(std::istream* configstream)
+{
   std::string Line;
   std::stringstream ssL;
   
@@ -297,40 +325,37 @@ void LeCroy4413::SetConfig(std::string config)
   int iEmp;
   //std::cout<<"conf 1"<<std::endl;
   bool maskSettings=false;
-  while (getline(fin, Line))
+  while (getline(*configstream, Line))
     {
       //std::cout<<"conf 2"<<std::endl;
       if (Line.empty()) continue;
-      if (Line[0] == '#') continue;
       if (Line.find("StartChannelMask") != std::string::npos) maskSettings = true;
       if (Line.find("EndChannelMask") != std::string::npos) maskSettings = false;
+      if (Line[0] == '#') continue;
       else
-	{
-	  Line.erase(Line.begin()+Line.find('#'), Line.end());
-	  ssL.str("");
-	  ssL.clear();
-	  ssL << Line;
-	  if (ssL.str() != "")
-	    {
-	      ssL >> sEmp >> iEmp;
-	      // Read internal parameters from file here... 
-	      if (sEmp == "Threshold") threshold = iEmp;
-	      else if (sEmp == "RemoteMode") RemoteMode = iEmp;
-	      else if (sEmp == "ThresholdMode") thresholdmode = iEmp;
-	      else if(maskSettings){
-		int chan;
-		std::stringstream tmp(sEmp);
-		tmp>>sEmp;
-		//int chan = std::stoi(sEmp);
-		if (chan >= 0 && chan < 16){
-		  channelmask.set(chan,iEmp);
-		} else {
-		  std::cerr<<"WARNING: Lecroy4413 ignoring out of range channel "<<chan<<" in ChannelMask configuration"<<std::endl;
+		{
+		  Line.erase(Line.begin()+Line.find('#'), Line.end());
+		  ssL.str("");
+		  ssL.clear();
+		  ssL << Line;
+		  if (ssL.str() != ""){
+		    if(maskSettings==false){
+		      ssL >> sEmp >> iEmp;
+		      // Read internal parameters from file here... 
+		      if (sEmp == "Threshold") threshold = iEmp;
+		      else if (sEmp == "RemoteMode") RemoteMode = iEmp;
+		      else if (sEmp == "ThresholdMode") thresholdmode = iEmp;
+		      else std::cerr<<"WARNING: Lecroy4413 ignoring unknown configuration option \""<<sEmp<<"\""<<std::endl;
+	        } else {
+	          int chan;
+	          ssL >> chan >> iEmp;
+	          if (chan >= 0 && chan < 16){
+	            channelmask.set(chan,iEmp);
+	          } else {
+	            std::cerr<<"WARNING: Lecroy4413 ignoring out of range channel "<<chan<<" in ChannelMask configuration"<<std::endl;
+	          }
+		    }
+		  }
 		}
-	      }
-	      else std::cerr<<"WARNING: Lecroy4413 ignoring unknown configuration option \""<<sEmp<<"\""<<std::endl;
-	    }
-	}
     }
-  fin.close();
 }

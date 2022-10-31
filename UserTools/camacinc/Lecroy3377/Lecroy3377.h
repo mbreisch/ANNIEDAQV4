@@ -9,6 +9,7 @@
 #define Lecroy3377_H
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <map>
@@ -27,6 +28,9 @@ class Lecroy3377 : public CamacCrate
 		}
 */
 		Lecroy3377(int NSlot, std::string config, int i = 0);// : CamacCrate(i);	//Constructor !
+		Lecroy3377(int NSlot, std::istream* config, int i = 0);// : CamacCrate(i);	//Constructor !
+		void Init(int NSlot, std::istream* config, int i = 0);// : CamacCrate(i);	//Constructor !
+		
 
 		int GetData(std::map<int, int> &mData);		//Store data into map
 
@@ -68,6 +72,7 @@ class Lecroy3377 : public CamacCrate
 		void EncRegister();			//Register control Encoder
 		void DecRegister();			//Register control Decoder	
 		void SetConfig(std::string config);	//Set register from configfile
+		void SetConfig(std::istream* config);	//Set register from file contents
 
 
 

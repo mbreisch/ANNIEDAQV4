@@ -22,6 +22,8 @@ class Lecroy4300b : public CamacCrate
 {
 	public:
 		Lecroy4300b(int NSlot, std::string config, int i = 0);
+		Lecroy4300b(int NSlot, std::istream* config, int i = 0);
+		void Init(int NSlot, std::istream* config, int i = 0);
 
 		int GetData(std::map<int, int> &mData);		//Store data into map
 
@@ -51,8 +53,10 @@ class Lecroy4300b : public CamacCrate
 		int GetPedestal();					//Get Pedestal from card
 		int SetPedestal();					//Set Pedestal to card
 		void LoadPedestal(std::string fname);			//Read ped from file and SetPedestal
+		void LoadPedestal(std::istream* fcont);			//Read ped from file contents and SetPedestal
 		void PrintPedestal();					//Set Pedestal to card
 		void SetConfig(std::string config);	//Set register from configfile
+		void SetConfig(std::istream* config);	//Set register from configfile contents
 
 
 

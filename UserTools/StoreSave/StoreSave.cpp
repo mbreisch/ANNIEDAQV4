@@ -61,11 +61,14 @@ bool StoreSave::Initialise(std::string configfile, DataModel &data){
   // BEN set up m_trigger_values and m_previous_values;
   //  m_data->run=0;
   //m_data->subrun=0;
-  m_trigger_values["VME"]=100;
+  m_trigger_values["VME"]=10000;
+  m_variables.Get("VME_triggers_threshold",m_trigger_values["VME"]);
   m_previous_values["VME"]=0;
   m_trigger_values["CAMAC"]=10000;
+  m_variables.Get("CAMAC_triggers_threshold",m_trigger_values["CAMAC"]);
   m_previous_values["CAMAC"]=0;
   m_trigger_values["LAPPD"]=10000;
+  m_variables.Get("LAPPD_triggers_threshold",m_trigger_values["LAPPD"]);
   m_previous_values["LAPPD"]=0;
   ////////////////////////
 
@@ -77,6 +80,8 @@ bool StoreSave::Initialise(std::string configfile, DataModel &data){
   args->identities = &(m_data->identities);
   args->OutPath="./";
   args->OutFile="RAWDATA";
+  m_variables.Get("OutPath",args->OutPath);
+  m_variables.Get("OutFile",args->OutFile);
   args->run=m_data->run;
   args->subrun=m_data->subrun;
 
@@ -179,7 +184,7 @@ void StoreSave::Thread(Thread_args* arg){
 	printf("d6 %s\n", key.str().c_str());
 	if(key.str()=="VME") loop=true;
 	printf("d7\n");
-	BoostStore* tmp=0;;
+	BoostStore* tmp=0;
 	  args->m_utils->ReceivePointer(args->receive, tmp);
 	  printf("d8\n");
 

@@ -13,6 +13,13 @@ LAPPD_args::LAPPD_args():DAQThread_args(){
   LAPPDData=0;
   la="";
   lb="";
+  servicename="";
+  update_conns_period=0;
+  portnum=0;
+  polltimeout=0;
+  storesendpolltimeout=0;
+  statsperiod=0;
+  ramdiskpath="";
 
 }
 
@@ -136,6 +143,10 @@ bool LAPPD::Execute(){
   
     m_data->triggers["LAPPD"]= LAPPD_readouts;
    
+    unsigned long LAPPD_buffer;
+    int get_ok = tmp->Get("data_buffer",LAPPD_buffer);
+    if(get_ok) m_data->buffers["LAPPD"]= LAPPD_buffer;
+
     delete tmp;
     tmp=0;
 
@@ -172,18 +183,20 @@ void LAPPD::LAPPD_Thread(Thread_args* arg){
   
   LAPPD_args* args=reinterpret_cast<LAPPD_args*>(arg);
    
-  args->m_utils->UpdateConnections("LAPPD", args->m_data_receive, args->connections, 300, args->ref_time1, "PORT");
+  if(args->connections.size()) args->m_utils->UpdateConnections(args->servicename, args->m_data_receive, args->connections, args->update_conns_period, args->ref_time1, std::to_string(args->portnum));
+  else  args->m_utils->UpdateConnections(args->servicename, args->m_data_receive, args->connections, 5, args->ref_time1, std::to_string(args->portnum));
+  
    
-  zmq::poll(args->in, 10);
+  zmq::poll(args->in, args->polltimeout);
   
   if(args->in.at(0).revents & ZMQ_POLLIN) Get_Data(args); //new data comming in buffer it and send akn
   
-  zmq::poll(args->out, 10);
+  zmq::poll(args->out, args->polltimeout);
   
   if((args->out.at(0).revents & ZMQ_POLLOUT) && args->data_buffer.size() ) LAPPD_To_Store(args);         /// data in buffer so send it to store writer 
   
   
-  if(difftime(time(NULL),*args->ref_time2) > 60){
+  if(difftime(time(NULL),*args->ref_time2) > args->statsperiod){
     LAPPD_Stats_Send(args);   // on timer stats pub to main thread for triggering
     *args->ref_time2=time(NULL);
   }
@@ -194,7 +207,7 @@ void LAPPD::Store_Thread(Thread_args* arg){
   
   LAPPD_args* args=reinterpret_cast<LAPPD_args*>(arg);
   
-  zmq::poll(args->in, 10);
+  zmq::poll(args->in, args->polltimeout);
   
   if(args->in.at(1).revents & ZMQ_POLLIN) Store_Send_Data(args); /// received store data request
   
@@ -236,6 +249,27 @@ bool LAPPD::LAPPD_Thread_Setup(DataModel* m_data, std::vector<LAPPD_args*> &m_ar
   tmp_item2.revents=0;
   tmp_args->out.push_back(tmp_item2);
 
+  zmq::pollitem_t tmp_item3;
+  tmp_item3.socket=*tmp_args->m_data_receive;
+  tmp_item3.fd=0;
+  tmp_item3.events=ZMQ_POLLOUT;
+  tmp_item3.revents=0;
+  tmp_args->out.push_back(tmp_item3);
+
+  tmp_args->polltimeout=10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
+  tmp_args->m_data_receive->setsockopt(ZMQ_RCVTIMEO, tmp_args->polltimeout);
+  tmp_args->m_data_receive->setsockopt(ZMQ_SNDTIMEO, tmp_args->polltimeout);
+
+  tmp_args->servicename="LAPPD";
+  tmp_args->update_conns_period = 300;
+  tmp_args->portnum = 89765;
+  m_variables.Get("servicename",tmp_args->servicename);
+  m_variables.Get("updateconnsperiod", tmp_args->update_conns_period);
+  m_variables.Get("portnum",tmp_args->portnum);
+  
+  tmp_args->statsperiod=60;
+  m_variables.Get("statsperiod",tmp_args->statsperiod);
 
   return m_util->CreateThread("LAPPD", &LAPPD_Thread, tmp_args); ///Ben improve return with catches for socket setup failures
 
@@ -277,9 +311,17 @@ bool LAPPD::Store_Thread_Setup(DataModel* m_data, std::vector<LAPPD_args*> &m_ar
   tmp_item5.events=ZMQ_POLLOUT;
   tmp_item5.revents=0;
   tmp_args->out.push_back(tmp_item5);
-  
-  tmp_args->la="/mnt/ramdisk/la";
-  tmp_args->lb="/mnt/ramdisk/lb";
+
+  tmp_args->polltimeout=10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
+
+  tmp_args->storesendpolltimeout=10000;
+  m_variables.Get("storesendpolltimeout",tmp_args->storesendpolltimeout);
+
+  std::string ramdiskpath="/mnt/ramdisk";
+  m_variables.Get("ramdiskpath",ramdiskpath);
+  tmp_args->la=ramdiskpath+"/la";
+  tmp_args->lb=ramdiskpath+"/lb";
   
   return m_util->CreateThread("Store", &Store_Thread, tmp_args); // Ben Setup error return correctly
   
@@ -323,7 +365,9 @@ bool LAPPD::Get_Data(LAPPD_args* args){
       
       //SEND AN AKN and MESSAGE NUMEBR ID;
       //BEN maybe add poll for outmessage to be sure otherwise will block
-      if(error || !args->m_data_receive->send(identity) || !args->m_data_receive->send(id)){
+      int ok = zmq::poll(&args->out.at(1),1,args->polltimeout);
+      if(ok < 0 || (args->out.at(1).revents & ZMQ_POLLIN)==0) error=true;
+      if(error || !args->m_data_receive->send(identity, ZMQ_SNDMORE) || !args->m_data_receive->send(id)){
 	args->m_logger->Log("ERROR: Cant send data aknoledgement",0,0);  
 	error=true;	
       }
@@ -406,7 +450,7 @@ bool LAPPD::Store_Send_Data(LAPPD_args* args){
   
   if(args->m_data_send->recv(&message) && !message.more()){
     // send store pointer 
-    zmq::poll(args->out, 10000);
+    zmq::poll(args->out, args->storesendpolltimeout);
     
     if(args->out.at(0).revents & ZMQ_POLLOUT){
       

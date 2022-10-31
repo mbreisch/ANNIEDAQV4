@@ -1,0 +1,2 @@
+verbosity 10
+pgsettingsfile configfiles/DBTest/PGClientConfig

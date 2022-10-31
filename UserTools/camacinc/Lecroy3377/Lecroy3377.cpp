@@ -3,6 +3,21 @@
 
 Lecroy3377::Lecroy3377(int NSlot, std::string config, int i) : CamacCrate(i)	//Subclass constructor, n of Slot given
 {
+	std::ifstream fin(config.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"LeCroy3377::LeCroy3377 Failed to open config file "<<config<<std::endl;
+		//return;
+	}
+	Init(NSlot, &fin, i);
+	if(fin.is_open()) fin.close();
+}
+
+Lecroy3377::Lecroy3377(int NSlot, std::istream* configstream, int i) : CamacCrate(i)	//Subclass constructor, n of Slot given
+{
+	Init(NSlot, configstream, i);
+}
+
+void Lecroy3377::Init(int NSlot, std::istream* config, int i){
     std::cout<<"l1"<<std::endl;
 	Slot.push_back(NSlot);
 	Crate.push_back(i);
@@ -587,16 +602,27 @@ void Lecroy3377::PrintRegister()
 	std::cout << std::endl; 
 }
 
-void Lecroy3377::SetConfig(std::string config)
-{
-	std::ifstream fin (config.c_str());
-	std::string Line;
-	std::stringstream ssL;
+void Lecroy3377::SetConfig(std::string configfile){
+	std::ifstream fin(configfile.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"LeCroy3377::SetConfig Failed to open config file "<<configfile<<std::endl;
+		return;
+	} else {
+		SetConfig(&fin);
+		fin.close();
+	}
+}
 
+void Lecroy3377::SetConfig(std::istream* configstream)
+{
+	// a string to get each config file line into
+	std::string Line;
+	// another stringstream to parse each line
+	std::stringstream ssL;
 	std::string sEmp;
 	int iEmp;
 	//std::cout<<"conf 1"<<std::endl;
-	while (getline(fin, Line))
+	while (getline(*configstream, Line))
 	{
 	  //std::cout<<"conf 2"<<std::endl;
 		if (Line.empty()) continue;
@@ -641,6 +667,4 @@ void Lecroy3377::SetConfig(std::string config)
 		}
 	}
 	//std::cout<<"conf 8"<<std::endl;
-	fin.close();
-	//std::cout<<"conf 9"<<std::endl;
 }

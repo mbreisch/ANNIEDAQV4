@@ -20,7 +20,7 @@ class SlackBot: public Tool {
 
 
  private:
-
+ std::string webhook;
 
 
 

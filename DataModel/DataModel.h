@@ -73,7 +73,7 @@ class DataModel {
 
   unsigned long run;
   unsigned long subrun;
-  int RunTypeID;
+  int RunConfig;
   std::string RunType;
   float RunTypeVersion;
   unsigned long NumEvents;

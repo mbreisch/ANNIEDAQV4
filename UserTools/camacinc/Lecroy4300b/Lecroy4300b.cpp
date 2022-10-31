@@ -2,6 +2,22 @@
 
 Lecroy4300b::Lecroy4300b(int NSlot, std::string config, int i) : CamacCrate(i)
 {
+	std::ifstream fin(config.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"Lecroy4300b constructor failed to open config file "<<config<<std::endl;
+		//return;
+	}
+	Init(NSlot, &fin, i);
+	if(fin.is_open()) fin.close();
+}
+
+Lecroy4300b::Lecroy4300b(int NSlot, std::istream* config, int i) : CamacCrate(i)
+{
+	Init(NSlot, config, i);
+}
+
+void Lecroy4300b::Init(int NSlot, std::istream* config, int i)
+{
 	Slot.push_back(NSlot);
 	ID = Slot.size()-1;
 	ClearAll();
@@ -249,12 +265,23 @@ int Lecroy4300b::SetPedestal()
 void Lecroy4300b::LoadPedestal(std::string fname)
 {
 	std::ifstream fin(fname.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"Lecroy4300b failed to open file "<<fname<<" to read pedestals"<<std::endl;
+	} else {
+		LoadPedestal(&fin);
+		fin.close();
+	}
+	
+}
+
+void Lecroy4300b::LoadPedestal(std::istream* fin)
+{
 	std::string Line;
 	std::stringstream ssL;
 	int ped, chan;
 	bool bPed = false;
 
-	while (getline(fin, Line))
+	while (getline(*fin, Line))
 	{
 		if (Line.find("StartPed") != std::string::npos) bPed = true;
 		if (Line.find("EndPed") != std::string::npos) bPed = false;
@@ -285,13 +312,23 @@ void Lecroy4300b::PrintPedestal()
 void Lecroy4300b::SetConfig(std::string config)
 {
 	std::ifstream fin (config.c_str());
+	if(!fin.is_open()){
+		std::cerr<<"Lecroy4300b::SetConfig failed to open file "<<config<<std::endl;
+		return;
+	}
+	SetConfig(&fin);
+	fin.close();
+}
+
+void Lecroy4300b::SetConfig(std::istream* configstream)
+{
 	std::string Line;
 	std::stringstream ssL;
 
 	std::string sEmp;
 	int iEmp;
 
-	while (getline(fin, Line))
+	while (getline(*configstream, Line))
 	{
 		if (Line[0] == '#') continue;
 		else if (Line.empty()) continue;
@@ -319,7 +356,6 @@ void Lecroy4300b::SetConfig(std::string config)
 			}
 		}
 	}
-	fin.close();
 }
 
 int Lecroy4300b::GetID()	//Return ID of module

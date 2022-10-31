@@ -31,6 +31,7 @@ class RunControl: public Tool {
 
   zmq::socket_t* sock;
   DAQUtilities* m_utils;
+  int polltimeout;
 
   std::map<std::string, Store*> connections;
 

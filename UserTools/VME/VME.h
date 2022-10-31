@@ -50,6 +50,14 @@ struct VME_args:DAQThread_args{
   std::string ta;
   std::string tb;
 
+  std::string servicename;
+  int portnum;
+  int update_conns_period; // seconds
+  int statsperiod; // seconds
+  int polltimeout; // milliseconds
+  int storesendpolltimeout; // milliseconds
+  std::string ramdiskpath;
+
 };
 
 /**

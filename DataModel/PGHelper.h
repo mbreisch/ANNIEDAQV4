@@ -3,6 +3,7 @@
 
 #include "Store.h"
 #include "BoostStore.h"
+#include "JsonParser.h"
 
 class DataModel;
 
@@ -38,6 +39,7 @@ class PGHelper{
 	
 	private:
 	DataModel* m_data;
+	JSONP parser;
 	
 	int verbosity=1;
 	int v_error=0;

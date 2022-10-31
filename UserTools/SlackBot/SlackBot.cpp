@@ -24,6 +24,9 @@ bool SlackBot::Initialise(std::string configfile, DataModel &data){
   // allow overrides from local config file
   if(configfile!="")  m_variables.Initialise(configfile);
 
+  // get webhook
+  m_variables.Get("webhook",webhook);
+
   //m_variables.Print();
 
   CURL *curl;
@@ -44,7 +47,7 @@ bool SlackBot::Initialise(std::string configfile, DataModel &data){
       /* First set the URL that is about to receive our POST. This URL can
 	 just as well be a https:// URL if that is what should receive the
 	 data. */ 
-      curl_easy_setopt(curl, CURLOPT_URL, "https://hooks.slack.com/services/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");
+      curl_easy_setopt(curl, CURLOPT_URL, webhook.c_str());
       /* Now specify the POST data */ 
       std::string field;
       field=tmp.str();
@@ -73,7 +76,7 @@ bool SlackBot::Initialise(std::string configfile, DataModel &data){
   // if (pid == 0){
   // std::cout<<"child started"<<std::endl;
   std::stringstream tmp;
-  tmp<<"curl -k -X POST --data-urlencode 'payload={\"text\":\"Run Number:"<<m_data->RunNumber<<", Sub Run Number:"<<m_data->SubRunNumber<<", Run Type:"<<m_data->RunType<<", Status:"<<"Run started\"}' https://hooks.slack.com/services/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";
+  tmp<<"curl -k -X POST --data-urlencode 'payload={\"text\":\"Run Number:"<<m_data->RunNumber<<", Sub Run Number:"<<m_data->SubRunNumber<<", Run Type:"<<m_data->RunType<<", Status:"<<"Run started\"}' "<< webhook.c_str();
   //  std::cout<<tmp.str()<<std::endl;
   system("ls -al");
   */
@@ -122,7 +125,7 @@ bool SlackBot::Finalise(){
       /* First set the URL that is about to receive our POST. This URL can
 	 just as well be a https:// URL if that is what should receive the
 	 data. */
-      curl_easy_setopt(curl, CURLOPT_URL, "https://hooks.slack.com/services/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");
+      curl_easy_setopt(curl, CURLOPT_URL, webhook.c_str());
 
       std::string field;
       field=tmp.str();

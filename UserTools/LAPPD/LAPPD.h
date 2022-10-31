@@ -26,14 +26,20 @@ struct LAPPD_args:DAQThread_args{
 
   std::vector<zmq::pollitem_t> in;
   std::vector<zmq::pollitem_t> out;
+  int polltimeout;
+  int storesendpolltimeout;
 
   DAQUtilities* m_utils;
   Logging* m_logger;
 
   time_t* ref_time1;
   time_t* ref_time2;
+  int statsperiod;
 
   std::map<std::string,Store*> connections;
+  int update_conns_period;
+  int portnum;
+  std::string servicename;
 
   std::deque<std::vector<PsecData*>* > data_buffer;
  
@@ -41,6 +47,7 @@ struct LAPPD_args:DAQThread_args{
 
   BoostStore* LAPPDData;
 
+  std::string ramdiskpath;
   std::string la;
   std::string lb;
 

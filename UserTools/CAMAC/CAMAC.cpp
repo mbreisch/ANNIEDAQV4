@@ -1,4 +1,5 @@
 #include "CAMAC.h"
+#include "Algorithms.h"
 
 CAMAC_args::CAMAC_args():Thread_args(){
 
@@ -18,6 +19,11 @@ CAMAC_args::CAMAC_args():Thread_args(){
   DC="";
   MRDout=0;
   CCData=0;
+
+  polltimeout=0;
+  statsperiod=0;
+  ramdiskpath="";
+  storesendpolltimeout=10000;
 }
 
 CAMAC_args::~CAMAC_args(){
@@ -87,18 +93,25 @@ bool CAMAC::Initialise(std::string configfile, DataModel &data){
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
   
   //m_variables.Print();
-
-  m_variables.Get("configcc", configcc);          //Module slots                                      
+  m_variables.Get("configcc",configcc);           // name of parent config file
   m_variables.Get("percent", perc);               //firing probability                                
   m_variables.Get("trg_mode", MRDdata.trg_mode);  //Trigger mode
+  m_variables.Get("StartTime",StartTime);         // 
 
-  ///temp
-  perc=100;
-  MRDdata.trg_mode=1;
-  configcc="/home/NewDAQ/configfiles/MRD/ModuleConfig";
-  StartTime="1970/1/1";
-  ////
 
+  // the 'configcc' option is a reference to another set of configuration options
+  // that provide settings for configuring the CAMAC cards. 
+  // It may be a DB entry name or a local file. The type should be given by
+  // the 'configcctype' variable, which is either 'local' (file) or 'remote' (DB)
+  configcctype="local";
+  if(!m_variables.Get("configcctype",configcctype)){
+  	// if the option is not present, we will default to local IF the file exists.
+  	Log("CAMAC: no configcctype in m_variables, checking if "+configcc
+  	   +" is a locally accessible file",3,m_verbose);
+  	if((configcc=="") || (checkfileexists(configcc)==false)) configcctype="remote";
+  }
+  Log("CAMAC: configcc '"+configcc+"' is a "+configcctype+" file",3,m_verbose);
+  
   m_util=new DAQUtilities(m_data->context);
 
   if(!SetupCards()){
@@ -156,6 +169,10 @@ bool CAMAC::Execute(){
     
     m_data->triggers["CAMAC"]= CAMAC_readouts;
     
+    unsigned long CAMAC_buffer;
+    int get_ok = tmp->Get("data_buffer",CAMAC_buffer);
+    if(get_ok) m_data->buffers["CAMAC"]= CAMAC_buffer;
+
     delete tmp;
     tmp=0;
 
@@ -200,12 +217,12 @@ void CAMAC::CAMACThread(Thread_args* arg){
 
     
   Get_Data(args); //new data comming in buffer it and send akn
-  
-  zmq::poll(args->out, 10);
+
+  zmq::poll(args->out, args->polltimeout);
   
   if( (args->out.at(0).revents & ZMQ_POLLOUT) && args->data_buffer.size()  ) CAMAC_To_Store(args);         /// data in buffer so send it to store writer 
   
-  if(difftime(time(NULL),*args->ref_time) >60){
+  if(difftime(time(NULL),*args->ref_time) >args->statsperiod){
     CAMAC_Stats_Send(args);   // on timer stats pub to main thread for triggering
     *args->ref_time=time(NULL);
   }
@@ -375,6 +392,21 @@ bool CAMAC::Get_Data(CAMAC_args* args){
   return true;   //ben this needs to be made useful
 }
 
+inline CamacCrate* CAMAC::Create(std::string cardname, std::istream* config, int cardslot, int crate){
+	CamacCrate* ccp;
+	if (cardname == "TDC")
+	{
+	  std::cout<<"TDC"<<std::endl;
+	  ccp = new Lecroy3377(cardslot, config, crate);
+	}
+	if (cardname == "ADC")
+	{
+	  std::cout<<"ADC"<<std::endl;
+	  ccp = new Lecroy4300b(cardslot, config, crate);
+	}
+	return ccp;	
+}
+
 inline CamacCrate* CAMAC::Create(std::string cardname, std::string config, int cardslot, int crate)
 {
 	CamacCrate* ccp;
@@ -428,49 +460,111 @@ bool CAMAC::CAMAC_Stats_Send(CAMAC_args* args){
 
 bool CAMAC::SetupCards(){
 
-  //loading card types and locations form config file
+  // loading card types and locations from config file
+  std::istream* configstream=nullptr;
 
-  std::ifstream fin (configcc.c_str());
+  // local file if present will take precedence
+  if(configcctype=="local"){
+  	configstream = new std::ifstream(configcc.c_str());
+  	if(!dynamic_cast<ifstream*>(configstream)->is_open()){
+  		Log("CAMAC::SetupCards failed to open local configuration file "+configcc,0,m_verbose);
+  		delete configstream;
+  		configstream=nullptr;
+  		return false;
+  	}
+  }
+  
+  // if we have a database entry name, get the contents from that
+  if(configstream==nullptr){
+  	std::string parentconfigcontents;
+  	bool get_ok = m_data->postgres_helper.GetToolConfig(configcc, parentconfigcontents);
+  	if(!get_ok){
+  		Log("ERROR: CAMAC Tool failed to get parent config entry "+configcc,0,m_verbose);
+  	} else {
+  		configstream = new std::stringstream(parentconfigcontents);
+  	}
+  }
+  
+  if(configstream==nullptr) return false;
+
+  // the first entry in the parent file should be its type.
+  // this will specify whether the following per-slot config files
+  // are DB entry names or paths to local files.
+  // if not present, we will assume local files.
+  std::string entrytype="";
+  
   std::string Line;
   std::stringstream ssL;
   std::string sEmp;
   int iEmp;
   
   int c = 0;
-  while (getline(fin, Line))
-    {
+  while (getline(*configstream, Line))
+  {
       if (Line[0] == '#') continue;
       else
 	{
 	  ssL.str("");
 	  ssL.clear();
 	  ssL << Line;
-	  if (ssL.str() != "")
-	    {
-	      ssL >> sEmp;
-	      Lcard.push_back(sEmp);		//Modeli L
-	      ssL >> iEmp;
-	      Ncard.push_back(iEmp);		//Slot N
-	      ssL >> iEmp;
-	      Ncrate.push_back(iEmp);         // crate
-	      ssL >> sEmp;
-	      Ccard.push_back(sEmp);		//Slot register file
-	    }
+	  if (ssL.str() == "") continue;
+      
+	  if(entrytype==""){
+	  	ssL >> sEmp >> entrytype;
+	  	std::cout<<"scanning entrytype from line "<<Line<<"; sEmp="<<sEmp<<"; entrytype="<<entrytype<<std::endl;
+	  	if(sEmp ==  "entrytype" && (entrytype=="local" || entrytype=="remote")) continue;
+	  	Log("WARNING: CAMAC Tool parent configcc did not specify file type! "
+	  	    "Assuming local!",0,m_verbose);
+	  	entrytype="local";   // default: assume local for backwards compatibility
+	  	// and assuming this was a normal line we need to re-parse it
+	    ssL.str("");
+	  	ssL.clear();
+	  	ssL << Line;
+	  }
+	  
+	  ssL >> sEmp;
+	  Lcard.push_back(sEmp);		//Modeli L
+	  ssL >> iEmp;
+	  Ncard.push_back(iEmp);		//Slot N
+	  ssL >> iEmp;
+	  Ncrate.push_back(iEmp);         // crate
+	  ssL >> sEmp;
+	  Ccard.push_back(sEmp);		//Slot register file
 	}
-    }
-  fin.close();
-  
-  
+  }
+  // close file if it's a file
+  std::ifstream* filepointer = dynamic_cast<std::ifstream*>(configstream);
+  if(filepointer) filepointer->close();
+  delete configstream;
+  configstream=0;
+
+  // a stringstream to hold the contents of the slot configs, if reading from DB
+  std::stringstream sslotconfig;
+
   // creating card classes based on config file
   
   trg_pos = 0;								//must implemented for more CC
   for (int i = 0; i < Lcard.size(); i++)	//CHECK i
     {
       std::cout << "for begin " <<Lcard.at(i)<< std::endl;
+
+      // if our configurations for each slot are DB entries we need to get the data from the DB
+      if(entrytype=="remote"){
+      	std::string contents;
+      	bool get_ok = m_data->postgres_helper.GetToolConfig(Ccard.at(i), contents);
+      	if(!get_ok){
+      		Log("ERROR! CAMAC failed to get DB config entry '"+Ccard.at(i)+"'",0,m_verbose);
+      		return false;
+      	}
+      	sslotconfig.clear();
+      	sslotconfig.str(contents);
+      }
+    
       if (Lcard.at(i) == "TDC" || Lcard.at(i) == "ADC")
 	{
 	  //std::cout << "d1 " << Ccard.at(i) << " " << Ncard.at(i) <<" "<< Ncrate.at(i)<<std::endl; 
-	  MRDdata.List.CC[Lcard.at(i)].push_back(Create(Lcard.at(i), Ccard.at(i), Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
+	  if(entrytype=="local")  MRDdata.List.CC[Lcard.at(i)].push_back(Create(Lcard.at(i), Ccard.at(i), Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
+	  if(entrytype=="remote") MRDdata.List.CC[Lcard.at(i)].push_back(Create(Lcard.at(i), &sslotconfig, Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
 	  //std::cout << "d2 "<<std::endl;
 	}
 		else if (Lcard.at(i) == "TRG")
@@ -478,13 +572,16 @@ bool CAMAC::SetupCards(){
 		    //std::cout << "d3 "<<std::endl;
 		    trg_pos = MRDdata.List.CC["TDC"].size();
 		    //std::cout << "d4 "<<std::endl;			
-		    MRDdata.List.CC["TDC"].push_back(Create("TDC", Ccard.at(i), Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
+		    if(entrytype=="local")  MRDdata.List.CC["TDC"].push_back(Create("TDC", Ccard.at(i), Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
+		    if(entrytype=="remote") MRDdata.List.CC["TDC"].push_back(Create("TDC", &sslotconfig, Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
 		    //std::cout << "d5 "<<std::endl;
 		  }
 		else if (Lcard.at(i) == "DISC"){
 		  //		  std::string cardname, std::string config, int cardslot, int crate
 		  //std::cout<<"setting descriminator crate:"<<Ncrate.at(i)<<", Card:"<<Ncard.at(i)<<std::endl;
-		  LeCroy4413* tmp=new LeCroy4413(Ncard.at(i), Ccard.at(i), Ncrate.at(i));
+		  LeCroy4413* tmp=nullptr;
+		  if(entrytype=="local")  tmp=new LeCroy4413(Ncard.at(i), Ccard.at(i), Ncrate.at(i));
+		  if(entrytype=="remote") tmp=new LeCroy4413(Ncard.at(i), &sslotconfig, Ncrate.at(i));
 		  disc.push_back(tmp);
 		  //		  tmp.
 		  
@@ -519,7 +616,7 @@ void CAMAC::StoreThread(Thread_args* arg){
 
   CAMAC_args* args=reinterpret_cast<CAMAC_args*>(arg);
   
-  zmq::poll(args->in, 10);
+  zmq::poll(args->in, args->polltimeout);
   
   if(args->in.at(1).revents & ZMQ_POLLIN) Store_Send_Data(args); /// received store data request
   
@@ -532,11 +629,10 @@ bool CAMAC::Store_Send_Data(CAMAC_args* args){
    zmq::message_t message;
   
    if(args->m_data_send->recv(&message) && !message.more()){
-     // send store pointer 
-     zmq::poll(args->out, 10000);
-    
-    if(args->out.at(0).revents & ZMQ_POLLOUT){
-      
+     // send store pointer
+     zmq::poll(args->out, args->storesendpolltimeout);
+     
+     if(args->out.at(0).revents & ZMQ_POLLOUT){
       zmq::message_t key(6);                                                                       
       
       snprintf ((char *) key.data(), 6 , "%s" , "CAMAC");
@@ -604,6 +700,7 @@ bool CAMAC::CAMAC_Thread_Setup(DataModel* m_data, std::vector<CAMAC_args*> &m_ar
   tmp_args->trg_pos=&trg_pos;
   tmp_args->perc=&perc;
   tmp_args->DC="TDC";
+  m_variables.Get("card_type",tmp_args->DC);
 
   tmp_args->m_trigger_pub = new zmq::socket_t(*m_data->context, ZMQ_PAIR);
   tmp_args->m_trigger_pub->connect("inproc://CAMACtrigger_status");
@@ -621,6 +718,12 @@ bool CAMAC::CAMAC_Thread_Setup(DataModel* m_data, std::vector<CAMAC_args*> &m_ar
   tmp_item.events=ZMQ_POLLOUT;
   tmp_item.revents=0;
   tmp_args->out.push_back(tmp_item);
+  
+  tmp_args->polltimeout=10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
+
+  tmp_args->statsperiod=60;
+  m_variables.Get("statsperiod",tmp_args->statsperiod);
 
   return m_util->CreateThread("camac", &CAMACThread, tmp_args);
 
@@ -664,12 +767,18 @@ bool CAMAC::Store_Thread_Setup(DataModel* m_data, std::vector<CAMAC_args*> &m_ar
   tmp_item5.events=ZMQ_POLLOUT;
   tmp_item5.revents=0;
   tmp_args->out.push_back(tmp_item5);
-  
-  tmp_args->ma="/mnt/ramdisk/ma";
-  tmp_args->mb="/mnt/ramdisk/mb";
+
+  tmp_args->polltimeout=10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
+
+  tmp_args->storesendpolltimeout = 10000;
+  m_variables.Get("storesendpolltimeout",tmp_args->storesendpolltimeout);
+
+  std::string ramdiskpath="/mnt/ramdisk";
+  m_variables.Get("ramdiskpath", ramdiskpath);
+  tmp_args->ma=ramdiskpath+"/ma";
+  tmp_args->mb=ramdiskpath+"/mb";
   
   return  m_util->CreateThread("store", &StoreThread, tmp_args);    
    
 }
-
-

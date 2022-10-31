@@ -1,0 +1,9 @@
+pgstarter PGStarter configfiles/DBTest/PGStarterConfig
+#pgtool PGTool configfiles/DBTest/PGToolConfig
+
+RunControl RunControl configfiles/DBTest/RunConfig
+SlackBot SlackBot configfiles/DBTest/SlackBotConfig
+StoreSave StoreSave configfiles/DBTest/StoreSaveConfig
+#VME VME configfiles/DBTest/VMEConfig
+CAMAC CAMAC configfiles/DBTest/CAMACConfig
+#LAPPD LAPPD configfiles/DBTest/LAPPDConfig
