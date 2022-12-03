@@ -1,4 +1,5 @@
 #include "PGStarter.h"
+#include "JsonParser.h"
 
 PGStarter::PGStarter():Tool(){}
 
@@ -12,6 +13,7 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
   m_log= m_data->Log;
   
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+  m_data->postgres_helper.SetVerbosity(m_verbose);
   
   // if we're the main DAQ we will make a new entry in the run table
   // at the start of each run. But only the main DAQ toolchain should do this.
@@ -96,6 +98,7 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
   
   // if it's a new run we need to look up the run configuration.
   // if we're the main DAQ we do this from the command line args
+  int runconfig;
   if(new_run && daqtoolchain){
     
     // get type of run from command line arg 1
@@ -136,7 +139,6 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
       return false;
     }
     resultstore.JsonParser(resultstring);
-    int runconfig;
     get_ok = resultstore.Get("id",runconfig);
     if(not get_ok){
       Log("PGStarter failed to get run config from query response '"+resultstring+"'",v_error,verbosity);
@@ -178,54 +180,52 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
          +" and error "+err,v_error,verbosity);
       return false;
     }
-    int runconfig;
     resultstore.JsonParser(resultstring);
     get_ok = resultstore.Get("runconfig",runconfig);
     if(not get_ok){
       Log("PGStarter failed to get runconfig from query response '"+resultstring+"'",v_error,verbosity);
       return false;
     }
-    
-    // next we use the runconfig to get the system configuration id from the runconfig entry
-    query_string = "SELECT "+systemname+" FROM runconfig WHERE id="+std::to_string(runconfig);
-    get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
-    if(not get_ok){
-      Log("PGStarter failed to get "+systemname+" config ID with return "+std::to_string(get_ok)
-         +" and error "+err,v_error,verbosity);
-      return false;
-    }
-    resultstore.JsonParser(resultstring);
-    int systemconfigid=0;
-    get_ok = resultstore.Get(systemname,systemconfigid);
-    if(not get_ok){
-      Log("PGStarter failed to get '"+systemname+"' from query response '"+resultstring+"'",v_error,verbosity);
-      return false;
-    }
-    
-    // finally we get the toolsconfig for this system
-    query_string = "SELECT toolsconfig FROM "+systemname+" WHERE id="+std::to_string(systemconfigid);
-    get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
-    if(not get_ok){
-      Log("PGStarter failed to get toolsconfig with return "+std::to_string(get_ok)
-         +" and error "+err,v_error,verbosity);
-      return false;
-    }
-    resultstore.JsonParser(resultstring);
-    std::string toolsconfigstring;
-    get_ok = resultstore.Get("toolsconfig",toolsconfigstring);
-    if(not get_ok){
-      Log("PGStarter failed to get toolsconfig from query response '"+resultstring+"'",v_error,verbosity);
-      return false;
-    }
-    
-    // the toolsconfig itself is a json representing a map of Tool to config file version number.
-    // a combination of system name, tool name and version number uniquely identifies a configuration string
-    // TODO MARCUS: PGHelper for now just assumes we want the latest version, in which case all we need
-    // is the system name (from m_data->vars) and tool name (hard-coded in each tool)
-    // so all this was pretty pointless: but in the future PGHelper should use the toolsconfig string
-    // to get the version number.
-    
   }
+   
+  // next we use the runconfig to get the system configuration id from the runconfig entry
+  query_string = "SELECT "+systemname+" FROM runconfig WHERE id="+std::to_string(runconfig);
+  get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+  if(not get_ok){
+    Log("PGStarter failed to get "+systemname+" config ID with return "+std::to_string(get_ok)
+       +" and error "+err,v_error,verbosity);
+    return false;
+  }
+  resultstore.JsonParser(resultstring);
+  int systemconfigid=0;
+  get_ok = resultstore.Get(systemname,systemconfigid);
+  if(not get_ok){
+    Log("PGStarter failed to get '"+systemname+"' from query response '"+resultstring+"'",v_error,verbosity);
+    return false;
+  }
+  
+  // finally we get the toolsconfig for this system
+  query_string = "SELECT toolsconfig FROM "+systemname+" WHERE id="+std::to_string(systemconfigid);
+  get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+  if(not get_ok){
+    Log("PGStarter failed to get toolsconfig with return "+std::to_string(get_ok)
+       +" and error "+err,v_error,verbosity);
+    return false;
+  }
+  
+  // the toolsconfig itself is a json representing a map of Tool to config file version number.
+  // a combination of system name, tool name and version number uniquely identifies a configuration string
+  // use a proper json parser to get the json string from the query response
+  JSONP parser;
+  BoostStore* toolsconfigbstore = new BoostStore{};
+  parser.Parse(resultstring, *toolsconfigbstore);
+  std::string toolsconfigstring;
+  toolsconfigbstore->Get("toolsconfig",toolsconfigstring);
+  // then parse that json in turn for the version numbers of each Tool's configuration
+  parser.Parse(toolsconfigstring, *toolsconfigbstore);
+  // we put that info in the datamodel. it'll be used by the PGHelper when each Tool
+  // asks for its Tool configuration
+  m_data->Stores.emplace("ToolsConfig",toolsconfigbstore);
   
   
   Log("This run is run number "+std::to_string(m_data->run)
@@ -250,7 +250,7 @@ bool PGStarter::Finalise(){
 	  std::string resultstring;
 	  std::string err;
 	  int timeout_ms=5000;
-	  std::string query_string = "UPDATE run SET stop='now()', numevents="+std::to_string(m_data->NumEvents)
+	  std::string query_string = "UPDATE run SET stop='now()', numevents="+std::to_string(m_data->triggers["VME"])
 	                            +" WHERE runnum="+std::to_string(m_data->run)
 	                            +" AND subrunnum="+std::to_string(m_data->subrun)+";";
 	  get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);

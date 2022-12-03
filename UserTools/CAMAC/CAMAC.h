@@ -110,6 +110,8 @@ class CAMAC: public Tool {
   zmq::socket_t* trigger_sub;
   zmq::pollitem_t items[1];
 
+  zmq::socket_t* monitoring_pub;
+
   //CamacCrate* CC;
   std::vector<std::string> Lcard, Ccard;
   std::vector<int> Ncard, Ncrate ;

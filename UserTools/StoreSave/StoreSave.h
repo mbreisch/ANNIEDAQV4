@@ -22,6 +22,7 @@ struct StoreSave_args:Thread_args{
   ~StoreSave_args();
 
   zmq::socket_t* receive;
+  zmq::socket_t* monitoring;
 
   BoostStore* outstore;
   Logging* m_logger;

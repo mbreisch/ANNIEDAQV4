@@ -35,7 +35,7 @@ struct VME_args:DAQThread_args{
 
   std::map<std::string,Store*> connections;
 
-  std::deque<std::vector<CardData*>* > data_buffer;
+  std::deque<std::vector<CardData>* > data_buffer;
   std::deque<std::vector<TriggerData*>* > trigger_buffer;
 
   unsigned long data_counter;

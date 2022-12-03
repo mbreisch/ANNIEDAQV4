@@ -70,6 +70,7 @@ class DataModel {
 
   std::vector<std::string> identities;
   std::map<std::string,unsigned long> triggers;
+  std::map<std::string,unsigned long> buffers;
 
   unsigned long run;
   unsigned long subrun;

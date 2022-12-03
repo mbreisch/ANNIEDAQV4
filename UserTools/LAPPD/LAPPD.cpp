@@ -52,11 +52,10 @@ LAPPD_args::~LAPPD_args(){
   connections.clear();
   
   for(int i=0; i<data_buffer.size(); i++){
-    for (int j=0; j<data_buffer.at(i)->size(); j++){
-      delete data_buffer.at(i)->at(j);
-      data_buffer.at(i)->at(j)=0;
+      delete data_buffer.at(i);
+      data_buffer.at(i)=0;
     }
-  }
+  
   data_buffer.clear();
   
   
@@ -83,7 +82,7 @@ bool LAPPD::Initialise(std::string configfile, DataModel &data){
   bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
   if(!get_ok){
     Log(m_tool_name+" Failed to get Tool config from database!",0,0);
-    return false;
+    //return false;
   }
   // parse the configuration to populate the m_variables Store.
   std::stringstream configstream(configtext);
@@ -113,7 +112,7 @@ bool LAPPD::Initialise(std::string configfile, DataModel &data){
     Log("ERROR: LAPPD Tool error setting up LAPPD thread",0,m_verbose);
     return false;  // Setting up LAPPD thread (BEN error on retur)
   }
-  
+    
   if(!Store_Thread_Setup(m_data, m_args, m_util)){
     Log("ERROR: LAPPD Tool error setting up Store thread",0,m_verbose);
     return false;// Setting UP Store Thread (BEN error on return)
@@ -136,7 +135,7 @@ bool LAPPD::Execute(){
     std::string status="";
     *tmp>>status;
 
-    Log(status,1,m_verbose);
+    Log(status,2,m_verbose);
     
     unsigned long LAPPD_readouts;
     tmp->Get("data_counter",LAPPD_readouts);
@@ -158,7 +157,7 @@ bool LAPPD::Execute(){
 
 
 bool LAPPD::Finalise(){
-
+ 
   for(int i=0; i<m_args.size(); i++){
     m_util->KillThread(m_args.at(i));
     delete m_args.at(i);
@@ -185,11 +184,31 @@ void LAPPD::LAPPD_Thread(Thread_args* arg){
    
   if(args->connections.size()) args->m_utils->UpdateConnections(args->servicename, args->m_data_receive, args->connections, args->update_conns_period, args->ref_time1, std::to_string(args->portnum));
   else  args->m_utils->UpdateConnections(args->servicename, args->m_data_receive, args->connections, 5, args->ref_time1, std::to_string(args->portnum));
-  
+
+  //printf("lappd connections=%d\n",args->connections.size());
+  //printf("lappd port=%d\n",args->portnum);
+  //printf("servicename=%s\n",args->servicename.c_str());  
    
-  zmq::poll(args->in, args->polltimeout);
+  for(std::map<std::string,Store*>::iterator it=args->connections.begin(); it!=args->connections.end(); it++){
   
-  if(args->in.at(0).revents & ZMQ_POLLIN) Get_Data(args); //new data comming in buffer it and send akn
+    //printf("%s\n", it->first.c_str());
+    std::string tmp="";
+    it->second->Get("ip",tmp);
+    //printf("ip=%s", tmp.c_str());
+    //  it->second->Print();
+  } 
+  
+  int pollok = zmq::poll(args->in, args->polltimeout);
+  //std::cout<<"lappd poll returned "<<pollok<<" items"<<std::endl;
+  if(pollok<0){
+      printf("LAPPD poll for data error!\n");
+  }
+  
+  else if(args->in.at(0).revents & ZMQ_POLLIN){
+
+    //printf("in Get_Data\n");
+    Get_Data(args); //new data comming in buffer it and send akn
+  }
   
   zmq::poll(args->out, args->polltimeout);
   
@@ -235,6 +254,13 @@ bool LAPPD::LAPPD_Thread_Setup(DataModel* m_data, std::vector<LAPPD_args*> &m_ar
   *tmp_args->ref_time1=time(NULL);
   *tmp_args->ref_time2=time(NULL);
 
+  //  tmp_args->m_data_receive->connect("tcp://192.168.163.84:89765");
+  
+  tmp_args->polltimeout=10;
+  m_variables.Get("polltimeout",tmp_args->polltimeout);
+  tmp_args->m_data_receive->setsockopt(ZMQ_RCVTIMEO, tmp_args->polltimeout);
+  tmp_args->m_data_receive->setsockopt(ZMQ_SNDTIMEO, tmp_args->polltimeout);
+
   zmq::pollitem_t tmp_item;
   tmp_item.socket=*tmp_args->m_data_receive;
   tmp_item.fd=0;
@@ -255,11 +281,6 @@ bool LAPPD::LAPPD_Thread_Setup(DataModel* m_data, std::vector<LAPPD_args*> &m_ar
   tmp_item3.events=ZMQ_POLLOUT;
   tmp_item3.revents=0;
   tmp_args->out.push_back(tmp_item3);
-
-  tmp_args->polltimeout=10;
-  m_variables.Get("polltimeout",tmp_args->polltimeout);
-  tmp_args->m_data_receive->setsockopt(ZMQ_RCVTIMEO, tmp_args->polltimeout);
-  tmp_args->m_data_receive->setsockopt(ZMQ_SNDTIMEO, tmp_args->polltimeout);
 
   tmp_args->servicename="LAPPD";
   tmp_args->update_conns_period = 300;
@@ -333,59 +354,59 @@ bool LAPPD::Get_Data(LAPPD_args* args){
   std::queue<zmq::message_t> message_queue;
   if(args->m_utils->ReceiveMessages(args->m_data_receive, message_queue)){
 
-    if(message_queue.size()>=4){
 
+    //printf("got LAPPD data size=%d\n",  message_queue.size());
+
+    if(message_queue.size()>=3){
+
+      //printf("LAPPD in message queue check\n");
+      
       zmq::message_t identity;
       identity.copy(&message_queue.front());
       message_queue.pop();
       zmq::message_t id;
       id.copy(&message_queue.front());
       message_queue.pop(); 
-      int cards=0;
-      memcpy (&cards, message_queue.front().data(), message_queue.front().size()); 
-
-      std::vector<PsecData*>* tmp_cards=0;
       
       bool error=false;
-
-      for(int i=0; i<cards; i++){
-	
-	PsecData* data=new PsecData;
-	if(data->Receive(message_queue)){;   //havent added error checking and buffer flush
-	  tmp_cards->push_back(data);
-	}
-	else{
-	  delete data;
-	  args->m_logger->Log("ERROR: Receiving PsecData");
-	  error=true;   
-	  break;  
-	}
+      
+      	
+      PsecData* data=new PsecData;
+      if(!data->Receive(message_queue)){;   //havent added error checking and buffer flush
+	printf("error Receiving PsecData\n");
+	delete data;
+	data=0;
+	args->m_logger->Log("ERROR: Receiving PsecData");
+	error=true;   
       }
       
-      
+      //printf("sending akn to LAPPD\n");
       //SEND AN AKN and MESSAGE NUMEBR ID;
       //BEN maybe add poll for outmessage to be sure otherwise will block
       int ok = zmq::poll(&args->out.at(1),1,args->polltimeout);
-      if(ok < 0 || (args->out.at(1).revents & ZMQ_POLLIN)==0) error=true;
+      
+      if(ok < 0 || (args->out.at(1).revents & ZMQ_POLLOUT)==0){
+	error=true;
+	printf("error sending akn to LAPPD\n");
+      }
       if(error || !args->m_data_receive->send(identity, ZMQ_SNDMORE) || !args->m_data_receive->send(id)){
+	printf("error sending akn to LAPPD2\n");
 	args->m_logger->Log("ERROR: Cant send data aknoledgement",0,0);  
 	error=true;	
       }
+      //printf("sent akn to LAPPD\n");
       
-      if (!message_queue.size() && !error && cards!=0){
-	
-	args->data_buffer.push_back(tmp_cards);                                               
+      if (!message_queue.size() && !error ){
+	//printf("LAPPD data pushed back\n");
+	args->data_buffer.push_back(data);                                               
 	args->data_counter++;
 	
       }
       
-      if (message_queue.size() || error || cards==0){
+      if (message_queue.size() || error ){
 	
-	for(int i=0; i<tmp_cards->size(); i++){
-	  delete tmp_cards->at(i);
-	  tmp_cards->at(i)=0;
-	}
-	tmp_cards->clear();
+	  delete data;
+	  data=0;
 	
 	
 	args->m_logger->Log("ERROR: With message format/contents");       
@@ -414,10 +435,12 @@ bool LAPPD::LAPPD_To_Store(LAPPD_args* args){
   
    
   if(args->data_buffer.size()){
+    //printf("LAPPD data being sent to store thread\n");
     //send data pointer
     if(args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
+      //printf("LAPPD data sent to store thread\n");      
       args->data_buffer.at(0)=0;       
-      args->data_buffer.pop_front();        	
+      args->data_buffer.pop_front();
     }
     else args->m_logger->Log("ERROR:Failed to send data pointer to LAPPD Store Thread");
     
@@ -456,7 +479,7 @@ bool LAPPD::Store_Send_Data(LAPPD_args* args){
       
       zmq::message_t key(6);                                                                       
       
-      snprintf ((char *) key.data(), 6 , "%s" , "LAPPD");
+      snprintf ((char *) key.data(), 10 , "%s" , "LAPPDData");
       args->m_data_send->send(key, ZMQ_SNDMORE);
     
       if (args->data_counter==0){
@@ -485,20 +508,21 @@ bool LAPPD::Store_Send_Data(LAPPD_args* args){
 bool LAPPD::Store_Receive_Data(LAPPD_args* args){
 
   
-  std::vector<PsecData*>* tmp;
+  PsecData* tmp;
   if(args->m_utils->ReceivePointer(args->m_data_receive, tmp)){
-    
-    for(int i=0; i<tmp->size(); i++){
+    //printf("LAPPD data resecived by store thread\n");
+    // for(int i=0; i<tmp->size(); i++){
+      
       
       args->LAPPDData->Set("LAPPDData",*tmp);
       args->LAPPDData->Save(args->la);
       args->LAPPDData->Delete();
       args->data_counter++;
-      delete tmp->at(i);
-      tmp->at(i)=0;
-    }
-    
-    tmp->clear();
+      //delete tmp->at(i);
+      //tmp->at(i)=0;
+      //}
+      //printf("store thread saved in store\n");
+      //tmp->clear();
     delete tmp;
     tmp=0;
     

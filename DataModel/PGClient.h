@@ -30,10 +30,10 @@ struct Query {
 	std::string dbname;
 	std::string query_string;
 	char type;
-	bool success;
+	uint32_t success;            // middleman treats this as BOOL: 1=success, 0=fail
 	std::vector<std::string> query_response;
 	std::string err;
-	int msg_id;
+	uint32_t msg_id;
 };
 
 class DataModel;
@@ -87,7 +87,7 @@ class PGClient {
 	std::vector<zmq::pollitem_t> out_polls;
 	
 	std::queue<std::pair<Query, std::promise<int>>> waiting_senders;
-	std::map<int, std::promise<Query>> waiting_recipients;
+	std::map<uint32_t, std::promise<Query>> waiting_recipients;
 	
 	bool BackgroundThread(std::future<void> terminator);
 	std::thread background_thread;   // a thread that will perform zmq socket operations in the background
@@ -125,7 +125,7 @@ class PGClient {
 	// since that's the one the middleman needs to know to send replies back
 	std::string clt_ID;
 	
-	int msg_id = 0;
+	uint32_t msg_id = 0;
 	
 	// =======================================================
 	
@@ -145,60 +145,69 @@ class PGClient {
 	// 4. generic case for other primitive types -> relies on &messagedata and sizeof(T) being suitable.
 	template <typename T>
 	bool Send(zmq::socket_t* sock, bool more, T&& messagedata){
+		if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
 		zmq::message_t message(sizeof(T));
 		memcpy(message.data(), &messagedata, sizeof(T));
 		bool send_ok;
 		if(more) send_ok = sock->send(message, ZMQ_SNDMORE);
 		else     send_ok = sock->send(message);
+		if(verbosity>10) std::cout<<"returning "<<send_ok<<std::endl;
 		return send_ok;
 	}
 	
 	// recursive case; send the next message part and forward all remaining parts
 	template <typename T, typename... Rest>
 	bool Send(zmq::socket_t* sock, bool more, T&& message, Rest&&... rest){
+		if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
 		bool send_ok = Send(sock, true, std::forward<T>(message));
 		if(not send_ok) return false;
-		return Send(sock, false, std::forward<Rest>(rest)...);
+		send_ok = Send(sock, false, std::forward<Rest>(rest)...);
+		if(verbosity>10) std::cout<<"returning "<<send_ok<<std::endl;
+		return send_ok;
 	}
 	
 	// wrapper to do polling if required
 	// version if one part
 	template <typename T>
 	int PollAndSend(zmq::socket_t* sock, zmq::pollitem_t poll, int timeout, T&& message){
+		if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
+		int send_ok=0;
 		// check for listener
 		int ret = zmq::poll(&poll, 1, timeout);
 		if(ret<0){
 			// error polling - is the socket closed?
-			return -3;
-		}
-		if(poll.revents & ZMQ_POLLOUT){
-			bool send_ok = Send(sock, false, std::forward<T>(message));
-			if(not send_ok) return -1;
+			send_ok = -3;
+		} else if(poll.revents & ZMQ_POLLOUT){
+			bool success = Send(sock, false, std::forward<T>(message));
+			send_ok = success ? 0 : -1;
 		} else {
 			// no listener
-			return -2;
+			send_ok = -2;
 		}
-		return 0;
+		if(verbosity>10) std::cout<<"returning "<<send_ok<<std::endl;
+		return send_ok;
 	}
 	
 	// wrapper to do polling if required
 	// version if more than one part
 	template <typename T, typename... Rest>
 	int PollAndSend(zmq::socket_t* sock, zmq::pollitem_t poll, int timeout, T&& message, Rest&&... rest){
+		if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
+		int send_ok = 0;
 		// check for listener
 		int ret = zmq::poll(&poll, 1, timeout);
 		if(ret<0){
 			// error polling - is the socket closed?
-			return -3;
-		}
-		if(poll.revents & ZMQ_POLLOUT){
-			bool send_ok = Send(sock, true, std::forward<T>(message), std::forward<Rest>(rest)...);
-			if(not send_ok) return -1;
+			send_ok = -3;
+		} else if(poll.revents & ZMQ_POLLOUT){
+			bool success = Send(sock, true, std::forward<T>(message), std::forward<Rest>(rest)...);
+			send_ok = success ? 0 : -1;
 		} else {
 			// no listener
-			return -2;
+			send_ok = -2;
 		}
-		return 0;
+		if(verbosity>10) std::cout<<"returning "<<send_ok<<std::endl;
+		return send_ok;
 	}
 	
 };

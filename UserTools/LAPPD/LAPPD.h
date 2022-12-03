@@ -41,7 +41,7 @@ struct LAPPD_args:DAQThread_args{
   int portnum;
   std::string servicename;
 
-  std::deque<std::vector<PsecData*>* > data_buffer;
+  std::deque<PsecData*> data_buffer;
  
   unsigned long data_counter;
 

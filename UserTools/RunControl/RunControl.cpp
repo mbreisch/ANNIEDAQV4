@@ -15,7 +15,7 @@ bool RunControl::Initialise(std::string configfile, DataModel &data){
   bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
   if(!get_ok){
     Log(m_tool_name+" Failed to get Tool config from database!",0,0);
-    return false;
+    //return false;
   }
   // parse the configuration to populate the m_variables Store.
   std::stringstream configstream(configtext);
@@ -42,6 +42,9 @@ bool RunControl::Initialise(std::string configfile, DataModel &data){
   m_utils->UpdateConnections("VME", sock, connections, std::to_string(portnum));
   m_utils->UpdateConnections("LAPPD", sock, connections, std::to_string(portnum));
 
+
+  sleep(5);
+
   bool start=true;
   zmq::message_t msg(sizeof(start));
   memcpy(msg.data(), &start, sizeof(start));
@@ -53,6 +56,7 @@ bool RunControl::Initialise(std::string configfile, DataModel &data){
   	    0, m_verbose);
     return false;
   } else if(outpoll.revents & ZMQ_POLLOUT){
+      sock->send(msg);
       sock->send(msg);
   } else {
   	Log(m_tool_name+"::Initialise timed out polling output socket!",0,m_verbose);

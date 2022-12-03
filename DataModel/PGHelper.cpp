@@ -13,7 +13,43 @@ void PGHelper::SetVerbosity(int verb){
 	verbosity=verb;
 }
 
+// TODO add err string pointer to these functions
 bool PGHelper::GetToolConfig(std::string toolname, std::string& configtext){
+    
+    // we may optionally include the version number in the 'toolname'
+    // by appending it after a ';', e.g. 'TriggerConfig;2'
+    size_t splitpos = toolname.find(';');
+    if(splitpos!=std::string::npos){
+        std::string	dbentryname;
+        int version;
+        try {
+            dbentryname = toolname.substr(0,toolname.find(';'));
+            version = std::stoi(toolname.substr(toolname.find(';')+1,std::string::npos));
+            return GetToolConfig(dbentryname, version, configtext);
+        } catch(...){
+            std::cerr<<"PGHelper::GetToolConfig exception splitting toolname and version from '"
+                     <<toolname<<"'"<<std::endl;
+            return false;
+        }
+    }
+    
+    // if no ';' found, see if this is a tool in the ToolsConfig
+    if(m_data->Stores.at("ToolsConfig")->Has(toolname)){
+        int version;
+        if(m_data->Stores.count("ToolsConfig")==0){
+            std::cerr<<"No ToolsConfig in m_data->Stores! Did PGStarter fail?"<<std::endl;
+            return false;
+        }
+        bool get_ok = m_data->Stores.at("ToolsConfig")->Get(toolname, version);
+        if(!get_ok){
+            std::cerr<<"PGHelper::GetToolConfig for tool '"<<toolname<<"' failed to get "
+                     <<"configuration version number from ToolsConfig?!"<<std::endl;
+            return false;
+        }
+        return GetToolConfig(toolname, version, configtext);
+    }
+    
+    // final fallback; assume no version == latest version
     std::string system;
     m_data->vars.Get("SystemName",system);
     std::string dbname="rundb";
@@ -24,6 +60,41 @@ bool PGHelper::GetToolConfig(std::string toolname, std::string& configtext){
                             +system+"' AND tool='"+toolname+"' AND version="
                             "(SELECT max(version) FROM configfiles WHERE system='"
                             +system+"' AND tool='"+toolname+"')";
+    //std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
+    bool ok = m_data->pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
+    if(!ok){
+            m_data->Log->Log("Failed to get configtext for tool "+toolname
+                            +", returned with error "+err,0,0);
+    } else {
+            //std::cout<<"PGHelper getting toolconfig by parsing json '"+result+"'"<<std::endl;
+            BoostStore store;
+            parser.Parse(result, store);
+            //std::cout<<"temporary store contents: "; store.Print(false);
+            //Store store;
+            //store.JsonParser(result);
+            //std::cout<<"temporary store contents: "; store.Print(); //false);
+            ok = store.Get("contents",configtext);
+            if(!ok){
+                    m_data->Log->Log("Failed to retrieve toolconfig contents for tool "
+                                     +toolname+", query returned '"+result+"'",0,0);
+            }
+            //std::cout<<"returning configuration text: '"<<configtext<<"'"<<std::endl;
+    }
+    
+    return ok;
+}
+
+
+bool PGHelper::GetToolConfig(std::string toolname, int version, std::string& configtext){
+    std::string system;
+    m_data->vars.Get("SystemName",system);
+    std::string dbname="rundb";
+    std::string err;
+    std::string result;
+    int timeout=1000;
+    std::string query_string="SELECT contents FROM configfiles WHERE system='"
+                            +system+"' AND tool='"+toolname+"' AND version="
+                            +std::to_string(version);
     //std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
     bool ok = m_data->pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
     if(!ok){

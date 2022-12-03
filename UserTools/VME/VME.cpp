@@ -55,14 +55,14 @@ VME_args::~VME_args(){
   }
 
   connections.clear();
-  
+  /*  
   for(int i=0; i<data_buffer.size(); i++){
     for (int j=0; j<data_buffer.at(i)->size(); j++){
       delete data_buffer.at(i)->at(j);
       data_buffer.at(i)->at(j)=0;
     }
   }
-
+  */
   data_buffer.clear();
   
 
@@ -99,7 +99,7 @@ bool VME::Initialise(std::string configfile, DataModel &data){
   bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
   if(!get_ok){
     Log(m_tool_name+" Failed to get Tool config from database!",0,0);
-    return false;
+    //return false;
   }
   // parse the configuration to populate the m_variables Store.
   std::stringstream configstream(configtext);
@@ -152,7 +152,7 @@ bool VME::Execute(){
     std::string status="";
     *tmp>>status;
 
-    Log(status,1,m_verbose);
+    Log(status,2,m_verbose);
     
     unsigned long VME_readouts;
     tmp->Get("data_counter",VME_readouts);
@@ -210,29 +210,43 @@ void VME::VME_Thread(Thread_args* arg){
   zmq::poll(args->in, args->polltimeout);
   
   if(args->in.at(0).revents & ZMQ_POLLIN) Get_Data(args); //new data comming in buffer it and send akn
-  
+  //printf("x1\n");
   zmq::poll(args->out, args->polltimeout);
-  
-  if((args->out.at(0).revents & ZMQ_POLLOUT) && (args->data_buffer.size() || args->trigger_buffer.size()) ) VME_To_Store(args);         /// data in buffer so send it to store writer 
-  
+  //printf("x2\n");
+  if((args->out.at(0).revents & ZMQ_POLLOUT) && (args->data_buffer.size() || args->trigger_buffer.size()) ){
+    //printf("x3\n");
+ VME_To_Store(args);         /// data in buffer so send it to store writer 
+ //printf("x4\n");  
+}  
+  //printf("x5\n");
   if(difftime(time(NULL), *args->ref_time2) >= args->statsperiod) {
-
+    //printf("x6\n");
     VME_Stats_Send(args);   // on timer stats pub to main thread for triggering
-    *args->ref_time2=time(NULL);
+    //printf("x7\n");  
+  *args->ref_time2=time(NULL);
+  //printf("x8\n");
   }
-
+  //printf("x9\n");
 }
 
 void VME::Store_Thread(Thread_args* arg){
-  
+  //printf("f1\n");
   VME_args* args=reinterpret_cast<VME_args*>(arg);
-  
+  //printf("f2\n");
   zmq::poll(args->in, args->polltimeout);
-  
-  if(args->in.at(1).revents & ZMQ_POLLIN) Store_Send_Data(args); /// received store data request
-  
-  if(args->in.at(0).revents & ZMQ_POLLIN) Store_Receive_Data(args); // received new data for adding to stores
-
+  //printf("f3\n");
+  if(args->in.at(1).revents & ZMQ_POLLIN){
+    //printf("f4\n");
+ Store_Send_Data(args); /// received store data request
+ //printf("f5\n");  
+}  
+  //printf("f6\n");
+  if(args->in.at(0).revents & ZMQ_POLLIN){
+    //printf("f7\n");
+ Store_Receive_Data(args); // received new data for adding to stores
+ //printf("f8\n");
+  }
+  //printf("f9\n");
 }
 
 
@@ -357,38 +371,47 @@ bool VME::Get_Data(VME_args* args){
 
   std::queue<zmq::message_t> message_queue;
   if(args->m_utils->ReceiveMessages(args->m_data_receive, message_queue)){
+    //printf("r1\n");
 
     if(message_queue.size()>=4){
-
+      //printf("r2\n");
       zmq::message_t identity;
       identity.copy(&message_queue.front());
       message_queue.pop();
+      //printf("r3\n");
       zmq::message_t id;
       id.copy(&message_queue.front());
-      message_queue.pop(); 
+      message_queue.pop();
+      //printf("r4\n"); 
       std::istringstream data_type(static_cast<char*>(message_queue.front().data()));
       message_queue.pop();
-      int cards=0;
-      memcpy (&cards, message_queue.front().data(), message_queue.front().size()); 
-
-      std::vector<CardData*>* tmp_cards=0;
+      //printf("r5\n"); 
+     int cards=0;
+      memcpy (&cards, message_queue.front().data(), message_queue.front().size());
+      message_queue.pop(); 
+      //printf("r6\n");
+      std::vector<CardData>* tmp_cards=0;
       std::vector<TriggerData*>* tmp_trig=0;
-      
-      if(data_type.str() == "D") tmp_cards = new std::vector<CardData*>;
+      //printf("r7\n");
+      if(data_type.str() == "D") tmp_cards = new std::vector<CardData>;
       if(data_type.str() == "T") tmp_trig = new std::vector<TriggerData*>;
       
+      //printf("r8\n");
       bool error=false;
 
       for(int i=0; i<cards; i++){
-	
+	//printf("r9\n");
 	if(data_type.str() == "D"){
-	  
-	  CardData* data=new CardData;
-	  if(data->Receive(message_queue)){;   //havent added error checking and buffer flush
+	  //printf("r10\n");
+	  CardData data;//=new CardData;
+	  if(data.Receive(message_queue)){;   //havent added error checking and buffer flush
+	    //printf("r10.5\n");
 	    tmp_cards->push_back(data);
 	  }
 	  else{
-	    delete data;
+	    //printf("r11\n");
+	    //	    delete data;
+	    // data=0;
 	    args->m_logger->Log("ERROR: Receiving CardData");
 	    error=true;   
 	    break;  
@@ -396,19 +419,22 @@ bool VME::Get_Data(VME_args* args){
 	}
 	
 	else if(data_type.str() == "T"){
-	  
+	  //printf("r12\n");
 	  TriggerData* data=new TriggerData;  
 	  if(data->Receive(message_queue)){ 
 	    tmp_trig->push_back(data);		  
 	  }
 	  else{
+	    //printf("r13\n");
 	    delete data;
+	    data=0;
 	    args->m_logger->Log("ERROR: Receiving TriggerData"); 
 	    error=true;
 	    break;  
 	  }
 	}
 	else{
+	  //printf("r14\n");
 	  error=true;
 	  break;
 	}
@@ -417,51 +443,70 @@ bool VME::Get_Data(VME_args* args){
       //SEND AN AKN and MESSAGE NUMEBR ID;
       //BEN maybe add poll for outmessage to be sure otherwise will block
       int ok = zmq::poll(&args->out.at(1),1,args->polltimeout);
-      
+      //printf("r15.1\n");
       if( ok<0 || (args->out.at(1).revents & ZMQ_POLLOUT)==0) error=true;
-      
+      //printf("r15.2\n");
       if(error || !args->m_data_receive->send(identity, ZMQ_SNDMORE) || !args->m_data_receive->send(id)){
+        //printf("r16\n");
 	args->m_logger->Log("ERROR: Cant send data aknoledgement",0,0);  
 	error=true;	
       }
+      //printf("r17\n");
       
       if (!message_queue.size() && !error && cards!=0){
-	
+	//printf("r18\n");
+	//printf("r18.1 %s\n",data_type.str().c_str());
 	if(data_type.str() == "D"){
+	  //printf("r19\n");
 	  args->data_buffer.push_back(tmp_cards);                                               
 	  args->data_counter++;
+	  //printf("r20\n");
 	}
 	
-	if(data_type.str() == "T"){
+	else if(data_type.str() == "T"){
+	  //printf("r20.1\n");
 	  args->trigger_buffer.push_back(tmp_trig);                                             
 	  args->trigger_counter++;
+	  //printf("r20.2\n");
 	}
-	
-      
+     
 	else error=true;
       }
+      //printf("r20.3\n");
      
       if (message_queue.size() || error || cards==0){
-	
-	for(int i=0; i<tmp_cards->size(); i++){
-	  delete tmp_cards->at(i);
-	  tmp_cards->at(i)=0;
+	//printf("r22 1=%d, 2=%d, 3=%d\n", message_queue.size(), error, cards);
+	if(tmp_cards!=0){
+	  for(int i=0; i<tmp_cards->size(); i++){
+	    //printf("r23\n");	  
+	    //  delete tmp_cards->at(i);
+	    // tmp_cards->at(i)=0;
+	    //printf("r24\n");
+	  }
+	  tmp_cards->clear();
 	}
-	tmp_cards->clear();
 	
-	for(int i=0; i<tmp_trig->size(); i++){
-	  delete tmp_trig->at(i);
-	  tmp_trig->at(i)=0;
+	//printf("r25\n");
+	if(tmp_trig!=0){
+	  for(int i=0; i<tmp_trig->size(); i++){
+	    //printf("r25.1 i=%d\n",i);
+	    delete tmp_trig->at(i);
+	    //printf("r25.2 i=%d\n",i);
+	    tmp_trig->at(i)=0;
+	    //printf("r25.3 i=%d\n",i);
+	  }
+	  //printf("r25.4\n");
+	  tmp_trig->clear();
 	}
-	tmp_trig->clear();
-	
+	//printf("r26\n");
 	args->m_logger->Log("ERROR: With message format/contents");       
 	return false;
       }
-    
+      //printf("r26.2\n");
     }
-	
+    
     else{
+      //printf("r27\n");
       args->m_logger->Log("ERROR: not enough message parts");
       return false;
     }
@@ -469,10 +514,11 @@ bool VME::Get_Data(VME_args* args){
     
   }
   else{
+    //printf("r28\n");
     args->m_logger->Log("ERROR:  error getting data from vme crate");      
     return false;
   }
-
+  
   return true;
 }
 
@@ -573,7 +619,7 @@ bool VME::VME_To_Store(VME_args* args){
     //send trigger pointer
     zmq::message_t tmp(2);
     snprintf ((char *) tmp.data(), 2 , "%s" , "T") ;
-    if(args->m_data_send->send(tmp) && args->m_utils->SendPointer(args->m_data_send, args->trigger_buffer.at(0))){
+    if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->trigger_buffer.at(0))){
       args->trigger_buffer.at(0)=0;
       args->trigger_buffer.pop_front();
     }
@@ -587,7 +633,7 @@ bool VME::VME_To_Store(VME_args* args){
     //send data pointer
     zmq::message_t tmp(2);           
     snprintf ((char *) tmp.data(), 2 , "%s" , "D") ;
-    if(args->m_data_send->send(tmp) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
+    if(args->m_data_send->send(tmp,ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
       args->data_buffer.at(0)=0;       
       args->data_buffer.pop_front();        	
     }
@@ -630,7 +676,7 @@ bool VME::Store_Send_Data(VME_args* args){
       
       zmq::message_t key(4);                                                                       
       
-      snprintf ((char *) key.data(), 4 , "%s" , "VME");
+      snprintf ((char *) key.data(), 8 , "%s" , "PMTData");
       args->m_data_send->send(key, ZMQ_SNDMORE);
     
       if (args->data_counter==0){
@@ -647,7 +693,7 @@ bool VME::Store_Send_Data(VME_args* args){
       args->da=dn;   
       
       zmq::message_t key2(5);
-      snprintf ((char *) key2.data(), 5 , "%s" , "TRIG");
+      snprintf ((char *) key2.data(), 9 , "%s" , "TrigData");
       args->m_data_send->send(key2, ZMQ_SNDMORE);
       
       if (args->trigger_counter==0){
@@ -681,23 +727,26 @@ bool VME::Store_Receive_Data(VME_args* args){
     std::istringstream key(static_cast<char*>(key_msg.data()));
     
     if(key.str() == "D"){
-      std::vector<CardData*>* tmp;
+      //printf("heyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n");
+      std::vector<CardData>* tmp;
       if(args->m_utils->ReceivePointer(args->m_data_receive, tmp)){
 	
-	for(int i=0; i<tmp->size(); i++){
-	  
+	//	for(int i=0; i<tmp->size(); i++){
+	if(tmp->size()>0){
 	  args->PMTData->Set("CardData",*tmp);
 	  args->PMTData->Save(args->da);
 	  args->PMTData->Delete();
 	  args->data_counter++;
-	  delete tmp->at(i);
-	  tmp->at(i)=0;
 	}
-
+	for(int i=0; i<tmp->size(); i++){
+	  //	  delete tmp->at(i);
+	  // tmp->at(i)=0;
+	}
+	
 	tmp->clear();
 	delete tmp;
 	tmp=0;
-
+	
 	return true;
       }
       else{
@@ -707,18 +756,29 @@ bool VME::Store_Receive_Data(VME_args* args){
     }
     
     else if(key.str() == "T"){
-      std::vector<TriggerData*>* tmp;
+      std::vector<TriggerData*>* tmp; // BEN THINK THIS IS NOT A VECTOR
       if(args->m_utils->ReceivePointer(args->m_data_receive, tmp)){
-	
+	//printf("o1 size=%d\n",tmp->size());
+
 	for(int i=0; i<tmp->size(); i++){
-	  
-	  args->TrigData->Set("TrigData",*tmp);
+	  //printf("o1.5 i=%d\n",i); 
+	  //printf("o2 pointer=%p\n",tmp->at(i));  
+	  args->TrigData->Set("TrigData",*(tmp->at(i)));
+	  //printf("o3\n");	
 	  args->TrigData->Save(args->ta);
+	  //printf("o4\n");
 	  args->TrigData->Delete();
+	  //printf("o5\n");	 
 	  args->trigger_counter++;
-	  delete tmp->at(i);
+	  //printf("o6\n");
+	  //printf("o6.2 i=%d\n",i);
+	  //printf("o6.5 pointer=%p\n",tmp->at(i));
+	  //delete tmp->at(i);
+	  //printf("o7\n");
 	  tmp->at(i)=0;
+	  //printf("o8\n");
 	}
+	//printf("o9\n");
 	
 	tmp->clear();
 	delete tmp;

@@ -81,7 +81,7 @@ bool CAMAC::Initialise(std::string configfile, DataModel &data){
   bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
   if(!get_ok){
     Log(m_tool_name+" Failed to get Tool config from database!",0,0);
-    return false;
+    //return false;
   }
   // parse the configuration to populate the m_variables Store.
   std::stringstream configstream(configtext);
@@ -92,6 +92,8 @@ bool CAMAC::Initialise(std::string configfile, DataModel &data){
 
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
   
+  //printf("verbosity=%d/n", m_verbose);
+
   //m_variables.Print();
   m_variables.Get("configcc",configcc);           // name of parent config file
   m_variables.Get("percent", perc);               //firing probability                                
@@ -132,6 +134,12 @@ bool CAMAC::Initialise(std::string configfile, DataModel &data){
   items[0].events=ZMQ_POLLIN;
   items[0].revents=0;
 
+  /* removed monitoring of single shot
+  monitoring_pub=new zmq::socket_t(*m_data->context, ZMQ_PUB);
+  monitoring_pub->bind("tcp://*:99999");
+
+  m_util->AddService("MonitorData", 99999, false);
+  */
   
   if(!CAMAC_Thread_Setup(m_data, m_args, m_util)){
     Log("ERROR: CAMAC Tool error setting up CAMAC thread",0,m_verbose);
@@ -162,7 +170,7 @@ bool CAMAC::Execute(){
     std::string status="";
     *tmp>>status;
     
-    Log(status,1,m_verbose);
+    Log(status,2,m_verbose);
     
     unsigned long CAMAC_readouts;
     tmp->Get("data_counter",CAMAC_readouts);
@@ -184,6 +192,8 @@ bool CAMAC::Execute(){
 
 
 bool CAMAC::Finalise(){
+
+  m_util->RemoveService("MonitorData");
 
   for(int i=0; i<m_args.size(); i++){
     m_util->KillThread(m_args.at(i));
@@ -232,9 +242,10 @@ void CAMAC::CAMACThread(Thread_args* arg){
 
 
 bool CAMAC::Get_Data(CAMAC_args* args){
-  
+  //printf("L0\n");
   args->MRDdata->TRG = false;
-  switch (args->MRDdata->trg_mode){ //0 is real trg, 1 is soft trg, 2 is with test
+  //printf("L1 trg_mode=%d\n",args->MRDdata->trg_mode);  
+switch (args->MRDdata->trg_mode){ //0 is real trg, 1 is soft trg, 2 is with test
     
   case 0:
     if(args->MRDdata->List.CC["TDC"].at(*args->trg_pos)->TestEvent() == 1)
@@ -252,69 +263,69 @@ bool CAMAC::Get_Data(CAMAC_args* args){
   default:
     args->m_logger->Log("WARNING: Trigger mode unknown");
   }
-
+//printf("L2\n");
     
   ////////////////////////////////////////////
   ///////////////////////////////////////////////
   ////////////////////////////////////////////////
 
   if(args->MRDdata->TRG){
-    
+    //printf("L2.5\n");
     args->MRDdata->triggernum++;
     args->data_counter++;
-    
+    //printf("L2.6\n");
     //	  std::cout << "TRG on!\n" << std::endl;
     args->MRDdata->LocalTime = boost::posix_time::microsec_clock::local_time();
-    //		++count;
+    //		++count;	
     //		Log("TRG!\n", 2, verb);
-    //std::cout<<"L3"<<std::endl;
+    //printf("L3\n");
     
     for (int i = 0; i < args->MRDdata->List.CC[args->DC].size(); i++)
       {
-	//std::cout<<"L4"<<std::endl;
+	//printf("L4\n");
 	//std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 
 	args->Data.ch.clear();
-	//std::cout<<"L5"<<std::endl;
+	//printf("L5\n");
 	//std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 	
 	if (args->MRDdata->trg_mode >0){
-	  //std::cout<<"L5.4 i="<<i<<" size="<<args->MRDdata->List.CC[args->DC].size()<<std::endl;
+	  //printf("L5.4 i=%d, size= %d \n",i,args->MRDdata->List.CC[args->DC].size());
 	  //std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 	  args->MRDdata->List.CC[args->DC].at(i)->InitTest();
-	  
+	  //printf("L5.45\n");
 	}
-	//std::cout<<"L5.5"<<std::endl;
+	//printf("L5.5\n");
 	args->MRDdata->List.CC[args->DC].at(i)->GetData(args->Data.ch);
-	//std::cout<<"L6"<<std::endl;
+	//printf("L6\n");
 	//std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 	
 	if (args->Data.ch.size() != 0)
 	  {
-	    //std::cout<<"L7"<<std::endl;
+	    //printf("L7\n");
 	    //std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 	    
 	    args->MRDdata->List.Data[args->DC].Slot.push_back(args->MRDdata->List.CC[args->DC].at(i)->GetSlot());
-	    //	std::cout<<"L8 slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<std::endl;
+	    //printf("L8 slot=%d",args->MRDdata->List.CC[args->DC].at(i)->GetSlot());
 	    //	std::cout<<"i="<<i<<" , size="<<args->MRDdata->List.CC[args->DC].size()<<std::endl;
 	    //	std::cout<<"crate is="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 	    args->MRDdata->List.Data[args->DC].Crate.push_back(args->MRDdata->List.CC[args->DC].at(i)->GetCrate());
 	    args->MRDdata->List.Data[args->DC].Num.push_back(args->Data);
 	    args->MRDdata->List.CC[args->DC].at(i)->ClearAll();
-	    //std::cout<<"L8"<<std::endl;
+	    //printf("L8\n");
 	    //std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
 	    
 	  }
-	//std::cout<<"L9"<<std::endl;
+	//printf("L9\n");
 	//std::cout<<"slot="<<args->MRDdata->List.CC[args->DC].at(i)->GetSlot()<<" : crate="<<args->MRDdata->List.CC[args->DC].at(i)->GetCrate()<<std::endl;
-
+	
       }
-    //std::cout<<"L10"<<std::endl;
-   
+    //printf("L10\n");
+    
     //std::cout<<"d20"<<std::endl;   
     ///////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
-
+    
     //      std::cout<<"positive trigger"<<std::endl;
     //	  std::cout<<"E2"<<std::endl;
     boost::posix_time::time_duration Time = args->MRDdata->LocalTime - (*(args->Epoch));
@@ -325,7 +336,9 @@ bool CAMAC::Get_Data(CAMAC_args* args){
     //std::cout<<"epoch="<<  boost::posix_time::to_iso_string(*(args->Epoch))<<std::endl;  
     //std::cout<<"diff="<< (args->MRDdata->LocalTime - (*(args->Epoch))).total_milliseconds()<<std::endl;
     //std::cout<<"test="<< args->MRDout->TimeStamp<<std::endl;
-  args->MRDout->TimeStamp = Time.total_milliseconds();
+    //printf("L11\n");  
+args->MRDout->TimeStamp = Time.total_milliseconds();
+//printf("L12\n");
   //std::cout<<"d22"<<std::endl;
     //		std::cout << "TimeStamp " << TimeStamp << std::endl; 	
     //		TOutN = 0, AOutN = 0;
@@ -345,49 +358,70 @@ bool CAMAC::Get_Data(CAMAC_args* args){
     args->MRDout->OutN = 0;
     //std::cout<<"d28"<<std::endl;
     //std::cout<<"E4"<<std::endl;
+    //printf("L13\n");
     args->MRDout->Trigger= args->MRDdata->triggernum;
+    //printf("L14\n");
     //std::cout<<"d29"<<std::endl;
     // std::cout<<"E5 size="<<args->MRDdata.List.Data.size()<<std::endl;
     
     if (args->MRDdata->List.Data.size() > 0)	//There is something to be saved
       {
+	//printf("L15\n");
 	//std::cout<<"d30"<<std::endl;
 	//  std::cout<<"E6 "<<std::endl;
 	args->inn = args->MRDdata->List.Data.begin();		//iterates over Module.Data map<type, Cards>
-        
+	//printf("L16\n");
 	//loop on Module.Data types, either TDC or ADC
 	for (; args->inn != args->MRDdata->List.Data.end(); ++(args->inn))
 	  {
+	    //printf("L17\n");
 	    //std::cout<<"d31"<<std::endl;
 	    //is = args->MRDdata.List.Data["TDC"].Num.begin();
 	    args->is = args->inn->second.Num.begin();
-	    
+	    //printf("L18\n");
 	    //loop on active Module.Card.Num vector
 	    for (int i = 0; args->is != args->inn->second.Num.end(); ++(args->is), ++i)
 	      {
+		//printf("L19\n");
 		//std::cout<<"d32"<<std::endl;
 		args->MRDout->OutN += args->is->ch.size();	//number of channels on
+		//printf("L20\n");	
 		args->it = args->is->ch.begin();
-		
+		//printf("L21\n");
 		//loop on active channels
 		for (; args->it != args->is->ch.end(); ++(args->it))
 		  {
+		    //printf("L22\n");
 		    //std::cout<<"d33"<<std::endl;
 		    args->MRDout->Type.push_back(args->inn->first);
 		    args->MRDout->Value.push_back(args->it->second);
 		    args->MRDout->Channel.push_back((args->it->first % 100));
 		    args->MRDout->Slot.push_back(args->inn->second.Slot.at(i));
 		    args->MRDout->Crate.push_back(args->inn->second.Crate.at(i));
+		    //printf("L23\n");		  
 		  }
+		//printf("L24\n");
 	      }
+	    //printf("L25\n");
 	  }
+	//printf("L26\n");
       }
-    
-    //std::cout<<"d34"<<std::endl;
-    args->data_buffer.push_back(args->MRDout);
-    args->MRDout=new MRDOut;
+    //printf("L27\n");
+	
+	//std::cout<<"d34"<<std::endl;
+
+	//// ben no idea just trying
+	args->MRDdata->List.Data.clear();
+
+  ///////////////////////////////////////////
+	args->data_buffer.push_back(args->MRDout);
+	//printf("L28\n");    
+	args->MRDout=new MRDOut;
+	//}
+	//printf("L29\n");
     //std::cout<<"d34"<<std::endl;
   }
+  //printf("L30\n");
   //std::cout<<"d36"<<std::endl;   
   return true;   //ben this needs to be made useful
 }
@@ -571,6 +605,7 @@ bool CAMAC::SetupCards(){
 		  {
 		    //std::cout << "d3 "<<std::endl;
 		    trg_pos = MRDdata.List.CC["TDC"].size();
+		    std::cout<<"setting Camac trigger card to "<<trg_pos<<std::endl;
 		    //std::cout << "d4 "<<std::endl;			
 		    if(entrytype=="local")  MRDdata.List.CC["TDC"].push_back(Create("TDC", Ccard.at(i), Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
 		    if(entrytype=="remote") MRDdata.List.CC["TDC"].push_back(Create("TDC", &sslotconfig, Ncard.at(i), Ncrate.at(i)));	//They use CC at 0
@@ -590,9 +625,9 @@ bool CAMAC::SetupCards(){
       //std::cout << "for over " << std::endl;
     }
   
-  //std::cout << "Trigger is in slot ";
-  //std::cout << MRDdata.List.CC["TDC"].at(trg_pos)->GetSlot();
-  //std::cout << " and crate "<<MRDdata.List.CC["TDC"].at(trg_pos)->GetCrate() << std::endl;
+  std::cout << "Trigger is in slot ";
+  std::cout << MRDdata.List.CC["TDC"].at(trg_pos)->GetSlot();
+  std::cout << " and crate "<<MRDdata.List.CC["TDC"].at(trg_pos)->GetCrate() << std::endl;
  
 
 
@@ -615,65 +650,90 @@ bool CAMAC::SetupCards(){
 void CAMAC::StoreThread(Thread_args* arg){
 
   CAMAC_args* args=reinterpret_cast<CAMAC_args*>(arg);
-  
+  //pritnf("x1\n");
   zmq::poll(args->in, args->polltimeout);
-  
+  //pritnf("x2\n");
   if(args->in.at(1).revents & ZMQ_POLLIN) Store_Send_Data(args); /// received store data request
-  
+  //pritnf("x3\n");
   if(args->in.at(0).revents & ZMQ_POLLIN) Store_Receive_Data(args); // received new data for adding to stores
-  
+  //pritnf("x4\n");
 }
 
 bool CAMAC::Store_Send_Data(CAMAC_args* args){
    
    zmq::message_t message;
-  
+   //pritnf("w1\n");
    if(args->m_data_send->recv(&message) && !message.more()){
+     //pritnf("w2\n");
      // send store pointer
      zmq::poll(args->out, args->storesendpolltimeout);
-     
+     //pritnf("w3\n");
      if(args->out.at(0).revents & ZMQ_POLLOUT){
+      //pritnf("w4\n");
       zmq::message_t key(6);                                                                       
       
-      snprintf ((char *) key.data(), 6 , "%s" , "CAMAC");
+      snprintf ((char *) key.data(), 7 , "%s" , "CCData");
       args->m_data_send->send(key, ZMQ_SNDMORE);
-    
+      //pritnf("w5\n");
       if (args->data_counter==0){
+	//pritnf("w6\n");
       	delete args->CCData;
+	//pritnf("w7\n");
       	args->CCData=0;
        } 
       
+      //pritnf("w8\n");      
       args->m_utils->SendPointer(args->m_data_send, args->CCData);
-    
+      //pritnf("w9\n");
       args->data_counter=0;
+      //pritnf("w10\n");
       args->CCData=new BoostStore(false, 2);
-      std::string mn=args->mb;
+      //pritnf("w11\n");      
+std::string mn=args->mb;
       args->mb=args->ma;
       args->ma=mn;   
-      
+      //pritnf("w12\n");
       return true; 
     }
-    
+    //pritnf("w13\n");
    }
    else args->m_logger->Log("ERROR:CAMAC Store Thread: bad store request");
-   
+   //pritnf("w14\n");
    return false;
    
 }
 
 bool CAMAC::Store_Receive_Data(CAMAC_args* args){
   
-  
+  //pritnf("p1\n");
   MRDOut* tmp;
+  //pritnf("p2\n");
   if(args->m_utils->ReceivePointer(args->m_data_receive, tmp)){
-   
+    //pritnf("p3\n");
     args->CCData->Set("Data",*tmp);
+    //pritnf("p4\n");
     args->CCData->Save(args->ma);
+    //pritnf("p5\n");
     args->CCData->Delete();
-
+    //pritnf("p6\n");
     args->data_counter++;
-    
+    //pritnf("p7\n");
+
+    //pritnf("p8\n");
+
+    ////////// add monitoring here
+    /*    if(!(args->data_counter%50)){
+      printf("Sending monitoring data\n");
+      zmq::message_t key(10);
+      snprintf ((char *) key.data(), 10 , "%s" , "MRDSingle");
+      args->m_trigger_pub->send(key, ZMQ_SNDMORE);
+      tmp->Send(args->m_trigger_pub);
+      
+    }
+    */
+
     delete tmp;
+    //pritnf("p9\n");
     tmp=0;
 
     return true;    
@@ -682,6 +742,7 @@ bool CAMAC::Store_Receive_Data(CAMAC_args* args){
     args->m_logger->Log("ERROR:CAMAC Store Thread: failed to receive data pointer");
     return false; 
   }
+  //pritnf("p10\n");
   
   return false;
 }
@@ -778,7 +839,11 @@ bool CAMAC::Store_Thread_Setup(DataModel* m_data, std::vector<CAMAC_args*> &m_ar
   m_variables.Get("ramdiskpath", ramdiskpath);
   tmp_args->ma=ramdiskpath+"/ma";
   tmp_args->mb=ramdiskpath+"/mb";
-  
+
+  ///////////monitoring
+  //  tmp_args->m_trigger_pub=monitoring_pub;
+  /////////////////////////
+
   return  m_util->CreateThread("store", &StoreThread, tmp_args);    
    
 }

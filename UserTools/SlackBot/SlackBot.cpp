@@ -4,7 +4,6 @@ SlackBot::SlackBot():Tool(){}
 
 
 bool SlackBot::Initialise(std::string configfile, DataModel &data){
-  std::cout<<"Slackbot::Initialise starting"<<std::endl;
   
   m_data= &data;
 
@@ -15,7 +14,7 @@ bool SlackBot::Initialise(std::string configfile, DataModel &data){
   bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
   if(!get_ok){
     Log(m_tool_name+" Failed to get Tool config from database!",0,0);
-    return false;
+    //return false;
   }
   // parse the configuration to populate the m_variables Store.
   std::stringstream configstream(configtext);
@@ -66,7 +65,8 @@ bool SlackBot::Initialise(std::string configfile, DataModel &data){
     curl_global_cleanup();
   }
   catch(...){
-    std::cout<<"Slack send error"<<std::endl;
+    Log("Slack send error",0,m_verbose);    
+
   }
   /*
   m_data= &data;
@@ -89,7 +89,6 @@ bool SlackBot::Initialise(std::string configfile, DataModel &data){
   // m_data->GetTTree("RunInformation")->Fill();
   //m_data->Stores["RunInformation"]->Set("SlackBot",m_variables);
 
-  std::cout<<"SlackBot::Initialise done"<<std::endl;
   return true;
 }
 
@@ -103,7 +102,6 @@ bool SlackBot::Execute(){
 
 
 bool SlackBot::Finalise(){
-  std::cout<<"Slackbot::Finalise starting"<<std::endl;
 
   std::stringstream tmp;
   tmp<<"payload={\"text\":\"Run Number:"<<m_data->run<<", Sub Run Number:"<<m_data->subrun<<", Run Type:"<<m_data->RunType<<", Status:"<<"Run ended, "<<m_data->NumEvents<<" events\"}";
@@ -146,9 +144,9 @@ bool SlackBot::Finalise(){
     
   }
   catch(...){
-    std::cout<<"Slack send error"<<std::endl;
+    Log("Slack send error",0,0);
   }
   
-  std::cout<<"SlackBot::Finalise done"<<std::endl;  
+ 
   return true;
 }
