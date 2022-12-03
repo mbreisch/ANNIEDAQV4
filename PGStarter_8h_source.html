@@ -90,27 +90,29 @@ $(function() {
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordtype">int</span> verbosity;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="comment">// verbosity levels: if &#39;verbosity&#39; &lt; this level, the message type will be logged.</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keywordtype">int</span> v_error=0;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordtype">int</span> v_warning=1;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordtype">int</span> v_message=2;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordtype">int</span> v_debug=3;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">int</span> get_ok;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordtype">bool</span> daqtoolchain;  <span class="comment">// is this toolchain the main daq?</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keywordtype">int</span> verbosity;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="comment">// verbosity levels: if &#39;verbosity&#39; &lt; this level, the message type will be logged.</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordtype">int</span> v_error=0;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordtype">int</span> v_warning=1;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">int</span> v_message=2;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keywordtype">int</span> v_debug=3;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordtype">int</span> get_ok;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;};</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;};</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:38</div></div>
 <div class="ttc" id="aclassPGStarter_html"><div class="ttname"><a href="classPGStarter.html">PGStarter</a></div><div class="ttdef"><b>Definition:</b> PGStarter.h:19</div></div>
-<div class="ttc" id="aclassPGStarter_html_a1e57ec0c98d336ecbc923de0db36503e"><div class="ttname"><a href="classPGStarter.html#a1e57ec0c98d336ecbc923de0db36503e">PGStarter::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:172</div></div>
-<div class="ttc" id="aclassPGStarter_html_a32f9553cefccc14ee6834e3512f4a5bb"><div class="ttname"><a href="classPGStarter.html#a32f9553cefccc14ee6834e3512f4a5bb">PGStarter::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:166</div></div>
-<div class="ttc" id="aclassPGStarter_html_a6ff16e346cee9dc0ebe9b39d65a4c44f"><div class="ttname"><a href="classPGStarter.html#a6ff16e346cee9dc0ebe9b39d65a4c44f">PGStarter::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:6</div></div>
-<div class="ttc" id="aclassPGStarter_html_a83286e823ecacb3f53a4d749264dc961"><div class="ttname"><a href="classPGStarter.html#a83286e823ecacb3f53a4d749264dc961">PGStarter::PGStarter</a></div><div class="ttdeci">PGStarter()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:3</div></div>
+<div class="ttc" id="aclassPGStarter_html_a1e57ec0c98d336ecbc923de0db36503e"><div class="ttname"><a href="classPGStarter.html#a1e57ec0c98d336ecbc923de0db36503e">PGStarter::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:245</div></div>
+<div class="ttc" id="aclassPGStarter_html_a32f9553cefccc14ee6834e3512f4a5bb"><div class="ttname"><a href="classPGStarter.html#a32f9553cefccc14ee6834e3512f4a5bb">PGStarter::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:239</div></div>
+<div class="ttc" id="aclassPGStarter_html_a6ff16e346cee9dc0ebe9b39d65a4c44f"><div class="ttname"><a href="classPGStarter.html#a6ff16e346cee9dc0ebe9b39d65a4c44f">PGStarter::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:7</div></div>
+<div class="ttc" id="aclassPGStarter_html_a83286e823ecacb3f53a4d749264dc961"><div class="ttname"><a href="classPGStarter.html#a83286e823ecacb3f53a4d749264dc961">PGStarter::PGStarter</a></div><div class="ttdeci">PGStarter()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> PGStarter.cpp:4</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -12,6 +12,12 @@ Inheritance diagram for Lecroy4300b\+:\begin{figure}[H]
 \mbox{\Hypertarget{classLecroy4300b_a248ec80560a03ab36d3fd4dc49645281}\label{classLecroy4300b_a248ec80560a03ab36d3fd4dc49645281}} 
 {\bfseries Lecroy4300b} (int NSlot, std\+::string config, int i=0)
 \item 
+\mbox{\Hypertarget{classLecroy4300b_a081097df9995892b2dc2f5c23397ea71}\label{classLecroy4300b_a081097df9995892b2dc2f5c23397ea71}} 
+{\bfseries Lecroy4300b} (int NSlot, std\+::istream $\ast$config, int i=0)
+\item 
+\mbox{\Hypertarget{classLecroy4300b_ae04002ab8d06389514c22bbd7106a50d}\label{classLecroy4300b_ae04002ab8d06389514c22bbd7106a50d}} 
+void {\bfseries Init} (int NSlot, std\+::istream $\ast$config, int i=0)
+\item 
 \mbox{\Hypertarget{classLecroy4300b_a3e8d7d8504e43c834c471453d084584a}\label{classLecroy4300b_a3e8d7d8504e43c834c471453d084584a}} 
 int {\bfseries Get\+Data} (std\+::map$<$ int, int $>$ \&m\+Data)
 \item 
@@ -90,11 +96,17 @@ int {\bfseries Set\+Pedestal} ()
 \mbox{\Hypertarget{classLecroy4300b_a6c618f08240bb75818939215b3516107}\label{classLecroy4300b_a6c618f08240bb75818939215b3516107}} 
 void {\bfseries Load\+Pedestal} (std\+::string fname)
 \item 
+\mbox{\Hypertarget{classLecroy4300b_ac64ac3d267cdf50bc1533a50136b6edc}\label{classLecroy4300b_ac64ac3d267cdf50bc1533a50136b6edc}} 
+void {\bfseries Load\+Pedestal} (std\+::istream $\ast$fcont)
+\item 
 \mbox{\Hypertarget{classLecroy4300b_aa5a92e4edf2810635ef24a1e25da07a6}\label{classLecroy4300b_aa5a92e4edf2810635ef24a1e25da07a6}} 
 void {\bfseries Print\+Pedestal} ()
 \item 
 \mbox{\Hypertarget{classLecroy4300b_a2ace9a5b9124c143c7800c8aee2292bd}\label{classLecroy4300b_a2ace9a5b9124c143c7800c8aee2292bd}} 
 void {\bfseries Set\+Config} (std\+::string config)
+\item 
+\mbox{\Hypertarget{classLecroy4300b_a0c9b7463aac01fabe5d4023460e0d8af}\label{classLecroy4300b_a0c9b7463aac01fabe5d4023460e0d8af}} 
+void {\bfseries Set\+Config} (std\+::istream $\ast$config)
 \end{DoxyCompactItemize}
 \doxysubsection*{Additional Inherited Members}
 

@@ -93,20 +93,21 @@ $(function() {
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  zmq::socket_t* sock;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_utils;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  std::map&lt;std::string, Store*&gt; connections;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;};</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordtype">int</span> polltimeout;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  std::map&lt;std::string, Store*&gt; connections;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;};</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDAQUtilities_html"><div class="ttname"><a href="classDAQUtilities.html">DAQUtilities</a></div><div class="ttdef"><b>Definition:</b> DAQUtilities.h:83</div></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:38</div></div>
 <div class="ttc" id="aclassRunControl_html"><div class="ttname"><a href="classRunControl.html">RunControl</a></div><div class="ttdef"><b>Definition:</b> RunControl.h:19</div></div>
 <div class="ttc" id="aclassRunControl_html_a08a99c1c5fa74bc34a64a709c817c48e"><div class="ttname"><a href="classRunControl.html#a08a99c1c5fa74bc34a64a709c817c48e">RunControl::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> RunControl.cpp:6</div></div>
 <div class="ttc" id="aclassRunControl_html_a6fed2c0354d740e345053c49fbc6c742"><div class="ttname"><a href="classRunControl.html#a6fed2c0354d740e345053c49fbc6c742">RunControl::RunControl</a></div><div class="ttdeci">RunControl()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> RunControl.cpp:3</div></div>
-<div class="ttc" id="aclassRunControl_html_aa8a2e711a7ed42620911dfd4b2ae8a3d"><div class="ttname"><a href="classRunControl.html#aa8a2e711a7ed42620911dfd4b2ae8a3d">RunControl::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> RunControl.cpp:54</div></div>
-<div class="ttc" id="aclassRunControl_html_ada7373bf0114a31501f079c01fdecca2"><div class="ttname"><a href="classRunControl.html#ada7373bf0114a31501f079c01fdecca2">RunControl::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> RunControl.cpp:48</div></div>
+<div class="ttc" id="aclassRunControl_html_aa8a2e711a7ed42620911dfd4b2ae8a3d"><div class="ttname"><a href="classRunControl.html#aa8a2e711a7ed42620911dfd4b2ae8a3d">RunControl::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> RunControl.cpp:76</div></div>
+<div class="ttc" id="aclassRunControl_html_ada7373bf0114a31501f079c01fdecca2"><div class="ttname"><a href="classRunControl.html#ada7373bf0114a31501f079c01fdecca2">RunControl::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> RunControl.cpp:70</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

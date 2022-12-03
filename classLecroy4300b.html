@@ -83,6 +83,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a248ec80560a03ab36d3fd4dc49645281"><td class="memItemLeft" align="right" valign="top"><a id="a248ec80560a03ab36d3fd4dc49645281"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Lecroy4300b</b> (int NSlot, std::string config, int i=0)</td></tr>
 <tr class="separator:a248ec80560a03ab36d3fd4dc49645281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a081097df9995892b2dc2f5c23397ea71"><td class="memItemLeft" align="right" valign="top"><a id="a081097df9995892b2dc2f5c23397ea71"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Lecroy4300b</b> (int NSlot, std::istream *config, int i=0)</td></tr>
+<tr class="separator:a081097df9995892b2dc2f5c23397ea71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae04002ab8d06389514c22bbd7106a50d"><td class="memItemLeft" align="right" valign="top"><a id="ae04002ab8d06389514c22bbd7106a50d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Init</b> (int NSlot, std::istream *config, int i=0)</td></tr>
+<tr class="separator:ae04002ab8d06389514c22bbd7106a50d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e8d7d8504e43c834c471453d084584a"><td class="memItemLeft" align="right" valign="top"><a id="a3e8d7d8504e43c834c471453d084584a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>GetData</b> (std::map&lt; int, int &gt; &amp;mData)</td></tr>
 <tr class="separator:a3e8d7d8504e43c834c471453d084584a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,12 +167,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>SetPedestal</b> ()</td
 <tr class="memitem:a6c618f08240bb75818939215b3516107"><td class="memItemLeft" align="right" valign="top"><a id="a6c618f08240bb75818939215b3516107"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadPedestal</b> (std::string fname)</td></tr>
 <tr class="separator:a6c618f08240bb75818939215b3516107"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac64ac3d267cdf50bc1533a50136b6edc"><td class="memItemLeft" align="right" valign="top"><a id="ac64ac3d267cdf50bc1533a50136b6edc"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadPedestal</b> (std::istream *fcont)</td></tr>
+<tr class="separator:ac64ac3d267cdf50bc1533a50136b6edc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5a92e4edf2810635ef24a1e25da07a6"><td class="memItemLeft" align="right" valign="top"><a id="aa5a92e4edf2810635ef24a1e25da07a6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>PrintPedestal</b> ()</td></tr>
 <tr class="separator:aa5a92e4edf2810635ef24a1e25da07a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ace9a5b9124c143c7800c8aee2292bd"><td class="memItemLeft" align="right" valign="top"><a id="a2ace9a5b9124c143c7800c8aee2292bd"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetConfig</b> (std::string config)</td></tr>
 <tr class="separator:a2ace9a5b9124c143c7800c8aee2292bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c9b7463aac01fabe5d4023460e0d8af"><td class="memItemLeft" align="right" valign="top"><a id="a0c9b7463aac01fabe5d4023460e0d8af"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetConfig</b> (std::istream *config)</td></tr>
+<tr class="separator:a0c9b7463aac01fabe5d4023460e0d8af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classCamacCrate"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCamacCrate')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCamacCrate.html">CamacCrate</a></td></tr>
 <tr class="memitem:a0da0d5dac8a0b62ca1dcbb128958ae13 inherit pub_methods_classCamacCrate"><td class="memItemLeft" align="right" valign="top"><a id="a0da0d5dac8a0b62ca1dcbb128958ae13"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>CamacCrate</b> (int i=0)</td></tr>

@@ -88,68 +88,75 @@ $(function() {
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  std::vector&lt;zmq::pollitem_t&gt; in;</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  std::vector&lt;zmq::pollitem_t&gt; out;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_utils;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  Logging* m_logger;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  time_t* ref_time1;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  time_t* ref_time2;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  std::map&lt;std::string,Store*&gt; connections;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  std::deque&lt;std::vector&lt;PsecData*&gt;* &gt; data_buffer;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> data_counter;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  BoostStore* LAPPDData;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="keywordtype">int</span> polltimeout;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordtype">int</span> storesendpolltimeout;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_utils;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  Logging* m_logger;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  time_t* ref_time1;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  time_t* ref_time2;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">int</span> statsperiod;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  std::map&lt;std::string,Store*&gt; connections;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordtype">int</span> update_conns_period;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keywordtype">int</span> portnum;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  std::string servicename;</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  std::string la;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  std::string lb;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  std::deque&lt;PsecData*&gt; data_buffer;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> data_counter;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;};</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  BoostStore* LAPPDData;</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classLAPPD.html">   59</a></span>&#160;<span class="keyword">class </span><a class="code" href="classLAPPD.html">LAPPD</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <a class="code" href="classLAPPD.html#a600f0a19e55c5616b1aaa321f3455c03">LAPPD</a>(); </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classLAPPD.html#a5bb8f94de14c7d1b4784861efc758a7f">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classLAPPD.html#a91cb2e13cf40d138b779aa28a5119a8e">Execute</a>(); </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classLAPPD.html#a8beebb1897ec0db1ceba9e7047d84d60">Finalise</a>(); </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  std::string ramdiskpath;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  std::string la;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  std::string lb;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;};</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="classLAPPD.html">   66</a></span>&#160;<span class="keyword">class </span><a class="code" href="classLAPPD.html">LAPPD</a>: <span class="keyword">public</span> Tool {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> LAPPD_Thread(<a class="code" href="structThread__args.html">Thread_args</a>* arg); </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> Store_Thread(<a class="code" href="structThread__args.html">Thread_args</a>* arg); </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keywordtype">bool</span> LAPPD_Thread_Setup(<a class="code" href="classDataModel.html">DataModel</a>* m_data, std::vector&lt;LAPPD_args*&gt; &amp;m_args, <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_util);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  <span class="keywordtype">bool</span> Store_Thread_Setup(<a class="code" href="classDataModel.html">DataModel</a>* m_data, std::vector&lt;LAPPD_args*&gt; &amp;m_args, <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_util);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> Get_Data(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> LAPPD_To_Store(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> LAPPD_Stats_Send(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> Store_Receive_Data(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> Store_Send_Data(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_util;  </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  std::vector&lt;LAPPD_args*&gt; m_args; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  zmq::pollitem_t items[1];</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  zmq::socket_t* trigger_sub;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;};</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <a class="code" href="classLAPPD.html#a600f0a19e55c5616b1aaa321f3455c03">LAPPD</a>(); </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classLAPPD.html#a5bb8f94de14c7d1b4784861efc758a7f">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classLAPPD.html#a91cb2e13cf40d138b779aa28a5119a8e">Execute</a>(); </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classLAPPD.html#a8beebb1897ec0db1ceba9e7047d84d60">Finalise</a>(); </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> LAPPD_Thread(<a class="code" href="structThread__args.html">Thread_args</a>* arg); </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> Store_Thread(<a class="code" href="structThread__args.html">Thread_args</a>* arg); </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keywordtype">bool</span> LAPPD_Thread_Setup(<a class="code" href="classDataModel.html">DataModel</a>* m_data, std::vector&lt;LAPPD_args*&gt; &amp;m_args, <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_util);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="keywordtype">bool</span> Store_Thread_Setup(<a class="code" href="classDataModel.html">DataModel</a>* m_data, std::vector&lt;LAPPD_args*&gt; &amp;m_args, <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_util);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> Get_Data(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> LAPPD_To_Store(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> LAPPD_Stats_Send(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> Store_Receive_Data(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> Store_Send_Data(<a class="code" href="structLAPPD__args.html">LAPPD_args</a>* args);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  <a class="code" href="classDAQUtilities.html">DAQUtilities</a>* m_util;  </div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  std::vector&lt;LAPPD_args*&gt; m_args; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  zmq::pollitem_t items[1];</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  zmq::socket_t* trigger_sub;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;};</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDAQUtilities_html"><div class="ttname"><a href="classDAQUtilities.html">DAQUtilities</a></div><div class="ttdef"><b>Definition:</b> DAQUtilities.h:83</div></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:38</div></div>
-<div class="ttc" id="aclassLAPPD_html"><div class="ttname"><a href="classLAPPD.html">LAPPD</a></div><div class="ttdef"><b>Definition:</b> LAPPD.h:59</div></div>
-<div class="ttc" id="aclassLAPPD_html_a5bb8f94de14c7d1b4784861efc758a7f"><div class="ttname"><a href="classLAPPD.html#a5bb8f94de14c7d1b4784861efc758a7f">LAPPD::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:67</div></div>
-<div class="ttc" id="aclassLAPPD_html_a600f0a19e55c5616b1aaa321f3455c03"><div class="ttname"><a href="classLAPPD.html#a600f0a19e55c5616b1aaa321f3455c03">LAPPD::LAPPD</a></div><div class="ttdeci">LAPPD()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:64</div></div>
-<div class="ttc" id="aclassLAPPD_html_a8beebb1897ec0db1ceba9e7047d84d60"><div class="ttname"><a href="classLAPPD.html#a8beebb1897ec0db1ceba9e7047d84d60">LAPPD::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:149</div></div>
-<div class="ttc" id="aclassLAPPD_html_a91cb2e13cf40d138b779aa28a5119a8e"><div class="ttname"><a href="classLAPPD.html#a91cb2e13cf40d138b779aa28a5119a8e">LAPPD::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:119</div></div>
+<div class="ttc" id="aclassLAPPD_html"><div class="ttname"><a href="classLAPPD.html">LAPPD</a></div><div class="ttdef"><b>Definition:</b> LAPPD.h:66</div></div>
+<div class="ttc" id="aclassLAPPD_html_a5bb8f94de14c7d1b4784861efc758a7f"><div class="ttname"><a href="classLAPPD.html#a5bb8f94de14c7d1b4784861efc758a7f">LAPPD::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:73</div></div>
+<div class="ttc" id="aclassLAPPD_html_a600f0a19e55c5616b1aaa321f3455c03"><div class="ttname"><a href="classLAPPD.html#a600f0a19e55c5616b1aaa321f3455c03">LAPPD::LAPPD</a></div><div class="ttdeci">LAPPD()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:70</div></div>
+<div class="ttc" id="aclassLAPPD_html_a8beebb1897ec0db1ceba9e7047d84d60"><div class="ttname"><a href="classLAPPD.html#a8beebb1897ec0db1ceba9e7047d84d60">LAPPD::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:159</div></div>
+<div class="ttc" id="aclassLAPPD_html_a91cb2e13cf40d138b779aa28a5119a8e"><div class="ttname"><a href="classLAPPD.html#a91cb2e13cf40d138b779aa28a5119a8e">LAPPD::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> LAPPD.cpp:125</div></div>
 <div class="ttc" id="astructDAQThread__args_html"><div class="ttname"><a href="structDAQThread__args.html">DAQThread_args</a></div><div class="ttdef"><b>Definition:</b> DAQUtilities.h:31</div></div>
 <div class="ttc" id="astructLAPPD__args_html"><div class="ttname"><a href="structLAPPD__args.html">LAPPD_args</a></div><div class="ttdef"><b>Definition:</b> LAPPD.h:18</div></div>
 <div class="ttc" id="astructThread__args_html"><div class="ttname"><a href="structThread__args.html">Thread_args</a></div><div class="ttdef"><b>Definition:</b> Utilities.h:23</div></div>

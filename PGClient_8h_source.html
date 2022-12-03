@@ -101,10 +101,10 @@ $(function() {
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    std::string dbname;</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    std::string query_string;</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">char</span> type;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">bool</span> success;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    uint32_t success;            <span class="comment">// middleman treats this as BOOL: 1=success, 0=fail</span></div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    std::vector&lt;std::string&gt; query_response;</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    std::string err;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">int</span> msg_id;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    uint32_t msg_id;</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;};</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">class </span><a class="code" href="classDataModel.html">DataModel</a>;</div>
@@ -158,7 +158,7 @@ $(function() {
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    std::vector&lt;zmq::pollitem_t&gt; out_polls;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    </div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    std::queue&lt;std::pair&lt;Query, std::promise&lt;int&gt;&gt;&gt; waiting_senders;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    std::map&lt;int, std::promise&lt;Query&gt;&gt; waiting_recipients;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    std::map&lt;uint32_t, std::promise&lt;Query&gt;&gt; waiting_recipients;</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    </div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">bool</span> BackgroundThread(std::future&lt;void&gt; terminator);</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    std::thread background_thread;   <span class="comment">// a thread that will perform zmq socket operations in the background</span></div>
@@ -196,7 +196,7 @@ $(function() {
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="comment">// since that&#39;s the one the middleman needs to know to send replies back</span></div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    std::string clt_ID;</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keywordtype">int</span> msg_id = 0;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    uint32_t msg_id = 0;</div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    </div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="comment">// =======================================================</span></div>
 <div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    </div>
@@ -216,65 +216,74 @@ $(function() {
 <div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;    <span class="comment">// 4. generic case for other primitive types -&gt; relies on &amp;messagedata and sizeof(T) being suitable.</span></div>
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keywordtype">bool</span> Send(zmq::socket_t* sock, <span class="keywordtype">bool</span> more, T&amp;&amp; messagedata){</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        zmq::message_t message(<span class="keyword">sizeof</span>(T));</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        memcpy(message.data(), &amp;messagedata, <span class="keyword">sizeof</span>(T));</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        <span class="keywordtype">bool</span> send_ok;</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <span class="keywordflow">if</span>(more) send_ok = sock-&gt;send(message, ZMQ_SNDMORE);</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <span class="keywordflow">else</span>     send_ok = sock-&gt;send(message);</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        <span class="keywordflow">return</span> send_ok;</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    }</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    </div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    <span class="comment">// recursive case; send the next message part and forward all remaining parts</span></div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Rest&gt;</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <span class="keywordtype">bool</span> Send(zmq::socket_t* sock, <span class="keywordtype">bool</span> more, T&amp;&amp; message, Rest&amp;&amp;... rest){</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="keywordtype">bool</span> send_ok = Send(sock, <span class="keyword">true</span>, std::forward&lt;T&gt;(message));</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keywordflow">if</span>(not send_ok) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="keywordflow">return</span> Send(sock, <span class="keyword">false</span>, std::forward&lt;Rest&gt;(rest)...);</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    }</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    </div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <span class="comment">// wrapper to do polling if required</span></div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="comment">// version if one part</span></div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keywordtype">int</span> PollAndSend(zmq::socket_t* sock, zmq::pollitem_t poll, <span class="keywordtype">int</span> timeout, T&amp;&amp; message){</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        <span class="comment">// check for listener</span></div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        <span class="keywordtype">int</span> ret = zmq::poll(&amp;poll, 1, timeout);</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;        <span class="keywordflow">if</span>(ret&lt;0){</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            <span class="comment">// error polling - is the socket closed?</span></div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            <span class="keywordflow">return</span> -3;</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        }</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        <span class="keywordflow">if</span>(poll.revents &amp; ZMQ_POLLOUT){</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            <span class="keywordtype">bool</span> send_ok = Send(sock, <span class="keyword">false</span>, std::forward&lt;T&gt;(message));</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            <span class="keywordflow">if</span>(not send_ok) <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            <span class="comment">// no listener</span></div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            <span class="keywordflow">return</span> -2;</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        }</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;        <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    }</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    </div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    <span class="comment">// wrapper to do polling if required</span></div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    <span class="comment">// version if more than one part</span></div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Rest&gt;</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    <span class="keywordtype">int</span> PollAndSend(zmq::socket_t* sock, zmq::pollitem_t poll, <span class="keywordtype">int</span> timeout, T&amp;&amp; message, Rest&amp;&amp;... rest){</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        <span class="comment">// check for listener</span></div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;        <span class="keywordtype">int</span> ret = zmq::poll(&amp;poll, 1, timeout);</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        <span class="keywordflow">if</span>(ret&lt;0){</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;            <span class="comment">// error polling - is the socket closed?</span></div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            <span class="keywordflow">return</span> -3;</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        }</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        <span class="keywordflow">if</span>(poll.revents &amp; ZMQ_POLLOUT){</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;            <span class="keywordtype">bool</span> send_ok = Send(sock, <span class="keyword">true</span>, std::forward&lt;T&gt;(message), std::forward&lt;Rest&gt;(rest)...);</div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;            <span class="keywordflow">if</span>(not send_ok) <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            <span class="comment">// no listener</span></div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;            <span class="keywordflow">return</span> -2;</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        }</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    }</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    </div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;};</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;__PRETTY_FUNCTION__&lt;&lt;<span class="stringliteral">&quot; called&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        zmq::message_t message(<span class="keyword">sizeof</span>(T));</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        memcpy(message.data(), &amp;messagedata, <span class="keyword">sizeof</span>(T));</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <span class="keywordtype">bool</span> send_ok;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <span class="keywordflow">if</span>(more) send_ok = sock-&gt;send(message, ZMQ_SNDMORE);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        <span class="keywordflow">else</span>     send_ok = sock-&gt;send(message);</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;<span class="stringliteral">&quot;returning &quot;</span>&lt;&lt;send_ok&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        <span class="keywordflow">return</span> send_ok;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    }</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    </div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <span class="comment">// recursive case; send the next message part and forward all remaining parts</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Rest&gt;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keywordtype">bool</span> Send(zmq::socket_t* sock, <span class="keywordtype">bool</span> more, T&amp;&amp; message, Rest&amp;&amp;... rest){</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;__PRETTY_FUNCTION__&lt;&lt;<span class="stringliteral">&quot; called&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="keywordtype">bool</span> send_ok = Send(sock, <span class="keyword">true</span>, std::forward&lt;T&gt;(message));</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        <span class="keywordflow">if</span>(not send_ok) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;        send_ok = Send(sock, <span class="keyword">false</span>, std::forward&lt;Rest&gt;(rest)...);</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;<span class="stringliteral">&quot;returning &quot;</span>&lt;&lt;send_ok&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <span class="keywordflow">return</span> send_ok;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    }</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="comment">// wrapper to do polling if required</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="comment">// version if one part</span></div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keywordtype">int</span> PollAndSend(zmq::socket_t* sock, zmq::pollitem_t poll, <span class="keywordtype">int</span> timeout, T&amp;&amp; message){</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;__PRETTY_FUNCTION__&lt;&lt;<span class="stringliteral">&quot; called&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        <span class="keywordtype">int</span> send_ok=0;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        <span class="comment">// check for listener</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <span class="keywordtype">int</span> ret = zmq::poll(&amp;poll, 1, timeout);</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <span class="keywordflow">if</span>(ret&lt;0){</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            <span class="comment">// error polling - is the socket closed?</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            send_ok = -3;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span>(poll.revents &amp; ZMQ_POLLOUT){</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            <span class="keywordtype">bool</span> success = Send(sock, <span class="keyword">false</span>, std::forward&lt;T&gt;(message));</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            send_ok = success ? 0 : -1;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;            <span class="comment">// no listener</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;            send_ok = -2;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;        }</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;<span class="stringliteral">&quot;returning &quot;</span>&lt;&lt;send_ok&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        <span class="keywordflow">return</span> send_ok;</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    }</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    </div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="comment">// wrapper to do polling if required</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    <span class="comment">// version if more than one part</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Rest&gt;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    <span class="keywordtype">int</span> PollAndSend(zmq::socket_t* sock, zmq::pollitem_t poll, <span class="keywordtype">int</span> timeout, T&amp;&amp; message, Rest&amp;&amp;... rest){</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;__PRETTY_FUNCTION__&lt;&lt;<span class="stringliteral">&quot; called&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        <span class="keywordtype">int</span> send_ok = 0;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        <span class="comment">// check for listener</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        <span class="keywordtype">int</span> ret = zmq::poll(&amp;poll, 1, timeout);</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        <span class="keywordflow">if</span>(ret&lt;0){</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;            <span class="comment">// error polling - is the socket closed?</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;            send_ok = -3;</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span>(poll.revents &amp; ZMQ_POLLOUT){</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;            <span class="keywordtype">bool</span> success = Send(sock, <span class="keyword">true</span>, std::forward&lt;T&gt;(message), std::forward&lt;Rest&gt;(rest)...);</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;            send_ok = success ? 0 : -1;</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;            <span class="comment">// no listener</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            send_ok = -2;</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;        }</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;        <span class="keywordflow">if</span>(verbosity&gt;10) std::cout&lt;&lt;<span class="stringliteral">&quot;returning &quot;</span>&lt;&lt;send_ok&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        <span class="keywordflow">return</span> send_ok;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    }</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    </div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;};</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160; </div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDAQUtilities_html"><div class="ttname"><a href="classDAQUtilities.html">DAQUtilities</a></div><div class="ttdef"><b>Definition:</b> DAQUtilities.h:83</div></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:38</div></div>
 <div class="ttc" id="aclassPGClient_html"><div class="ttname"><a href="classPGClient.html">PGClient</a></div><div class="ttdef"><b>Definition:</b> PGClient.h:41</div></div>

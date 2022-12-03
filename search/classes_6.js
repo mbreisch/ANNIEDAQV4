@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['runcontrol_139',['RunControl',['../classRunControl.html',1,'']]]
+  ['query_142',['Query',['../structQuery.html',1,'']]]
 ];

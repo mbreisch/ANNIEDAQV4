@@ -1,17 +1,10 @@
 var searchData=
 [
-  ['updateconnections_77',['UpdateConnections',['../classDAQUtilities.html#a1a2f0b8dc11c83e4153de3e53770ea76',1,'DAQUtilities::UpdateConnections(std::string ServiceName, zmq::socket_t *sock, std::map&lt; std::string, Store * &gt; &amp;connections, std::string port=&quot;&quot;)'],['../classDAQUtilities.html#a6cac3c6ff1342eef8039fa4615b240ed',1,'DAQUtilities::UpdateConnections(std::string ServiceName, zmq::socket_t *sock, std::map&lt; std::string, Store * &gt; &amp;connections, int period, time_t *ref, std::string port=&quot;&quot;)']]],
-  ['usb_5fbus_78',['usb_bus',['../structusb__bus.html',1,'']]],
-  ['usb_5fconfig_5fdescriptor_79',['usb_config_descriptor',['../structusb__config__descriptor.html',1,'']]],
-  ['usb_5fctrl_5fsetup_80',['usb_ctrl_setup',['../structusb__ctrl__setup.html',1,'']]],
-  ['usb_5fdescriptor_5fheader_81',['usb_descriptor_header',['../structusb__descriptor__header.html',1,'']]],
-  ['usb_5fdevice_82',['usb_device',['../structusb__device.html',1,'']]],
-  ['usb_5fdevice_5fdescriptor_83',['usb_device_descriptor',['../structusb__device__descriptor.html',1,'']]],
-  ['usb_5fendpoint_5fdescriptor_84',['usb_endpoint_descriptor',['../structusb__endpoint__descriptor.html',1,'']]],
-  ['usb_5fhid_5fdescriptor_85',['usb_hid_descriptor',['../structusb__hid__descriptor.html',1,'']]],
-  ['usb_5finterface_86',['usb_interface',['../structusb__interface.html',1,'']]],
-  ['usb_5finterface_5fdescriptor_87',['usb_interface_descriptor',['../structusb__interface__descriptor.html',1,'']]],
-  ['usb_5fstring_5fdescriptor_88',['usb_string_descriptor',['../structusb__string__descriptor.html',1,'']]],
-  ['usb_5fversion_89',['usb_version',['../structusb__version.html',1,'']]],
-  ['utilities_90',['Utilities',['../classUtilities.html',1,'Utilities'],['../classUtilities.html#ab1676c9ce35cf347a73d16f1094e1271',1,'Utilities::Utilities()']]]
+  ['thread_72',['Thread',['../classUtilities.html#a29b7f99dcb44ddb9a519c3e441a7fa2b',1,'Utilities']]],
+  ['thread_73',['thread',['../structThread__args.html#a4f71beb11e75d05269fc63ca7c19a8a9',1,'Thread_args']]],
+  ['thread_5fargs_74',['Thread_args',['../structThread__args.html',1,'Thread_args'],['../structThread__args.html#a399b672e0f4f137fe52c141bd8c38eb1',1,'Thread_args::Thread_args()']]],
+  ['threadname_75',['ThreadName',['../structThread__args.html#a594f831be7ce66015a7606e023b24cf4',1,'Thread_args']]],
+  ['threads_76',['Threads',['../classUtilities.html#a26ebd7308ea895452c4c1066dc5834e5',1,'Utilities']]],
+  ['triggerdata_77',['TriggerData',['../classTriggerData.html',1,'']]],
+  ['type_78',['type',['../classSerialisableObject.html#a893f965e41ad7f09b4066cb07fecef8e',1,'SerialisableObject']]]
 ];

@@ -1,10 +1,5 @@
 var searchData=
 [
-  ['lappd_25',['LAPPD',['../classLAPPD.html',1,'LAPPD'],['../classLAPPD.html#a600f0a19e55c5616b1aaa321f3455c03',1,'LAPPD::LAPPD()']]],
-  ['lappd_5fargs_26',['LAPPD_args',['../structLAPPD__args.html',1,'']]],
-  ['lappd_5fargs_5fargs_27',['LAPPD_args_args',['../structLAPPD__args__args.html',1,'']]],
-  ['lecroy3377_28',['Lecroy3377',['../classLecroy3377.html',1,'']]],
-  ['lecroy4300b_29',['Lecroy4300b',['../classLecroy4300b.html',1,'']]],
-  ['lecroy4413_30',['LeCroy4413',['../classLeCroy4413.html',1,'']]],
-  ['log_31',['Log',['../classDataModel.html#aa777da4c632e4659ee5b1447ad513458',1,'DataModel']]]
+  ['kill_25',['kill',['../structThread__args.html#a298b8c85c8598ecc557e2090d90a73c3',1,'Thread_args']]],
+  ['killthread_26',['KillThread',['../classUtilities.html#a6f1c1d53b9ce59bb26c56a3bebdbb255',1,'Utilities::KillThread(Thread_args *&amp;args)'],['../classUtilities.html#a8c17a46ce33b0b647797f24bc859bd7a',1,'Utilities::KillThread(std::string ThreadName)'],['../classUtilities.html#af4091a68d8a27a3b806d029cc9b2135e',1,'Utilities::KillThread(T *pointer)']]]
 ];

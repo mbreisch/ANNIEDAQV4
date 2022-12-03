@@ -96,6 +96,12 @@ std::vector&lt; zmq::pollitem_t &gt;&#160;</td><td class="memItemRight" valign="
 <tr class="memitem:a4765ae34dd3f8495bb0881e06334804d"><td class="memItemLeft" align="right" valign="top"><a id="a4765ae34dd3f8495bb0881e06334804d"></a>
 std::vector&lt; zmq::pollitem_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>out</b></td></tr>
 <tr class="separator:a4765ae34dd3f8495bb0881e06334804d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e4e5deb3172aa00763ba1294ccbade2"><td class="memItemLeft" align="right" valign="top"><a id="a9e4e5deb3172aa00763ba1294ccbade2"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>polltimeout</b></td></tr>
+<tr class="separator:a9e4e5deb3172aa00763ba1294ccbade2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a241c546ed5ea8d04060737090350bfe0"><td class="memItemLeft" align="right" valign="top"><a id="a241c546ed5ea8d04060737090350bfe0"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>storesendpolltimeout</b></td></tr>
+<tr class="separator:a241c546ed5ea8d04060737090350bfe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f339402e4c9599de4051a6e6649542d"><td class="memItemLeft" align="right" valign="top"><a id="a8f339402e4c9599de4051a6e6649542d"></a>
 <a class="el" href="classDAQUtilities.html">DAQUtilities</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_utils</b></td></tr>
 <tr class="separator:a8f339402e4c9599de4051a6e6649542d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -108,18 +114,33 @@ time_t *&#160;</td><td class="memItemRight" valign="bottom"><b>ref_time1</b></td
 <tr class="memitem:a68d133368b94692070539fd33c6f69af"><td class="memItemLeft" align="right" valign="top"><a id="a68d133368b94692070539fd33c6f69af"></a>
 time_t *&#160;</td><td class="memItemRight" valign="bottom"><b>ref_time2</b></td></tr>
 <tr class="separator:a68d133368b94692070539fd33c6f69af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad59d6331166d398327a49f8a80bac8a4"><td class="memItemLeft" align="right" valign="top"><a id="ad59d6331166d398327a49f8a80bac8a4"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>statsperiod</b></td></tr>
+<tr class="separator:ad59d6331166d398327a49f8a80bac8a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a747ba98b5a4f51b54e61119566685ab0"><td class="memItemLeft" align="right" valign="top"><a id="a747ba98b5a4f51b54e61119566685ab0"></a>
 std::map&lt; std::string, Store * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>connections</b></td></tr>
 <tr class="separator:a747ba98b5a4f51b54e61119566685ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4260f4e1d8c6a8b641217cb653ddd59e"><td class="memItemLeft" align="right" valign="top"><a id="a4260f4e1d8c6a8b641217cb653ddd59e"></a>
-std::deque&lt; std::vector&lt; <a class="el" href="classPsecData.html">PsecData</a> * &gt; * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>data_buffer</b></td></tr>
-<tr class="separator:a4260f4e1d8c6a8b641217cb653ddd59e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8e32426bfb9016d9cd7d938be732e5a"><td class="memItemLeft" align="right" valign="top"><a id="ab8e32426bfb9016d9cd7d938be732e5a"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>update_conns_period</b></td></tr>
+<tr class="separator:ab8e32426bfb9016d9cd7d938be732e5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a451777864f9a794cf59f095917afbb6e"><td class="memItemLeft" align="right" valign="top"><a id="a451777864f9a794cf59f095917afbb6e"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>portnum</b></td></tr>
+<tr class="separator:a451777864f9a794cf59f095917afbb6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a61bfb1d782f920c778c10f356fd99b"><td class="memItemLeft" align="right" valign="top"><a id="a0a61bfb1d782f920c778c10f356fd99b"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>servicename</b></td></tr>
+<tr class="separator:a0a61bfb1d782f920c778c10f356fd99b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afee71b7806efe063d3b099f80e28ddf1"><td class="memItemLeft" align="right" valign="top"><a id="afee71b7806efe063d3b099f80e28ddf1"></a>
+std::deque&lt; <a class="el" href="classPsecData.html">PsecData</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>data_buffer</b></td></tr>
+<tr class="separator:afee71b7806efe063d3b099f80e28ddf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c6b240d34310229b069d85ad5129ffd"><td class="memItemLeft" align="right" valign="top"><a id="a8c6b240d34310229b069d85ad5129ffd"></a>
 unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>data_counter</b></td></tr>
 <tr class="separator:a8c6b240d34310229b069d85ad5129ffd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a39d548cf052928f9fd37a5c3b3250a"><td class="memItemLeft" align="right" valign="top"><a id="a8a39d548cf052928f9fd37a5c3b3250a"></a>
 BoostStore *&#160;</td><td class="memItemRight" valign="bottom"><b>LAPPDData</b></td></tr>
 <tr class="separator:a8a39d548cf052928f9fd37a5c3b3250a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc941b233b8f334012ba18694ad11ff9"><td class="memItemLeft" align="right" valign="top"><a id="acc941b233b8f334012ba18694ad11ff9"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ramdiskpath</b></td></tr>
+<tr class="separator:acc941b233b8f334012ba18694ad11ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af34a5dbb92f8166f421d0b10747b07b2"><td class="memItemLeft" align="right" valign="top"><a id="af34a5dbb92f8166f421d0b10747b07b2"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>la</b></td></tr>
 <tr class="separator:af34a5dbb92f8166f421d0b10747b07b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
