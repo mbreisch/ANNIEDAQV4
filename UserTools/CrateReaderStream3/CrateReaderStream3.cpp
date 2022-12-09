@@ -161,7 +161,7 @@ bool CrateReaderStream3::Execute(){
     std::string status="";
     *tmp>>status;
 
-    Log(status,1,m_verbose);
+    Log(status,2,m_verbose);
     
     unsigned long VME_readouts;
     tmp->Get("data_counter",VME_readouts);
@@ -318,25 +318,33 @@ bool CrateReaderStream3::Thread_Setup(CrateReaderStream3_args* &arg){
   std::string stopconfig="TriggerConfig";
   m_variables.Get("StartVariables", startconfig);
   m_variables.Get("StopVariables", stopconfig);
-  // we need to determine if these are local file paths or DB entry names,
-  // so let's see if they exist locally, and if so use them, otherwise
-  // we'll assume they're DB entry names and try that.
+  // we need to determine if these are local file paths or DB entry names.
+  // see if a local file exists
   if(checkfileexists(startconfig)){
-    // file exists locally, use it
+    // local file
     //std::cout<<"believe "<<startconfig<<" to be a local file"<<std::endl;
-    arg->start_variables.Initialise(startconfig);
+    bool get_ok = arg->start_variables.Initialise(startconfig);
+    if(not get_ok){
+        std::cerr<<"Unable to load local StartVariables file '"<<startconfig<<"'"<<std::endl;
+        return false;
+    }
   } else {
-    // no file by this name, assume it's a DB entry name
+    // assume it's a DB entry
     std::string filecontents;
+    //std::cout<<"believe "<<startconfig<<" to be a db entry name"<<std::endl;
     m_data->postgres_helper.GetToolConfig(startconfig, filecontents);
     std::stringstream streamer(filecontents);
-    std::cout<<"initialising start_variables with stringstream"<<std::endl;
+    //std::cout<<"initialising start_variables with stringstream"<<std::endl;
     arg->start_variables.Initialise(streamer);
   }
   // repeat for stop variables
   if(checkfileexists(stopconfig)){
     // file exists locally, use it
-    arg->start_variables.Initialise(stopconfig);
+    bool get_ok = arg->start_variables.Initialise(stopconfig);
+    if(not get_ok){
+        std::cerr<<"Unable to load local StopVariables file '"<<stopconfig<<"'"<<std::endl;
+        return false;
+    }
   } else {
     // no file by this name, assume it's a DB entry name
     std::string filecontents;
@@ -418,14 +426,16 @@ bool CrateReaderStream3::Get_Data(CrateReaderStream3_args* args){
       //std::cout<<"TriggerCard->HasData() returned true, calling GetTriggerData"<<std::endl;
       
       
-      TriggerData* tmptriggerdata=args->TriggerCard->GetTriggerData();
+      TriggerData* tmptriggerdata=0;
+      tmptriggerdata=args->TriggerCard->GetTriggerData();
       //std::cout<<"m9"<<std::endl;    
   
-      if(tmptriggerdata->TimeStampData.size()==0){
+      if(tmptriggerdata && tmptriggerdata->TimeStampData.size()==0){
 	//std::cout<<"no trigger data"<<std::endl;
 	delete tmptriggerdata;
+	tmptriggerdata=0;
       }
-      else{
+      else if(tmptriggerdata){
         //std::cout<<"got trigger data"<<std::endl;
 	args->trigger_buffer.push_back(tmptriggerdata);
 	args->trigger_counter++;
@@ -448,10 +458,20 @@ bool CrateReaderStream3::VME_To_Send(CrateReaderStream3_args* args){
     //send trigger pointer
     zmq::message_t tmp(2);
     snprintf ((char *) tmp.data(), 2 , "%s" , "T") ;
-    if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->trigger_buffer.at(0))){
-      args->trigger_buffer.at(0)=0;
-      args->trigger_buffer.pop_front();
-    }
+   
+    /*
+    ////////////////tmp
+ delete args->trigger_buffer.at(0);
+    args->trigger_buffer.at(0)=0;
+    args->trigger_buffer.pop_front();
+    ///////////////////
+    */
+
+     if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->trigger_buffer.at(0))){
+       args->trigger_buffer.at(0)=0;
+       args->trigger_buffer.pop_front();
+     }
+     
     else args->m_logger->Log("ERROR:Failed to send trigger pointer to VME Store Thread");
     
   }
@@ -463,9 +483,18 @@ bool CrateReaderStream3::VME_To_Send(CrateReaderStream3_args* args){
     //send data pointer
     zmq::message_t tmp(2);           
     snprintf ((char *) tmp.data(), 2 , "%s" , "D") ;
-    if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
-      args->data_buffer.at(0)=0;       
-      args->data_buffer.pop_front();        	
+   
+    /*
+ //////////tmp    
+    delete args->data_buffer.at(0);    
+args->data_buffer.at(0)=0;
+    args->data_buffer.pop_front();
+
+    ///
+    */
+ if(args->m_data_send->send(tmp, ZMQ_SNDMORE) && args->m_utils->SendPointer(args->m_data_send, args->data_buffer.at(0))){
+      args->data_buffer.at(0)=0;
+      args->data_buffer.pop_front();
     }
     else args->m_logger->Log("ERROR:Failed to send data pointer to VME Store Thread");
     

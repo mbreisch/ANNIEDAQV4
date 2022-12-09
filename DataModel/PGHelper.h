@@ -30,6 +30,7 @@ class PGHelper{
 	}
 	
 	bool GetToolConfig(std::string toolname, std::string& configtext);
+	bool GetToolConfig(std::string toolname, int version, std::string& configtext);
 	
 	template <typename... Ts>
 	bool Insert(std::string table, std::vector<std::string> fields, std::string* err, Ts&&... vals){

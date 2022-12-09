@@ -72,7 +72,7 @@ bool RunControl::Execute(){
       
     }
 
-    std::cout<<"got "<< m_data->running<<std::endl;
+    //    std::cout<<"got "<< m_data->running<<std::endl;
 
     old_running=m_data->running;
     
