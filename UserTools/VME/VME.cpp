@@ -435,6 +435,7 @@ bool VME::Get_Data(VME_args* args){
 	}
 	else{
 	  //printf("r14\n");
+	  args->m_logger->Log("ERROR: unkown data type");
 	  error=true;
 	  break;
 	}
@@ -444,9 +445,17 @@ bool VME::Get_Data(VME_args* args){
       //BEN maybe add poll for outmessage to be sure otherwise will block
       int ok = zmq::poll(&args->out.at(1),1,args->polltimeout);
       //printf("r15.1\n");
-      if( ok<0 || (args->out.at(1).revents & ZMQ_POLLOUT)==0) error=true;
+      //if( ok<0 || (args->out.at(1).revents & ZMQ_POLLOUT)==0) error=true;
       //printf("r15.2\n");
-      if(error || !args->m_data_receive->send(identity, ZMQ_SNDMORE) || !args->m_data_receive->send(id)){
+      if(error){
+	unsigned long tmpid=0;
+	memcpy(&tmpid, id.data(), id.size());
+	tmpid--;
+	memcpy(id.data(),&tmpid, id.size());
+
+      }
+      //if(error || 
+      if((!args->out.at(1).revents & ZMQ_POLLOUT) || (!args->m_data_receive->send(identity, ZMQ_SNDMORE) || !args->m_data_receive->send(id)){
         //printf("r16\n");
 	args->m_logger->Log("ERROR: Cant send data aknoledgement",0,0);  
 	error=true;	

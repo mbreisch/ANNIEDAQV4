@@ -162,9 +162,9 @@ bool PsecData::Receive(zmq::socket_t* sock)
 
 bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
 {
-  printf("w1 size=%d\n",message_queue.size());
+  //printf("w1 size=%d\n",message_queue.size());
   if(message_queue.size() <8){
-    printf("w1\n");
+    //printf("w1\n");
     return false;
   }
   
@@ -174,28 +174,28 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
   tempVersionNumber=*(reinterpret_cast<unsigned int*>(message_queue.front().data())); 
   message_queue.pop();
   //  if(tempVersionNumber != VersionNumber) return false;
-  printf("tempVersionNumber=%d\n",tempVersionNumber);  
+  //printf("tempVersionNumber=%d\n",tempVersionNumber);  
   
   //ID
   LAPPD_ID=*(reinterpret_cast<unsigned int*>(message_queue.front().data())); 
   message_queue.pop();         
   
-  printf("LAPPD_ID=%d\n",LAPPD_ID);
+  //printf("LAPPD_ID=%d\n",LAPPD_ID);
 
   //Timestamp
   std::stringstream iss(static_cast<char*>(message_queue.front().data()));
   iss >> Timestamp;   
   message_queue.pop();
   
-  printf("Timestamp=%s\n",Timestamp.c_str());
+  //printf("Timestamp=%s\n",Timestamp.c_str());
 
   //Boards
   tmp_size=0;
   tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
   message_queue.pop();   
 
-  printf("tmp_size=%d\n",tmp_size);
-  printf("w2 size=%d\n",message_queue.size());  
+  //printf("tmp_size=%d\n",tmp_size);
+  //printf("w2 size=%d\n",message_queue.size());  
 
   if(tmp_size>0 &&  message_queue.size()>=5){
     BoardIndex.resize(message_queue.front().size()/sizeof(int));
@@ -203,7 +203,7 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
     message_queue.pop();
   }
   else if(tmp_size!=0){
-    printf("w2\n");
+    //printf("w2\n");
     return false;
   }
 
@@ -212,8 +212,8 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
   tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
   message_queue.pop();
 
-  printf("tmp_size=%d\n",tmp_size);
-  printf("w3 size=%d\n",message_queue.size());
+  //printf("tmp_size=%d\n",tmp_size);
+  //printf("w3 size=%d\n",message_queue.size());
 
   if(tmp_size>0 &&  message_queue.size()>=4){
     AccInfoFrame.resize(message_queue.front().size()/sizeof(unsigned short));
@@ -221,7 +221,7 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
     message_queue.pop();	
   }
   else if(tmp_size!=0){
-    printf("w3\n");
+    //printf("w3\n");
     return false;
   }
 
@@ -230,8 +230,8 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
   tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
   message_queue.pop();
 
-  printf("tmp_size=%d\n",tmp_size);  
-  printf("w4 size=%d\n",message_queue.size());
+  //printf("tmp_size=%d\n",tmp_size);  
+  //printf("w4 size=%d\n",message_queue.size());
 
   if(tmp_size>0  &&  message_queue.size()>=3){
     RawWaveform.resize(message_queue.front().size()/sizeof(unsigned short));
@@ -239,7 +239,7 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
     message_queue.pop();
   }
   else if(tmp_size!=0){
-    printf("w4\n");
+    //printf("w4\n");
     return false;
   }
 
@@ -248,8 +248,8 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
   tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
   message_queue.pop();
   
-  printf("tmp_size=%d\n",tmp_size);
-  printf("w5 size=%d\n",message_queue.size());
+  //printf("tmp_size=%d\n",tmp_size);
+  //printf("w5 size=%d\n",message_queue.size());
 
   if(tmp_size>0  &&  message_queue.size()>=2){
     errorcodes.resize(message_queue.front().size()/sizeof(unsigned int));
@@ -257,13 +257,13 @@ bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
     message_queue.pop();
   }
   else if(tmp_size!=0) {
-    printf("w5\n");
+    //printf("w5\n");
     return false;
   }
 
   FailedReadCounter=*(reinterpret_cast<int*>(message_queue.front().data()));
   message_queue.pop();    
-  printf("FailedReadCounter=%d\n",FailedReadCounter);  
+  //printf("FailedReadCounter=%d\n",FailedReadCounter);  
 
   return true;
 }

@@ -181,8 +181,10 @@ bool CardData::Receive(zmq::socket_t *socket){
 bool CardData::Receive(std::queue<zmq::message_t> &message_queue){
                   
                        
-  if(message_queue.size() <5) return false;
-
+  if(message_queue.size() <5){
+    std::cout<<"CARD DATA ERROR 1"<<std::endl;
+    return false;
+  }
 
   //std::cout<<"z2"<<std::endl; 
   CardID=*(reinterpret_cast<int*>(message_queue.front().data()));
@@ -203,8 +205,15 @@ bool CardData::Receive(std::queue<zmq::message_t> &message_queue){
   message_queue.pop();
   //std::cout<<"z5b size="<<tmp<<std::endl;
   
-  if(tmp>0 && message_queue.size()>=2){
 
+  if(tmp>0 && message_queue.size()<2){
+    std::cout<<"CARD DATA ERROR 2"<<std::endl;
+    return false;
+  }
+
+  //if(tmp>0 && message_queue.size()>=2){
+
+  if(tmp>0){
     Data.resize(message_queue.front().size()/sizeof(uint32_t));
     std::memcpy(&Data[0], message_queue.front().data(), message_queue.front().size());
     message_queue.pop();
@@ -212,10 +221,8 @@ bool CardData::Receive(std::queue<zmq::message_t> &message_queue){
     //    for(int k=0;k<tmp;k++){
     // std::cout<<"Data["<<k<<"]="<<Data.at(k)<<std::endl;
     // }
-
+    
   }
-  else return false;
-  
   
   FIFOstate=*(reinterpret_cast<int*>(message_queue.front().data()));
   message_queue.pop();
