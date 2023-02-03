@@ -1,0 +1,82 @@
+#Overall ACC/ACDC config file
+#0 = no Save
+#1 = Save to ASCII
+#2 = Save to Bianrydata -> Store
+#3 = Save to Raw
+Save 1
+path ./Results/LAPPD
+WaveformLabel LAPPDData
+AccLabel AccInfoFrame
+MetaLabel Metadata
+PPSLabel PPSFrames
+
+#Reset
+resetACC 1
+resetACDC 1
+
+#SMA set
+SMA 0 #0 for RJ45 or 1 for SMA3 (pps) and SMA4 (Beamgate)
+
+#Trigger
+
+##Triggermode
+Triggermode 5 #...
+
+##ACC settings
+ACC_Sign 0 #normal(0) or inverted(1)
+
+##ACDC settings
+ACDC_Sign 0 #normal(0) or inverted(1)
+
+##Self trigger settings
+SELF_Sign 0 #normal(0) or inverted(1)
+SELF_Enable_Coincidence 0 #on(1) or off(0)
+SELF_Coincidence_Number 0 #number from 0 to 30
+SELF_threshold 1600 #adc counts from 0 to 4095
+
+#Masks
+
+##ACDC boards
+ACDC_mask 255
+#ACDC_mask 0xFF #Choose which boards to set, 8 bit, each representing an ACDC board, from 0x00 to 0xFF
+
+##PSEC chips for self trigger
+PSEC_Chip_Mask_0 1 #on(1) or off(0)
+PSEC_Chip_Mask_1 0 #on(1) or off(0)
+PSEC_Chip_Mask_2 0 #on(1) or off(0)
+PSEC_Chip_Mask_3 0 #on(1) or off(0)
+PSEC_Chip_Mask_4 0 #on(1) or off(0)
+PSEC_Channel_Mask_0 32 #6 bit, each for a channel, from 0x00 to 0x3F
+PSEC_Channel_Mask_1 0 #6 bit, each for a channel, from 0x00 to 0x3F
+PSEC_Channel_Mask_2 0 #6 bit, each for a channel, from 0x00 to 0x3F
+PSEC_Channel_Mask_3 0 #6 bit, each for a channel, from 0x00 to 0x3F
+PSEC_Channel_Mask_4 0 #6 bit, each for a channel, from 0x00 to 0x3F
+#PSEC_Channel_Mask_0 0x20 #6 bit, each for a channel, from 0x00 to 0x3F
+#PSEC_Channel_Mask_1 0x00 #6 bit, each for a channel, from 0x00 to 0x3F
+#PSEC_Channel_Mask_2 0x00 #6 bit, each for a channel, from 0x00 to 0x3F
+#PSEC_Channel_Mask_3 0x00 #6 bit, each for a channel, from 0x00 to 0x3F
+#PSEC_Channel_Mask_4 0x00 #6 bit, each for a channel, from 0x00 to 0x3F
+
+
+#Validation time
+Validation_Start 325250 #value from 0 to 819 in ns
+Validation_Window 020000 #value from 0 to 819 in ns
+
+#Calibration mode
+Calibration_Mode 0 #on(1) or off(0)
+
+#Raw mode
+Raw_Mode 1 #returns a map with <int, vector<unsigned short>> | the int is the board index and the vector the data
+
+#Pedestal set value channel
+Pedestal_channel 2000 #pedestal value to be set 
+Pedestal_channel_mask 31 #5 bit representin psec chips
+#Pedestal_channel_mask 0x1F #5 bit representin psec chips
+
+#PPS
+
+PPS_Ratio 0
+#PPS_Ratio 0x000A
+PPS_Mux 1
+
+RunControl 0

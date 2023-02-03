@@ -14,14 +14,17 @@
 
 #include "PGClient.h"
 #include "PGHelper.h"
-#include <CardData.h>
-#include <TriggerData.h>
 
 #include <zmq.hpp>
 
-#include "MRDData.h"
-#include "MRDOut.h"
+#include <Canbus.h>
+#include <SlowControlMonitor.h>
+//ACC classes
+#include <ACC.h>
 #include <PsecData.h>
+#include <PsecConfig.h>
+#include <TempClassStore.h>
+
 
 /**
  * \class DataModel
@@ -68,15 +71,26 @@ class DataModel {
   PGClient pgclient;        // manages interface with the database
   PGHelper postgres_helper; // provides user methods to perform routine database operations
 
-  std::vector<std::string> identities;
-  std::map<std::string,unsigned long> triggers;
-
+  bool running;
+  
   unsigned long run;
   unsigned long subrun;
-  int RunTypeID;
+  int RunConfig;
   std::string RunType;
   float RunTypeVersion;
+  // unused but needed
   unsigned long NumEvents;
+
+  //SC
+  Canbus* CB;
+  SlowControlMonitor SCMonitor;
+  //ACC
+  stdUSB* usb;
+  ACC* acc;
+  PsecData psec;
+  PsecConfig conf;
+  TempClassStore TCS;
+
   
  private:
 

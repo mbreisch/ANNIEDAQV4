@@ -16,19 +16,28 @@ endif
 ZMQLib= -L $(Dependencies)/zeromq-4.0.7/lib -lzmq 
 ZMQInclude= -I $(Dependencies)/zeromq-4.0.7/include/ 
 
+YOCTOLib = -L $(Dependencies)/YOCTO/Binaries/linux/armhf -lyocto -lm -lpthread
+YOCTOInclude = -I $(Dependencies)/YOCTO/Sources
+
+
 BoostLib= -L $(Dependencies)/boost_1_66_0/install/lib -lboost_date_time -lboost_serialization -lboost_iostreams -lboost_system
 BoostInclude= -I $(Dependencies)/boost_1_66_0/install/include
 
-PostgresLib= -L $(Dependencies)/pqxx/install/lib -lpqxx -L /usr/pgsql-12/lib -lpq
-PostgresInclude= -I $(Dependencies)/pqxx/install/include
+PostgresLib=
+#-L $(Dependencies)/pqxx/install/lib -lpqxx -L /usr/pgsql-12/lib -lpq
+PostgresInclude=
+#-I $(Dependencies)/pqxx/install/include
 
-DataModelInclude = $(PostgresInclude)
-DataModelLib = $(PostgresLib)
+DataModelInclude = $(PostgresInclude) $(YOCTOInclude)
+DataModelLib = $(PostgresLib) $(YOCTOLib) -lusb-1.0 -lwiringPi   
 
 MyToolsInclude = $(PostgresInclude) 
 #-I ToolDAQ/curl-7.65.3/install/include/
-MyToolsLib = $(PostgresLib) -L lib -lCC -lL3 -lL4 -lm -lxx_usb -lcurl  
+MyToolsLib =
+#$(PostgresLib) -L lib -lCC -lL3 -lL4 -lm -lxx_usb -lcurl  
 #-L ToolDAQ/curl-7.65.3/install/lib/ -lcurl 
+
+
 
 debug: all
 
@@ -74,7 +83,7 @@ clean:
 	rm -f UserTools/*/*.o
 	rm -f DataModel/*.o
 
-lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libDAQLogging.so lib/libStore.so  lib/libServiceDiscovery.so include/Camac lib/Camac $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))
+lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libDAQLogging.so lib/libStore.so  lib/libServiceDiscovery.so $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))
 	@echo -e "\e[38;5;226m\n*************** Making " $@ "****************\e[0m"
 	g++ $(CXXFLAGS) -shared DataModel/*.o -I include -L lib -lStore -lLogging -lDAQLogging -o lib/libDataModel.so $(DataModelInclude) $(DataModelLib) $(ZMQLib) $(ZMQInclude) $(BoostLib) $(BoostInclude)
 
@@ -121,7 +130,7 @@ UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so inclu
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	cp UserTools/Factory/Factory.h include
 	cp UserTools/Unity.h include
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging -lDAQLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelib) $(ZMQLib) $(ZMQInclude) $(BoostLib) $(BoostInclude)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging -lDAQLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelLib) $(ZMQLib) $(ZMQInclude) $(BoostLib) $(BoostInclude)
 
 
 UserTools/%.o: UserTools/%.cpp lib/libStore.so include/Tool.h lib/libLogging.so lib/libDAQLogging.so lib/libDataModel.so | include/Tool.h
@@ -145,16 +154,3 @@ Docs:
 	doxygen Doxyfile
 
 
-include/Camac:
-	cp UserTools/camacinc/CamacCrate/CamacCrate.h include/
-	cp UserTools/camacinc/Lecroy3377/Lecroy3377.h include/
-	cp UserTools/camacinc/Lecroy4300b/Lecroy4300b.h include/
-	cp UserTools/camacinc/Lecroy4413/Lecroy4413.h include/
-	cp /home/NewDAQ/Dependencies/MRD/xxusb_3.22/include/libxxusb.h include/
-
-lib/Camac:
-
-	cp /home/NewDAQ/Dependencies/MRD/xxusb_3.22/lib/libxx_usb.so lib/
-	g++ -g -shared -fPIC UserTools/camacinc/CamacCrate/CamacCrate.cpp -I include -L lib -o lib/libCC.so
-	g++ -g -shared -fPIC UserTools/camacinc/Lecroy3377/Lecroy3377.cpp -I include -L lib -o lib/libL3.so
-	g++ -g -shared -fPIC UserTools/camacinc/Lecroy4300b/Lecroy4300b.cpp UserTools/camacinc/Lecroy4413/Lecroy4413.cpp -I include -L lib -o lib/libL4.so

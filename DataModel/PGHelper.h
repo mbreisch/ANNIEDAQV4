@@ -3,6 +3,7 @@
 
 #include "Store.h"
 #include "BoostStore.h"
+#include "JsonParser.h"
 
 class DataModel;
 
@@ -11,6 +12,7 @@ class PGHelper{
 	PGHelper(DataModel* m_data_in=nullptr);
 	void SetDataModel(DataModel* m_data_in);
 	void SetVerbosity(int verb);
+	void SetDumpConfigs(bool dumpthem);
 	
 	bool GetCurrentRun(int& runnum, int* runconfig=nullptr, std::string* err=nullptr);
 	bool GetRunConfig(int& runconfig, int* runnum_in=nullptr, std::string* err=nullptr);
@@ -29,6 +31,7 @@ class PGHelper{
 	}
 	
 	bool GetToolConfig(std::string toolname, std::string& configtext);
+	bool GetToolConfig(std::string toolname, int version, std::string& configtext);
 	
 	template <typename... Ts>
 	bool Insert(std::string table, std::vector<std::string> fields, std::string* err, Ts&&... vals){
@@ -38,7 +41,11 @@ class PGHelper{
 	
 	private:
 	DataModel* m_data;
+	JSONP parser;
 	
+	// for debug checking
+	bool dumpconfigs;
+		
 	int verbosity=1;
 	int v_error=0;
 	int v_warning=1;

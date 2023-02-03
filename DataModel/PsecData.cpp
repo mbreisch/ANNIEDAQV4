@@ -24,7 +24,7 @@ bool PsecData::Send(zmq::socket_t* sock)
 	int S_errorcodes = errorcodes.size();
 	int S_BoardIndex = BoardIndex.size();
 
-	std::cout<<"S1"<<std::endl;
+	//std::cout<<"S1"<<std::endl;
 	
 	zmq::message_t msgV(sizeof VersionNumber);
 	std::memcpy(msgV.data(), &VersionNumber, sizeof VersionNumber);
@@ -57,33 +57,44 @@ bool PsecData::Send(zmq::socket_t* sock)
 
 	zmq::message_t msgF(sizeof FailedReadCounter);
 	std::memcpy(msgF.data(), &FailedReadCounter, sizeof FailedReadCounter);
-  std::cout<<"S2"<<std::endl;
-	sock->send(msgV,ZMQ_SNDMORE);
-	  std::cout<<"S3"<<std::endl;
-	sock->send(msgID,ZMQ_SNDMORE);
-	  std::cout<<"S4"<<std::endl;
-	sock->send(msgTime,ZMQ_SNDMORE);
-	  std::cout<<"S5"<<std::endl;
-	sock->send(msgSB,ZMQ_SNDMORE);
-	  std::cout<<"S6"<<std::endl;
-	if(S_BoardIndex>0){sock->send(msgB,ZMQ_SNDMORE);}
-	  std::cout<<"S7"<<std::endl;
-	sock->send(msgSA,ZMQ_SNDMORE);
-  std::cout<<"S8"<<std::endl;
-	if(S_AccInfoFrame>0){sock->send(msgA,ZMQ_SNDMORE);}
-	  std::cout<<"S9"<<std::endl;
-	sock->send(msgSW,ZMQ_SNDMORE);
-	  std::cout<<"S10"<<std::endl;
-	if(S_RawWaveform>0){sock->send(msgW,ZMQ_SNDMORE);}
-	  std::cout<<"S11"<<std::endl;
-	sock->send(msgSE,ZMQ_SNDMORE);
-	  std::cout<<"S12"<<std::endl;
-	if(S_errorcodes>0){sock->send(msgE,ZMQ_SNDMORE);}
-	  std::cout<<"S13"<<std::endl;
-	sock->send(msgF);
-	  std::cout<<"S14"<<std::endl;
-
-	return true;
+        
+        bool send_ok = true;
+  //std::cout<<"S2"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgV,ZMQ_SNDMORE);
+	  //std::cout<<"S3"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgID,ZMQ_SNDMORE);
+	  //std::cout<<"S4"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgTime,ZMQ_SNDMORE);
+	  //std::cout<<"S5"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgSB,ZMQ_SNDMORE);
+	  //std::cout<<"S6"<<std::endl;
+	if(S_BoardIndex>0){
+		if(send_ok) send_ok &= sock->send(msgB,ZMQ_SNDMORE);
+	}
+	  //std::cout<<"S7"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgSA,ZMQ_SNDMORE);
+  //std::cout<<"S8"<<std::endl;
+	if(S_AccInfoFrame>0){
+		if(send_ok) send_ok &= sock->send(msgA,ZMQ_SNDMORE);
+	}
+	  //std::cout<<"S9"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgSW,ZMQ_SNDMORE);
+	  //std::cout<<"S10"<<std::endl;
+	if(S_RawWaveform>0){
+		if(send_ok) send_ok &= sock->send(msgW,ZMQ_SNDMORE);
+	}
+	  //std::cout<<"S11"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgSE,ZMQ_SNDMORE);
+	  //std::cout<<"S12"<<std::endl;
+	if(S_errorcodes>0){
+		if(send_ok) send_ok &= sock->send(msgE,ZMQ_SNDMORE);
+	}
+	  //std::cout<<"S13"<<std::endl;
+	if(send_ok) send_ok &= sock->send(msgF);
+	  //std::cout<<"S14"<<std::endl;
+	
+	return send_ok;
+	
 }
 
 
@@ -157,82 +168,6 @@ bool PsecData::Receive(zmq::socket_t* sock)
 	FailedReadCounter=*(reinterpret_cast<int*>(msg.data()));
 
 	return true;
-}
-
-bool PsecData::Receive(std::queue<zmq::message_t> &message_queue)
-{
-
-  if(message_queue.size() <8) return false;
-  
-  int tmp_size=0;
-  
-  unsigned int tempVersionNumber;
-  tempVersionNumber=*(reinterpret_cast<unsigned int*>(message_queue.front().data())); 
-  message_queue.pop();
-  if(tempVersionNumber != VersionNumber) return false;
-    
-  
-  //ID
-  LAPPD_ID=*(reinterpret_cast<unsigned int*>(message_queue.front().data())); 
-  message_queue.pop();         
-  
-  //Timestamp
-  std::stringstream iss(static_cast<char*>(message_queue.front().data()));
-  iss >> Timestamp;   
-  message_queue.pop();
-  
-  //Boards
-  tmp_size=0;
-  tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();   
-  
-  if(tmp_size>0 &&  message_queue.size()>=5){
-    BoardIndex.resize(message_queue.front().size()/sizeof(int));
-    std::memcpy(&BoardIndex[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();
-  }
-  else return false;
-
-  //ACC
-  tmp_size=0;
-  tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  
-  if(tmp_size>0 &&  message_queue.size()>=4){
-    AccInfoFrame.resize(message_queue.front().size()/sizeof(unsigned short));
-    std::memcpy(&AccInfoFrame[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();	
-  }
-  else return false;
-  
-  //Waveforms
-  tmp_size=0;
-  tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  
-  if(tmp_size>0  &&  message_queue.size()>=3){
-    RawWaveform.resize(message_queue.front().size()/sizeof(unsigned short));
-    std::memcpy(&RawWaveform[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();
-  }
-  else return false;
-
-  //Errors
-  tmp_size=0;
-  tmp_size=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();
-  
-  if(tmp_size>0  &&  message_queue.size()>=2){
-    errorcodes.resize(message_queue.front().size()/sizeof(unsigned int));
-    std::memcpy(&errorcodes[0], message_queue.front().data(), message_queue.front().size());
-    message_queue.pop();
-  }
-  else return false;
-  
-  FailedReadCounter=*(reinterpret_cast<int*>(message_queue.front().data()));
-  message_queue.pop();    
-  
-  return true;
 }
 
 

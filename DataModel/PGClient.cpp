@@ -5,7 +5,7 @@ Query::Query(std::string dbname_in, std::string query_string_in, char type_in){
 	dbname = dbname_in;
 	query_string = query_string_in;
 	type = type_in;
-	success=false;
+	success=0;
 	query_response=std::vector<std::string>{};
 	err="";
 	msg_id=-1;
@@ -15,7 +15,7 @@ Query::Query(){
 	dbname="";
 	query_string="";
 	type='\0';
-	success=false;
+	success=0;
 	query_response=std::vector<std::string>{};
 	err="";
 	msg_id=-1;
@@ -55,7 +55,7 @@ Query::Query(Query&& qry_in){
 	qry_in.dbname="";
 	qry_in.query_string="";
 	qry_in.type='\0';
-	qry_in.success=false;
+	qry_in.success=0;
 	qry_in.msg_id=-1;
 	qry_in.query_response=std::vector<std::string>{};
 }
@@ -72,7 +72,7 @@ Query& Query::operator=(Query&& qry_in){
 		qry_in.dbname="";
 		qry_in.query_string="";
 		qry_in.type='\0';
-		qry_in.success=false;
+		qry_in.success=0;
 		qry_in.msg_id=-1;
 		qry_in.query_response=std::vector<std::string>{};
 	}
@@ -94,7 +94,7 @@ bool PGClient::Initialise(std::string configfile){
 	
 	/*            General Variables              */
 	/* ----------------------------------------- */
-	verbosity = 3;
+	verbosity = 1;
 	max_retries = 3;
 	m_variables.Get("verbosity",verbosity);
 	m_variables.Get("max_retries",max_retries);
@@ -137,6 +137,10 @@ bool PGClient::Initialise(std::string configfile){
 	} else {
 		hostname = std::string(buf);
 	}
+
+	// initialise the message IDs based on the current time in unix seconds
+	msg_id = (int)time(NULL);
+	std::cout<<"initialising message ID to "<<msg_id<<std::endl;
 	
 	// kick off a thread to do actual send and receive of messages
 	std::future<void> signal = terminator.get_future();
@@ -249,6 +253,7 @@ bool PGClient::InitServiceDiscovery(){
 	if(m_data!=nullptr && m_data->vars.Get("service_discovery_address",sda)==true){
 		// probably running as part of a toolchain
 		Log("Seem to be part of a toolchain; assuming ServiceDiscovery is running",v_message,verbosity);
+                service_discovery=nullptr;
 		return true;
 	}
 	// otherwise assume we have to start one of our own
@@ -376,6 +381,7 @@ bool PGClient::BackgroundThread(std::future<void> signaller){
 bool PGClient::SendQuery(std::string dbname, std::string query_string, std::vector<std::string>* results, int* timeout_ms, std::string* err){
 	// send a query and receive response.
 	// This is a wrapper that ensures we always return within the requested timeout.
+	if(verbosity>10) std::cout<<"PGClient::SendQuery invoked with query '"<<query_string<<"'"<<std::endl;
 	
 	// we need to send reads and writes to different sockets.
 	// we could ask the user to specify, or try to determine it ourselves
@@ -387,6 +393,7 @@ bool PGClient::SendQuery(std::string dbname, std::string query_string, std::vect
 	// encapsulate the query in an object.
 	// We need this since we can only get one return value from an asynchronous function call,
 	// and we want both a response string and error flag.
+	if(verbosity>10) std::cout<<"PGClient::SendQuery constructing Query"<<std::endl;
 	Query qry{dbname, query_string, type};
 	
 	// submit the query asynchrously.
@@ -401,6 +408,7 @@ bool PGClient::SendQuery(std::string dbname, std::string query_string, std::vect
 	// see https://stackoverflow.com/a/23454840/3544936 and https://stackoverflow.com/a/23460094/3544936
 	std::promise<Query> returnval;
 	std::future<Query> response = returnval.get_future();
+	if(verbosity>10) std::cout<<"PGClient::SendQuery spinning up new thread"<<std::endl;
 	std::thread{&PGClient::DoQuery, this, qry, std::move(returnval)}.detach();
 	
 	// the return from a std::async call is a 'future' object
@@ -413,9 +421,13 @@ bool PGClient::SendQuery(std::string dbname, std::string query_string, std::vect
 	// wrap our attempt to get the future in a try-catch, in case of exception
 	try {
 		// wait_for will return either when the result is ready, or when it times out
+		if(verbosity>10) std::cout<<"PGClient::sendQuery waiting for response"<<std::endl;
 		if(response.wait_for(span)!=std::future_status::timeout){
 			// we got a response in time. retrieve and parse return value
+			if(verbosity>10) std::cout<<"PGClient::SendQuery fetching response"<<std::endl;
 			qry = response.get();
+			if(verbosity>10) std::cout<<"PGClient::SendQuery response is "<<qry.query_response.size()
+			                          <<" parts"<<std::endl;
 			if(results) *results = qry.query_response;
 			if(err) *err = qry.err;
 			return qry.success;
@@ -452,21 +464,41 @@ bool PGClient::SendQuery(std::string dbname, std::string query_string, std::stri
 }
 
 bool PGClient::DoQuery(Query qry, std::promise<Query> result){
-	//std::cout<<"PGClient DoQuery received query"<<std::endl;
+	if(verbosity>10) std::cout<<"PGClient::DoQuery received query"<<std::endl;
 	// submit a query, wait for the response and return it
 	
 	// capture a unique id for this message
-	int thismsgid = ++msg_id;
+	uint32_t thismsgid = ++msg_id;
 	qry.msg_id = thismsgid;
 	
 	// zmq sockets aren't thread-safe, so we have one central sender.
-	// submit our query and keep a ticket to retrieve the return status on completion
+	// we submit our query and keep a ticket to retrieve the return status on completion.
+	// similarly, the next response received may not be for us, so a central dealer receives
+	// all responses and deals them out to the appropriate recipient. Again we register
+	// ourselves as a recipient for the response, and wait for it to be fulfilled.
+	// due to the asynchronous nature of these calls, we must register ourselves
+	// as a recipient for a response before we even send the request, to ensure that
+	// we can be identified as a the recipient as soon as we submit our query.
+	// It's a little odd, but that's how it is.
+	if(verbosity>10) std::cout<<"PGClient::DoQuery pre-emptively submitting ticket for response"<<std::endl;
+	std::promise<Query> response_ticket;
+	std::future<Query> response_reciept = response_ticket.get_future();
+	send_queue_mutex.lock();
+	waiting_recipients.emplace(thismsgid, std::move(response_ticket));
+	send_queue_mutex.unlock();
+	
+	// submit a request to send our query.
 	std::promise<int> send_ticket;
 	std::future<int> send_receipt = send_ticket.get_future();
+	send_queue_mutex.lock();
+	if(verbosity>10) std::cout<<"PGClient::DoQuery putting query into waiting-to-send list"<<std::endl;
 	waiting_senders.emplace(qry, std::move(send_ticket));
+	send_queue_mutex.unlock();
 	
 	// wait for our number to come up. loooong timeout, but don't hang forever.
+	if(verbosity>10) std::cout<<"PGClient::DoQuery waiting for send confirmation"<<std::endl;
 	if(send_receipt.wait_for(std::chrono::seconds(30))==std::future_status::timeout){
+		if(verbosity>10) std::cerr<<"PGClient::DoQuery timeout"<<std::endl;
 		// sending timed out
 		if(qry.type=='w') ++write_queries_failed;
 		else if(qry.type=='r') ++read_queries_failed;
@@ -474,37 +506,49 @@ bool PGClient::DoQuery(Query qry, std::promise<Query> result){
 		qry.success = false;
 		qry.err = "Timed out sending query";
 		result.set_value(qry);
+		
+		// since we are giving up waiting for the response, remove ourselves from
+		// the list of waiting recipients
+		if(verbosity>10) std::cout<<"PGClient::DoQuery de-registering for response on id "<<thismsgid<<std::endl;
+		send_queue_mutex.lock();
+		waiting_recipients.erase(thismsgid);
+		send_queue_mutex.unlock();
+		
 		return true;
 	} // else got a return value
 	
+	// so we got response about our send request, but did it go through?
 	// check for errors sending
+	if(verbosity>10) std::cout<<"PGClient::DoQuery getting send confirmation"<<std::endl;
 	int ret = send_receipt.get();
 	std::string errmsg;
 	if(ret==-3) errmsg="Error polling out socket in PollAndSend! Is socket closed?";
 	if(ret==-2) errmsg="No listener on out socket in PollAndSend!";
 	if(ret==-1) errmsg="Error sending in PollAndSend!";
 	if(ret!=0){
+		if(verbosity>10) std::cout<<"PGClient::DoQuery got response "<<ret
+		                          <<" from PollAndSend: sending failed"<<std::endl;
 		if(qry.type=='w') ++write_queries_failed;
 		else if(qry.type=='r') ++read_queries_failed;
 		Log(errmsg,v_debug,verbosity);
 		qry.success = false;
 		qry.err = errmsg;
 		result.set_value(qry);
+		
+		// since the send failed we don't expect a response, so remove ourselves
+		// from the list of recipients awaiting response
+		send_queue_mutex.lock();
+		if(verbosity>10) std::cout<<"PGClient::DoQuery de-registering for response on query "<<thismsgid<<std::endl;
+		waiting_recipients.erase(thismsgid);
+		send_queue_mutex.unlock();
+		
 		return false;
 	}
 	
 	// if we succeeded in sending the message, we now need to wait for a repsonse.
-	// again, the next message received may not be for us, so a central dealer receives
-	// all responses and deals them out to the appropriate recipient.
-	// submit a ticket for our message id and wait for it to come up.
-	std::promise<Query> response_ticket;
-	std::future<Query> response_reciept = response_ticket.get_future();
-	send_queue_mutex.lock();
-	waiting_recipients.emplace(thismsgid, std::move(response_ticket));
-	send_queue_mutex.unlock();
-	
-	// wait for our number to come up. loooong timeout, but don't hang forever.
+	if(verbosity>10) std::cout<<"PGClient::DoQuery waiting for response"<<std::endl;
 	if(response_reciept.wait_for(std::chrono::seconds(30))==std::future_status::timeout){
+		if(verbosity>10) std:cout<<"PGClient::DoQuery response timeout"<<std::endl;
 		// timed out
 		if(qry.type=='w') ++write_queries_failed;
 		else if(qry.type=='r') ++read_queries_failed;
@@ -515,7 +559,8 @@ bool PGClient::DoQuery(Query qry, std::promise<Query> result){
 		return false;
 	} else {
 		// got a response!
-		//std::cout<<"PGClient got a response for query "<<qry.msg_id<<std::endl;
+		if(verbosity>10) std::cout<<"PGClient::DoQuery got a response for query "<<qry.msg_id
+		                          <<"passing back to caller"<<std::endl;
 		try{
 			result.set_value(response_reciept.get());
 		} catch(std::exception& e){
@@ -544,6 +589,7 @@ bool PGClient::GetNextResponse(){
 	// check return status
 	if(ret==-2) return true;      // no messages waiting to be received
 	
+	if(verbosity>10) std::cout<<"PGClient::GetNextResponse had response in socket"<<std::endl;
 	if(ret==-3){
 		Log("PollAndReceive Error polling in socket! Is socket closed?",v_error,verbosity);
 		return false;
@@ -574,11 +620,11 @@ bool PGClient::GetNextResponse(){
 	// else if ret==0 && response.size() >= 2: success
 	
 	// if we got this far we had at least one response part; the message id
-	int message_id_rcvd = *reinterpret_cast<int*>(response.at(0).data());
+	uint32_t message_id_rcvd = *reinterpret_cast<uint32_t*>(response.at(0).data());
 	
 	// if we also had a status part, get that
 	if(response.size()>1){
-		qry.success = *reinterpret_cast<int*>(response.at(1).data());  // (0 or 1 for now)
+		qry.success = *reinterpret_cast<uint32_t*>(response.at(1).data());  // 1=success, 0=fail
 	}
 	// if we also had further parts, fetch those
 	for(int i=2; i<response.size(); ++i){
@@ -589,12 +635,25 @@ bool PGClient::GetNextResponse(){
 		qry.query_response.push_back(resp);
 	}
 	
+	if(verbosity>3){
+		std::stringstream logmsg;
+		logmsg << "PGClient::GetNextResponse received response to query "<<message_id_rcvd
+	               <<"; status "<<qry.success<<", response '";
+		for(auto& apart : qry.query_response){
+			logmsg<<"["<<apart<<"]";
+		}
+		logmsg<<"'"<<std::endl;
+		Log(logmsg.str(),v_debug,verbosity);
+	}
+	
 	// get the ticket associated with this message id
 	if(waiting_recipients.count(message_id_rcvd)){
 		std::promise<Query>* ticket = &waiting_recipients.at(message_id_rcvd);
 		ticket->set_value(qry);
 		// remove it from the map of waiting promises
+		send_queue_mutex.lock();
 		waiting_recipients.erase(message_id_rcvd);
+		send_queue_mutex.unlock();
 	} else {
 		// unknown message id?
 		Log("Unknown message id "+std::to_string(message_id_rcvd)+" with no client",v_error,verbosity);
@@ -611,6 +670,7 @@ bool PGClient::SendNextQuery(){
 		// nothing to send
 		return true;
 	}
+	if(verbosity>10) std::cout<<"PGClient::SendNextQuery got outgoing query to send"<<std::endl;
 	
 	// get the next query to send
 	send_queue_mutex.lock();
@@ -618,7 +678,12 @@ bool PGClient::SendNextQuery(){
 	waiting_senders.pop();
 	send_queue_mutex.unlock();
 	Query& qry = next_qry.first;
-	//std::cout<<"PGClient: sending query "<<qry.msg_id<<std::endl;
+	if(verbosity>10) std::cout<<"PGClient::SendNextQuery sending query "<<qry.msg_id<<std::endl;
+	if(verbosity>3){
+		std::stringstream logmsg;
+		logmsg<<"Sending query "<<qry.msg_id<<", \""<<qry.query_string<<"\""<<std::endl;
+		//Log(logmsg.str(),v_debug,verbosity);
+	}
 	
 	// write queries go to the pub socket, read queries to the dealer
 	zmq::socket_t* thesocket = (qry.type=='w') ? clt_pub_socket : clt_dlr_socket;
@@ -633,11 +698,13 @@ bool PGClient::SendNextQuery(){
 	// the ZMQ identity of the sender. Writes go out via a Pub socket that does not!
 	int ret=-99;
 	dlr_socket_mutex.lock();
+	if(verbosity>10) std::cout<<"PGClient::SendNextQuery calling PollAndSend"<<std::endl;
 	if(qry.type=='w'){
 		ret = PollAndSend(thesocket, out_polls.at(1), outpoll_timeout, clt_ID, qry.msg_id, qry.dbname, qry.query_string);
 	} else {
 		ret = PollAndSend(thesocket, out_polls.at(1), outpoll_timeout, qry.msg_id, qry.dbname, qry.query_string);
 	}
+	if(verbosity>10) std::cout<<"PGClient::SendNextQuery send returned "<<ret<<", passing to recipient"<<std::endl;
 	dlr_socket_mutex.unlock();
 	//std::cout<<"PGClient SNQ P&S returned "<<ret<<std::endl;
 	
@@ -661,13 +728,13 @@ bool PGClient::Finalise(){
 	utilities->RemoveService("psql_read");
 	
 	std::cout<<"Deleting ServiceDiscovery"<<std::endl;
-	delete service_discovery; service_discovery=nullptr;
+	if(service_discovery!=nullptr) delete service_discovery; service_discovery=nullptr;
 	
 	std::cout<<"Deleting Utilities class"<<std::endl;
 	delete utilities; utilities=nullptr;
 	
 	std::cout<<"deleting sockets"<<std::endl;
-	delete clt_pub_socket; clt_pub_socket=nullptr; 
+	delete clt_pub_socket; clt_pub_socket=nullptr;
 	delete clt_dlr_socket; clt_dlr_socket=nullptr;
 	
 	std::cout<<"deleting context"<<std::endl;
@@ -679,6 +746,8 @@ bool PGClient::Finalise(){
 	
 	// can't use 'Log' since we may have deleted the Logging class
 	std::cout<<"PGClient destructor done"<<std::endl;
+	
+	return true;
 }
 
 // =====================================================================
@@ -718,51 +787,63 @@ bool PGClient::FindNewClients(){
 // ZMQ helper functions; TODO move these to external class? since they're shared by middleman.
 
 bool PGClient::Send(zmq::socket_t* sock, bool more, zmq::message_t& message){
+	if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
 	bool send_ok;
 	if(more) send_ok = sock->send(message, ZMQ_SNDMORE);
 	else     send_ok = sock->send(message);
+	
+	if(verbosity>10) std::cout<<"returning "<<send_ok<<std::endl;
 	return send_ok;
 }
 
 bool PGClient::Send(zmq::socket_t* sock, bool more, std::string messagedata){
+	if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
 	// form the zmq::message_t
 	zmq::message_t message(messagedata.size());
-	snprintf((char*)message.data(), messagedata.size()+1, "%s", messagedata.c_str());
-	//memcpy(message.data(), messagedata.data(), message.size()+1);
+	//snprintf((char*)message.data(), messagedata.size()+1, "%s", messagedata.c_str());
+	memcpy(message.data(), messagedata.data(), message.size());
 	
 	// send it with given SNDMORE flag
 	bool send_ok;
 	if(more) send_ok = sock->send(message, ZMQ_SNDMORE);
 	else     send_ok = sock->send(message);
 	
+	if(verbosity>10) std::cout<<"returning "<<send_ok<<std::endl;
 	return send_ok;
 }
 
 bool PGClient::Send(zmq::socket_t* sock, bool more, std::vector<std::string> messages){
+	if(verbosity>10) std::cout<<__PRETTY_FUNCTION__<<" called"<<std::endl;
 	
 	// loop over all but the last part in the input vector,
 	// and send with the SNDMORE flag
 	for(int i=0; i<(messages.size()-1); ++i){
+		if(verbosity>10) std::cout<<"sending part "<<i<<"/"<<messages.size()<<std::endl;
 		
 		// form zmq::message_t
 		zmq::message_t message(messages.at(i).size());
-		snprintf((char*)message.data(), messages.at(i).size()+1, "%s", messages.at(i).c_str());
+		memcpy(message.data(), messages.at(i).data(), messages.at(i).size());
+		//snprintf((char*)message.data(), messages.at(i).size()+1, "%s", messages.at(i).c_str());
 		
 		// send this part
 		bool send_ok = sock->send(message, ZMQ_SNDMORE);
 		
+		if(verbosity>10) std::cout<<"returned "<<send_ok<<std::endl;
 		// break on error
 		if(not send_ok) return false;
 	}
 	
+	if(verbosity>10) std::cout<<"sending part "<<(messages.size()-1)<<"/"<<messages.size()<<std::endl;
 	// form the zmq::message_t for the last part
 	zmq::message_t message(messages.back().size());
-	snprintf((char*)message.data(), messages.back().size()+1, "%s", messages.back().c_str());
+	memcpy(message.data(), messages.back().data(), messages.back().size());
+	//snprintf((char*)message.data(), messages.back().size()+1, "%s", messages.back().c_str());
 	
 	// send it with, or without SNDMORE flag as requested
 	bool send_ok;
 	if(more) send_ok = sock->send(message, ZMQ_SNDMORE);
 	else     send_ok = sock->send(message);
+	if(verbosity>10) std::cout<<"returned "<<send_ok<<std::endl;
 	
 	return send_ok;
 }

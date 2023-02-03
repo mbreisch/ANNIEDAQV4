@@ -13,7 +13,84 @@ void PGHelper::SetVerbosity(int verb){
 	verbosity=verb;
 }
 
+void PGHelper::SetDumpConfigs(bool dumpthem){
+	dumpconfigs = dumpthem;
+}
+
+// TODO add err string pointer to these functions
 bool PGHelper::GetToolConfig(std::string toolname, std::string& configtext){
+    
+    int version;
+    // we may optionally include the version number in the 'toolname'
+    // by appending it after a ';', e.g. 'TriggerConfig;2'
+    size_t splitpos = toolname.find(';');
+    if(splitpos!=std::string::npos){
+        std::string dbentryname;
+        try {
+            dbentryname = toolname.substr(0,toolname.find(';'));
+            version = std::stoi(toolname.substr(toolname.find(';')+1,std::string::npos));
+            toolname = dbentryname;
+        } catch(...){
+            std::cerr<<"PGHelper::GetToolConfig exception splitting toolname and version from '"
+                     <<toolname<<"'"<<std::endl;
+            return false;
+        }
+    
+    }
+    
+    // if no ';' found, see if this is a tool in the ToolsConfig
+    else if(m_data->Stores.at("ToolsConfig")->Has(toolname)){
+
+        if(m_data->Stores.count("ToolsConfig")==0){
+            std::cerr<<"No ToolsConfig in m_data->Stores! Did PGStarter fail?"<<std::endl;
+            return false;
+        }
+        bool get_ok = m_data->Stores.at("ToolsConfig")->Get(toolname, version);
+        if(!get_ok){
+            std::cerr<<"PGHelper::GetToolConfig for tool '"<<toolname<<"' failed to get "
+                     <<"configuration version number from ToolsConfig?!"<<std::endl;
+            return false;
+        }
+    }
+    
+    // final fallback; assume no version == latest version
+    else {
+        std::string system;
+        m_data->vars.Get("SystemName",system);
+        std::string dbname="rundb";
+        std::string err;
+        std::string result;
+        int timeout=1000;
+        std::string query_string="SELECT max(version) FROM configfiles WHERE system='"
+                                 +system+"' AND tool='"+toolname+"'";
+        //std::cout<<"PGHelper getting latest tool config version with query '"+query_string+"'"<<std::endl;
+        bool ok = m_data->pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
+        if(!ok){
+                m_data->Log->Log("Failed to get latest version number for tool "+toolname
+                                +", returned with error "+err,0,0);
+        } else {
+                //std::cout<<"PGHelper getting version number by parsing json '"+result+"'"<<std::endl;
+                BoostStore store;
+                parser.Parse(result, store);
+                //std::cout<<"temporary store contents: "; store.Print(false);
+                //Store store;
+                //store.JsonParser(result);
+                //std::cout<<"temporary store contents: "; store.Print(); //false);
+                ok = store.Get("max",version);
+                if(!ok){
+                        m_data->Log->Log("Failed to retrieve toolconfig version for tool "
+                                         +toolname+", query returned '"+result+"'",0,0);
+                }
+                //std::cout<<"configuration version: "<<version<<std::endl;
+        }
+    }
+    
+    // got version number; look up contents
+    return GetToolConfig(toolname, version, configtext);
+}
+
+
+bool PGHelper::GetToolConfig(std::string toolname, int version, std::string& configtext){
     std::string system;
     m_data->vars.Get("SystemName",system);
     std::string dbname="rundb";
@@ -22,22 +99,39 @@ bool PGHelper::GetToolConfig(std::string toolname, std::string& configtext){
     int timeout=1000;
     std::string query_string="SELECT contents FROM configfiles WHERE system='"
                             +system+"' AND tool='"+toolname+"' AND version="
-                            "(SELECT max(version) FROM configfiles WHERE system='"
-                            +system+"' AND tool='"+toolname+"')";
-    std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
+                            +std::to_string(version);
+    //std::cout<<"PGHelper getting tool config with query '"+query_string+"'"<<std::endl;
     bool ok = m_data->pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
     if(!ok){
-            m_data->Log->Log("Failed to get configtext for tool "+toolname+" using query"
-                             +query_string+", returned with error "+err,0,0);
+            m_data->Log->Log("Failed to get configtext for tool "+toolname
+                            +", returned with error "+err,0,0);
     } else {
-            Store tmp;
-            std::cout<<"PGHelper getting toolconfig by parsing json '"+configtext+"'"<<std::endl;
-            tmp.JsonParser(result);
-            ok = tmp.Get("contents",configtext);
+            //std::cout<<"PGHelper getting toolconfig by parsing json '"+result+"'"<<std::endl;
+            BoostStore store;
+            parser.Parse(result, store);
+            //std::cout<<"temporary store contents: "; store.Print(false);
+            //Store store;
+            //store.JsonParser(result);
+            //std::cout<<"temporary store contents: "; store.Print(); //false);
+            ok = store.Get("contents",configtext);
             if(!ok){
                     m_data->Log->Log("Failed to retrieve toolconfig contents for tool "
                                      +toolname+", query returned '"+result+"'",0,0);
             }
+            //std::cout<<"returning configuration text: '"<<configtext<<"'"<<std::endl;
+    }
+    
+    // debug: store all configurations retrieved for checking
+    if(dumpconfigs){
+        std::string filename = toolname+"_config.txt";
+        std::ofstream textout(filename.c_str());
+        if(!textout.is_open()){
+            std::cerr<<"failed to open output debug file '"<<filename<<"' for writing"<<std::endl;
+        } else {
+            textout << "TOOL: "<<toolname<<", VERSION: "<<version<<std::endl;
+            textout << configtext;
+            textout.close();
+        }
     }
     
     return ok;

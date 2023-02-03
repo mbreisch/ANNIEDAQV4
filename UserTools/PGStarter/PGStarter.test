@@ -1,0 +1,89 @@
+#include "PGStarter.h"
+
+PGStarter::PGStarter():Tool(){}
+
+
+bool PGStarter::Initialise(std::string configfile, DataModel &data){
+
+  if(configfile!="")  m_variables.Initialise(configfile);
+  //m_variables.Print();
+  
+  m_data= &data;
+  m_log= m_data->Log;
+  
+  if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+  m_data->postgres_helper.SetVerbosity(m_verbose);
+  
+  // get config file of settings for connecting to the database
+  std::string pgsettingsfile="";
+  get_ok = m_variables.Get("pgsettingsfile",pgsettingsfile);
+  if(not get_ok){
+    Log("PGStarter couldn't find pgsettingsfile in m_variables! Need to know postgres connection settings!",
+        v_warning,verbosity);
+    // i guess we can continue with defaults of everything
+  }
+  
+  get_ok = m_data->pgclient.Initialise(pgsettingsfile);
+  if(not get_ok){
+    Log("PGClient failed to Initialise!",v_error,verbosity);
+    return false;
+  }
+  
+  // after Initilising the pgclient needs ~15 seconds for the middleman to connect
+  std::this_thread::sleep_for(std::chrono::seconds(15));
+  // hopefully the middleman has found us by now
+  
+  // =============================================================================
+  
+  // for now until the PGHelper does it for us we need to extract the results from
+  // the returned json using a Store
+  Store resultstore;
+  
+  // variables used in making query
+  std::string resultstring="";
+  std::string err="";
+  std::string dbname="rundb";
+  int timeout_ms=5000;
+  
+  // we'll run a series of test queries
+  std::ifstream querieslist("queries.txt");
+  if(!querieslist.is_open()){
+     std::cerr<<"failed to open queries.txt"<<std::endl;
+     return false;
+  }
+  std::string query;
+  std::vector<std::string> queries;
+  while(getline(querieslist, query).good()){
+    queries.push_back(query);
+  }
+  
+  // ok, run through each of the queries and see if they work ok
+  for(std::string query_string : queries){
+    resultstring="";
+    err="";
+    std::cout<<"next query: '"<<query_string<<"'"<<std::endl;
+    get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+    if(not get_ok){
+      Log("PGStarter failed to get query "+query_string+" with return "+std::to_string(get_ok)
+         +" and error "+err,v_error,verbosity);
+      return false;
+    } else {
+      std::cout<<"query OK!"<<std::endl;
+    }
+  }
+  
+  return true;
+}
+
+
+bool PGStarter::Execute(){
+
+  return true;
+}
+
+
+bool PGStarter::Finalise(){
+  m_data->pgclient.Finalise();
+  
+  return true;
+}

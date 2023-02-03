@@ -1,4 +1,5 @@
 #include "PGStarter.h"
+#include "JsonParser.h"
 
 PGStarter::PGStarter():Tool(){}
 
@@ -12,6 +13,19 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
   m_log= m_data->Log;
   
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+  m_data->postgres_helper.SetVerbosity(m_verbose);
+  
+  // if we're the main DAQ we will make a new entry in the run table
+  // at the start of each run. But only the main DAQ toolchain should do this.
+  std::string systemname="";
+  daqtoolchain=false;
+  if(!m_data->vars.Get("SystemName",systemname)){
+    Log("PGStarter did not find a SystemName in ToolChainConfig!",v_error,verbosity);
+    return false;
+  } else {
+    daqtoolchain = (systemname=="daq");
+  }
+ std::cout<<"system name "<<systemname<<std::endl;
   
   // get config file of settings for connecting to the database
   std::string pgsettingsfile="";
@@ -21,6 +35,7 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
         v_warning,verbosity);
     // i guess we can continue with defaults of everything
   }
+std::cout<<"initing pgclient"<<std::endl;
   
   get_ok = m_data->pgclient.Initialise(pgsettingsfile);
   if(not get_ok){
@@ -36,6 +51,7 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
   // the returned json using a Store
   Store resultstore;
   
+std::cout<<"getting run info"<<std::endl;
   // make a query to get the run number
   // TODO update the PGHelper to work with the new PGClient to make these cleaner
   std::string resultstring="";
@@ -83,80 +99,148 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
     return false;
   }
   
-  // get type of run from command line arg 1
-  std::string runtype;
-  m_data->vars.Get("$1",runtype);
-  // we need to extract the runtype from the command line argument.
-  // this may be something like 'Beam', but may also be './Beam'
-  // or './configfiles/Beam/ToolChainConfig', so strip as appropriate
-  
-  // first strip everything before the first slash
-  size_t apos = runtype.find('/');
-  if(apos!=std::string::npos){
-  	runtype=runtype.substr(apos+1,std::string::npos);
+  // if it's a new run we need to look up the run configuration.
+  // if we're the main DAQ we do this from the command line args
+  int runconfig;
+std::cout<<"split"<<std::endl;
+  if(new_run && daqtoolchain){
+std::cout<<"i am daq"<<std::endl;
+    
+    // get type of run from command line arg 1
+    std::string runtype="";
+    m_data->vars.Get("$1",runtype);
+    // we need to extract the runtype from the command line argument.
+    // this may be something like 'Beam', but may also be './Beam'
+    // or './configfiles/Beam/ToolChainConfig', so strip as appropriate
+    
+    // first strip everything before the first slash
+    size_t apos = runtype.find('/');
+    if(apos!=std::string::npos){
+    	runtype=runtype.substr(apos+1,std::string::npos);
+    }
+    // next strip any trailing '/ToolChainConfig' if present
+    apos=runtype.find("/ToolChainConfig");
+    if(apos!=std::string::npos){
+    	runtype=runtype.substr(0,apos);
+    }
+    // and finally strip any leading 'configfiles/'
+    apos=runtype.find("configfiles/");
+    
+    m_data->RunType=runtype;
+    
+    // we then need to look up the runconfig ID of the latest version of this run type.
+    // the run config ID uniquely identifies the run configuration,
+    // and is needed by other Tools to get their configuration parameters
+    resultstring="";
+    err="";
+    //query_string="SELECT version FROM runconfig INNER JOIN run ON run.runconfig = runconfig.id WHERE name='"
+    //             + m_data->RunType+"' AND runnum = (SELECT max(runnum) FROM run)";
+    query_string="SELECT id FROM runconfig WHERE name='"+m_data->RunType+"' AND version="
+                 "(SELECT max(version) FROM runconfig WHERE name='"+m_data->RunType+"');";
+    get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+    if(not get_ok){
+      Log("PGStarter failed to get runtype id and version for type "+runtype
+         +" with return "+std::to_string(get_ok)+" and error "+err,v_error,verbosity);
+      return false;
+    }
+    resultstore.JsonParser(resultstring);
+    get_ok = resultstore.Get("id",runconfig);
+    if(not get_ok){
+      Log("PGStarter failed to get run config from query response '"+resultstring+"'",v_error,verbosity);
+      return false;
+    }
+    m_data->RunConfig=runconfig;
+    
+    // we make a new entry in the run table at the start of each new run or subrun;
+    // increment either runnum or subrunnum as appropriate
+    if(new_run){
+      ++runnum;
+      subrunnum=0;
+    } else {
+      ++subrunnum;
+    }
+    m_data->run = runnum;
+    m_data->subrun = subrunnum;
+    
+    // and create a new record in the run table for this run/subrun
+    query_string = "INSERT INTO run ( runnum, subrunnum, start, runconfig ) VALUES ( "
+                   +std::to_string(m_data->run)+", "+std::to_string(m_data->subrun)
+                   +", 'now()', "+std::to_string(m_data->RunConfig)+");";
+    get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+    if(not get_ok){
+      Log("PGStarter failed to make new entry with query '"+query_string+"'"
+          ", returned with error '"+err+"'",v_error,verbosity);
+      return false;
+    }
+    
+std::cout<<"end split"<<std::endl;
+    
+  } else if(new_run){
+    
+std::cout<<"not daq"<<std::endl;
+    // if we are not the main toolchain we need to get the run configuration id
+    // corresponding to the current run (i.e. latest run entry)
+    query_string = "SELECT runconfig FROM run WHERE runnum=(SELECT MAX(runnum) FROM run)";
+    get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+    if(not get_ok){
+      Log("PGStarter failed to get runconfig number with return "+std::to_string(get_ok)
+         +" and error "+err,v_error,verbosity);
+      return false;
+    }
+    resultstore.JsonParser(resultstring);
+    get_ok = resultstore.Get("runconfig",runconfig);
+    if(not get_ok){
+      Log("PGStarter failed to get runconfig from query response '"+resultstring+"'",v_error,verbosity);
+      return false;
+    }
   }
-  // next strip any trailing '/ToolChainConfig' if present
-  apos=runtype.find("/ToolChainConfig");
-  if(apos!=std::string::npos){
-  	runtype=runtype.substr(0,apos);
-  }
-  // and finally strip any leading 'configfiles/'
-  apos=runtype.find("configfiles/");
-  
-  m_data->RunType=runtype;
-  
-  // we also need to look up the latest version num for this run type.
-  // the run type and version number together uniquely identify the run configuration
-  // and are needed by other Tools to get their configuration parameters
-  resultstring="";
-  err="";
-  //query_string="SELECT version FROM runconfig INNER JOIN run ON run.runconfig = runconfig.id WHERE name='"
-  //             + m_data->RunType+"' AND runnum = (SELECT max(runnum) FROM run)";
-  query_string="SELECT id,version FROM runconfig WHERE name='"+m_data->RunType+"' AND version="
-               "(SELECT max(version) FROM runconfig WHERE name='"+m_data->RunType+"');";
+   
+  // next we use the runconfig to get the system configuration id from the runconfig entry
+  query_string = "SELECT "+systemname+" FROM runconfig WHERE id="+std::to_string(runconfig);
   get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
   if(not get_ok){
-    Log("PGStarter failed to get runtype id and version for type "+runtype
-       +" with return "+std::to_string(get_ok)+" and error "+err,v_error,verbosity);
+    Log("PGStarter failed to get "+systemname+" config ID with return "+std::to_string(get_ok)
+       +" and error "+err,v_error,verbosity);
     return false;
   }
   resultstore.JsonParser(resultstring);
-  get_ok  = resultstore.Get("version",m_data->RunTypeVersion);
-  get_ok &= resultstore.Get("id",m_data->RunTypeID);
+  int systemconfigid=0;
+  get_ok = resultstore.Get(systemname,systemconfigid);
   if(not get_ok){
-    Log("PGStarter failed to get run config from query response '"+resultstring+"'",v_error,verbosity);
+    Log("PGStarter failed to get '"+systemname+"' from query response '"+resultstring+"'",v_error,verbosity);
     return false;
   }
   
-  // Initialise is called at the start of a new run or subrun;
-  // increment either runnum or subrunnum as appropriate
-  if(new_run){
-    ++runnum;
-    subrunnum=0;
-  } else {
-    ++subrunnum;
-  }
-  m_data->run = runnum;
-  m_data->subrun = subrunnum;
-  
-  // create a new record in the run table for this run/subrun
-  query_string = "INSERT INTO run ( runnum, subrunnum, start, runconfig ) VALUES ( "
-                 +std::to_string(m_data->run)+", "+std::to_string(m_data->subrun)
-                 +", 'now()', "+std::to_string(m_data->RunTypeID)+");";
-std::cout<<"inserting"<<std::endl;
+  // finally we get the toolsconfig for this system
+  query_string = "SELECT toolsconfig FROM "+systemname+" WHERE id="+std::to_string(systemconfigid);
   get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
-std::cout<<"returned "<<get_ok<<std::endl;
   if(not get_ok){
-    Log("PGStarter failed to make new entry with query '"+query_string+"'"
-        ", returned with error '"+err+"'",v_error,verbosity);
+    Log("PGStarter failed to get toolsconfig with return "+std::to_string(get_ok)
+       +" and error "+err,v_error,verbosity);
     return false;
   }
-
+std::cout<<"after split, parsing toolsconfig: '"<<resultstring<<"'"<<std::endl;
+  
+  // the toolsconfig itself is a json representing a map of Tool to config file version number.
+  // a combination of system name, tool name and version number uniquely identifies a configuration string
+  // use a proper json parser to get the json string from the query response
+  JSONP parser;
+  BoostStore* toolsconfigbstore = new BoostStore{};
+  parser.Parse(resultstring, *toolsconfigbstore);
+  std::string toolsconfigstring;
+std::cout<<"getting toolsconfig"<<std::endl;
+  toolsconfigbstore->Get("toolsconfig",toolsconfigstring);
+  // then parse that json in turn for the version numbers of each Tool's configuration
+std::cout<<"parsing it again '"<<toolsconfigstring<<"'"<<std::endl;
+  parser.Parse(toolsconfigstring, *toolsconfigbstore);
+  // we put that info in the datamodel. it'll be used by the PGHelper when each Tool
+  // asks for its Tool configuration
+std::cout<<"putting in stores"<<std::endl;
+  m_data->Stores.emplace("ToolsConfig",toolsconfigbstore);
+  
   
   Log("This run is run number "+std::to_string(m_data->run)
-     +", subrun "+std::to_string(m_data->subrun)
-     +", of runtype "+m_data->RunType
-     +" configuration version "+std::to_string(m_data->RunTypeVersion),
+     +", subrun "+std::to_string(m_data->subrun),
      v_message,verbosity);
   
   return true;
@@ -170,6 +254,23 @@ bool PGStarter::Execute(){
 
 
 bool PGStarter::Finalise(){
+
+  if(daqtoolchain){
+	  // update the record in the run table for this run/subrun with the number of events taken
+	  std::string dbname="rundb";
+	  std::string resultstring;
+	  std::string err;
+	  int timeout_ms=5000;
+	  std::string query_string = "UPDATE run SET stop='now()', numevents="+std::to_string(m_data->NumEvents)
+	                            +" WHERE runnum="+std::to_string(m_data->run)
+	                            +" AND subrunnum="+std::to_string(m_data->subrun)+";";
+	  get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
+	  if(not get_ok){
+	    Log("PGStarter failed to update end of run info with query '"+query_string+"'"
+	        ", returned with error '"+err+"'",v_error,verbosity);
+	    return false;
+	  }
+  }
   
   m_data->pgclient.Finalise();
   
