@@ -23,6 +23,7 @@ bool ACC_Receive::Initialise(std::string configfile, DataModel &data){
     if(configtext!="") m_variables.Initialise(configstream);
     
     // allow overrides from local config file
+    localconfigfile=configfile;
     if(configfile!="")  m_variables.Initialise(configfile);
     
     // get Run[Start/End]Configs
@@ -59,7 +60,14 @@ bool ACC_Receive::Initialise(std::string configfile, DataModel &data){
 
 
 bool ACC_Receive::Execute(){
-
+  
+  // on start of run, re-fetch Tool configuration
+  if(m_data->reinit){
+    Finalise();
+    Initialise(localconfigfile,*m_data);
+  }
+  
+  // on start or end of run, update ACC configuration
   if(m_data->running != running_old){
   
     printf("ACC_receive initialise");

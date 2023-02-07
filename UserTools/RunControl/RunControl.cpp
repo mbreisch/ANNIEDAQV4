@@ -30,6 +30,7 @@ bool RunControl::Initialise(std::string configfile, DataModel &data){
   //m_variables.Print();
 
   m_data->running=false;
+  old_running=false;
   
   int portnum = 78787;
   int zmq_linger_ms = 100;
@@ -57,16 +58,35 @@ bool RunControl::Initialise(std::string configfile, DataModel &data){
 
 
 bool RunControl::Execute(){
+  
+  m_data->reinit = false;
 
- zmq::poll(&items[0],1,zmq_polltimeo_ms);
+  zmq::poll(&items[0],1,zmq_polltimeo_ms);
 
   if ((items[0].revents & ZMQ_POLLIN)){
-
+    
     zmq::message_t msg;
     sock->recv(&msg);
-
+    
     memcpy(&m_data->running, msg.data(), sizeof(m_data->running));
     std::cout<<"got "<< m_data->running<<std::endl;
+
+    // if we've received a 'run start' when we're already running,
+    // this implies that we missed a 'run stop'.
+    // To force clearing of any buffered data so we start fresh
+    // set m_data->running to false so trigger the data acquisition
+    // threads to dump any currently held data.
+    if(m_data->running && old_running){
+      m_data->running=false;
+      usleep(500*1000);  // 500ms wait, should be enough
+      m_data->running=true;
+      
+    }
+    
+    if(old_running==false && m_data->running) m_data->reinit = true;
+    
+    old_running=m_data->running;
+    
   }
 
   

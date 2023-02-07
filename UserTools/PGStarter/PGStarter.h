@@ -29,7 +29,7 @@ class PGStarter: public Tool {
 
  private:
   bool daqtoolchain;  // is this toolchain the main daq?
-  
+
   int verbosity;
   // verbosity levels: if 'verbosity' < this level, the message type will be logged.
   int v_error=0;

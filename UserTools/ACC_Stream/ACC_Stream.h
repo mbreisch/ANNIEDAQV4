@@ -38,6 +38,7 @@ class ACC_Stream: public Tool {
   }
  private:
 
+  std::string localconfigfile;
   zmq::socket_t* sock;
   zmq::pollitem_t items[1];
   zmq::pollitem_t things[1];

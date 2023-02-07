@@ -41,6 +41,7 @@ class ACC_SetupBoards: public Tool {
 
     bool Setup();
     void LoadDefaults();
+    std::string localconfigfile;
 
 };
 

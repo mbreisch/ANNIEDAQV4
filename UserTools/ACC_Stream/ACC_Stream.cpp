@@ -22,6 +22,7 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
     if(configtext!="") m_variables.Initialise(configstream);
     
     // allow overrides from local config file
+    localconfigfile=configfile;
     if(configfile!="")  m_variables.Initialise(configfile);
 
     if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
@@ -36,9 +37,9 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
 
     std::string connection="tcp://*:"+port;
 
-    std::cout<<"making socket from context "<<m_data->context<<std::endl;
+    //std::cout<<"making socket from context "<<m_data->context<<std::endl;
     sock=new zmq::socket_t(*(m_data->context), ZMQ_DEALER);
-    std::cout<<"setting options of socket "<<sock<<std::endl;
+    //std::cout<<"setting options of socket "<<sock<<std::endl;
     
     int zmq_linger_ms = 10;
     int zmq_sndtimeo_ms = 100;
@@ -56,10 +57,10 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
     zmq_polltimeo_ms = 100;
     m_variables.Get("zmq_polltimeo_ms",zmq_polltimeo_ms);
     
-    std::cout<<"binding connection to "<<connection<<std::endl;
+    //std::cout<<"binding connection to "<<connection<<std::endl;
     sock->bind(connection.c_str());
 
-    printf("%s",connection.c_str());
+    printf("ACC_Stream binding to '%s'\n",connection.c_str());
     
     // yes, items. very good variable name. very descriptive. :)
     items[0].socket = *sock;
@@ -79,6 +80,12 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
 
 
 bool ACC_Stream::Execute(){
+  
+  // at start of  new run, re-fetch Tool config
+  if(m_data->reinit){
+    Finalise();
+    Initialise(localconfigfile,*m_data);
+  }
 
   // receive any outstanding acknowledgements
   zmq::poll(&things[0], 1, zmq_polltimeo_ms);

@@ -71,7 +71,8 @@ class DataModel {
   PGClient pgclient;        // manages interface with the database
   PGHelper postgres_helper; // provides user methods to perform routine database operations
 
-  bool running;
+  bool running=false;
+  bool reinit=false;
   
   unsigned long run;
   unsigned long subrun;
@@ -79,7 +80,7 @@ class DataModel {
   std::string RunType;
   float RunTypeVersion;
   // unused but needed
-  unsigned long NumEvents;
+  std::map<std::string,unsigned long> triggers;
 
   //SC
   Canbus* CB;

@@ -23,6 +23,7 @@ bool ACC_DataRead::Initialise(std::string configfile, DataModel &data){
 	if(configtext!="") m_variables.Initialise(configstream);
 	
 	// allow overrides from local config file
+	localconfigfile=configfile;
 	if(configfile!="") m_variables.Initialise(configfile);
 	
 	//m_variables.Print();
@@ -34,6 +35,12 @@ bool ACC_DataRead::Initialise(std::string configfile, DataModel &data){
 
 
 bool ACC_DataRead::Execute(){
+	
+	// if start of new run, re-fetch tool config
+	if(m_data->reinit){
+		Finalise();
+		Initialise(localconfigfile,*m_data);
+	}
 	
 	if(m_data->running){
 		
@@ -84,7 +91,5 @@ bool ACC_DataRead::Execute(){
 
 
 bool ACC_DataRead::Finalise(){
-	delete m_data->acc;
-	m_data->acc=0;
 	return true;
 }

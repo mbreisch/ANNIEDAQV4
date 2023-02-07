@@ -15,6 +15,17 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
   m_data->postgres_helper.SetVerbosity(m_verbose);
   
+  // configure the PGHelper to dump the configurations it retrieves
+  bool dumpconfigs = false;
+    std::ofstream* textout = nullptr;
+  if(m_variables.Get("dumpconfigs",dumpconfigs) && dumpconfigs){
+    m_data->postgres_helper.SetDumpConfigs(dumpconfigs);
+    textout = new std::ofstream("PGStarter_config.txt");
+    if(!textout->is_open()){
+      std::cerr<<"failed to open 'PGStarter_config.txt' for writing"<<std::endl;
+    }
+  }
+  
   // if we're the main DAQ we will make a new entry in the run table
   // at the start of each run. But only the main DAQ toolchain should do this.
   std::string systemname="";
@@ -25,7 +36,6 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
   } else {
     daqtoolchain = (systemname=="daq");
   }
- std::cout<<"system name "<<systemname<<std::endl;
   
   // get config file of settings for connecting to the database
   std::string pgsettingsfile="";
@@ -35,7 +45,6 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
         v_warning,verbosity);
     // i guess we can continue with defaults of everything
   }
-std::cout<<"initing pgclient"<<std::endl;
   
   get_ok = m_data->pgclient.Initialise(pgsettingsfile);
   if(not get_ok){
@@ -51,7 +60,6 @@ std::cout<<"initing pgclient"<<std::endl;
   // the returned json using a Store
   Store resultstore;
   
-std::cout<<"getting run info"<<std::endl;
   // make a query to get the run number
   // TODO update the PGHelper to work with the new PGClient to make these cleaner
   std::string resultstring="";
@@ -98,33 +106,30 @@ std::cout<<"getting run info"<<std::endl;
     Log("PGStarter failed to get subrunnum from query response '"+resultstring+"'",v_error,verbosity);
     return false;
   }
-  
+
   // if it's a new run we need to look up the run configuration.
   // if we're the main DAQ we do this from the command line args
   int runconfig;
-std::cout<<"split"<<std::endl;
-  if(new_run && daqtoolchain){
-std::cout<<"i am daq"<<std::endl;
+  std::string runtype="";
+  if(daqtoolchain){
     
     // get type of run from command line arg 1
-    std::string runtype="";
     m_data->vars.Get("$1",runtype);
     // we need to extract the runtype from the command line argument.
     // this may be something like 'Beam', but may also be './Beam'
     // or './configfiles/Beam/ToolChainConfig', so strip as appropriate
     
-    // first strip everything before the first slash
-    size_t apos = runtype.find('/');
+    // if '/ToolChainConfig' found, strip it
+    size_t apos=runtype.find("/ToolChainConfig");
     if(apos!=std::string::npos){
-    	runtype=runtype.substr(apos+1,std::string::npos);
+        runtype=runtype.substr(0,apos);
     }
-    // next strip any trailing '/ToolChainConfig' if present
-    apos=runtype.find("/ToolChainConfig");
+    
+    // if '/' found, strip off it and everything before it
+    apos=runtype.find_last_of("/");
     if(apos!=std::string::npos){
-    	runtype=runtype.substr(0,apos);
+        runtype=runtype.substr(apos+1,std::string::npos);
     }
-    // and finally strip any leading 'configfiles/'
-    apos=runtype.find("configfiles/");
     
     m_data->RunType=runtype;
     
@@ -139,7 +144,7 @@ std::cout<<"i am daq"<<std::endl;
                  "(SELECT max(version) FROM runconfig WHERE name='"+m_data->RunType+"');";
     get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
     if(not get_ok){
-      Log("PGStarter failed to get runtype id and version for type "+runtype
+      Log("PGStarter failed to get runtype id and version for type "+m_data->RunType
          +" with return "+std::to_string(get_ok)+" and error "+err,v_error,verbosity);
       return false;
     }
@@ -173,14 +178,13 @@ std::cout<<"i am daq"<<std::endl;
       return false;
     }
     
-std::cout<<"end split"<<std::endl;
     
   } else if(new_run){
     
-std::cout<<"not daq"<<std::endl;
     // if we are not the main toolchain we need to get the run configuration id
     // corresponding to the current run (i.e. latest run entry)
-    query_string = "SELECT runconfig FROM run WHERE runnum=(SELECT MAX(runnum) FROM run)";
+    // (limit 1 needed if we have subruns)
+    query_string = "SELECT runconfig FROM run WHERE runnum=(SELECT MAX(runnum) FROM run) LIMIT 1";
     get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
     if(not get_ok){
       Log("PGStarter failed to get runconfig number with return "+std::to_string(get_ok)
@@ -193,10 +197,11 @@ std::cout<<"not daq"<<std::endl;
       Log("PGStarter failed to get runconfig from query response '"+resultstring+"'",v_error,verbosity);
       return false;
     }
+    m_data->RunConfig=runconfig;
   }
-   
+  
   // next we use the runconfig to get the system configuration id from the runconfig entry
-  query_string = "SELECT "+systemname+" FROM runconfig WHERE id="+std::to_string(runconfig);
+  query_string = "SELECT "+systemname+" FROM runconfig WHERE id="+std::to_string(m_data->RunConfig);
   get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);
   if(not get_ok){
     Log("PGStarter failed to get "+systemname+" config ID with return "+std::to_string(get_ok)
@@ -219,7 +224,6 @@ std::cout<<"not daq"<<std::endl;
        +" and error "+err,v_error,verbosity);
     return false;
   }
-std::cout<<"after split, parsing toolsconfig: '"<<resultstring<<"'"<<std::endl;
   
   // the toolsconfig itself is a json representing a map of Tool to config file version number.
   // a combination of system name, tool name and version number uniquely identifies a configuration string
@@ -228,16 +232,28 @@ std::cout<<"after split, parsing toolsconfig: '"<<resultstring<<"'"<<std::endl;
   BoostStore* toolsconfigbstore = new BoostStore{};
   parser.Parse(resultstring, *toolsconfigbstore);
   std::string toolsconfigstring;
-std::cout<<"getting toolsconfig"<<std::endl;
   toolsconfigbstore->Get("toolsconfig",toolsconfigstring);
   // then parse that json in turn for the version numbers of each Tool's configuration
-std::cout<<"parsing it again '"<<toolsconfigstring<<"'"<<std::endl;
   parser.Parse(toolsconfigstring, *toolsconfigbstore);
   // we put that info in the datamodel. it'll be used by the PGHelper when each Tool
   // asks for its Tool configuration
-std::cout<<"putting in stores"<<std::endl;
-  m_data->Stores.emplace("ToolsConfig",toolsconfigbstore);
+  if(m_data->Stores.count("ToolsConfig")){
+    BoostStore* oldconfig = m_data->Stores.at("ToolsConfig");
+    delete oldconfig;
+  }
+  m_data->Stores["ToolsConfig"] = toolsconfigbstore;
   
+  if(textout){
+    *textout<<"SYSTEM: "<<systemname<<std::endl;
+    *textout<<"DAQ TOOLCHAIN: "<<daqtoolchain<<std::endl;
+    *textout<<"RUN: "<<m_data->run<<std::endl;
+    *textout<<"SUBRUN: "<<m_data->subrun<<std::endl;
+    *textout<<"NEW RUN:" <<new_run<<std::endl;
+    *textout<<"RUNTYPE: "<<m_data->RunType<<std::endl;
+    *textout<<"RUNCONFIG ID: "<<m_data->RunConfig<<std::endl;
+    *textout<<"SYSTEMCONFIG ID: "<<systemconfigid<<std::endl;
+    *textout<<"TOOLSCONFIG: "<<toolsconfigstring<<std::endl;
+  }
   
   Log("This run is run number "+std::to_string(m_data->run)
      +", subrun "+std::to_string(m_data->subrun),
@@ -248,7 +264,12 @@ std::cout<<"putting in stores"<<std::endl;
 
 
 bool PGStarter::Execute(){
-
+  
+  if(m_data->reinit){
+    Finalise();
+    Initialise("",*m_data);
+  }
+  
   return true;
 }
 
@@ -261,7 +282,7 @@ bool PGStarter::Finalise(){
 	  std::string resultstring;
 	  std::string err;
 	  int timeout_ms=5000;
-	  std::string query_string = "UPDATE run SET stop='now()', numevents="+std::to_string(m_data->NumEvents)
+	  std::string query_string = "UPDATE run SET stop='now()', numevents="+std::to_string(m_data->triggers["VME"])
 	                            +" WHERE runnum="+std::to_string(m_data->run)
 	                            +" AND subrunnum="+std::to_string(m_data->subrun)+";";
 	  get_ok = m_data->pgclient.SendQuery(dbname, query_string, &resultstring, &timeout_ms, &err);

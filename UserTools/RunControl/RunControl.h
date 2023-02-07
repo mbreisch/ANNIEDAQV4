@@ -30,7 +30,8 @@ class RunControl: public Tool {
  private:
 
   zmq::socket_t* sock;
-  zmq::pollitem_t items[1];       
+  zmq::pollitem_t items[1];
+  bool old_running;
   int zmq_polltimeo_ms;
 
 

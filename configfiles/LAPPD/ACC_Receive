@@ -2,7 +2,7 @@
 verbose 3
 
 # 3rd feb 2023 testing; local override
-RunStartConfigType local
-RunStartConfigName /home/pi/rsc1
-RunEndConfigType local
-RunEndConfigName /home/pi/rec1
+#RunStartConfigType local
+#RunStartConfigName /home/pi/rsc1
+#RunEndConfigType local
+#RunEndConfigName /home/pi/rec1

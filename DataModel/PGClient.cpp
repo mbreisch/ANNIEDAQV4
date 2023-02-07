@@ -143,6 +143,7 @@ bool PGClient::Initialise(std::string configfile){
 	std::cout<<"initialising message ID to "<<msg_id<<std::endl;
 	
 	// kick off a thread to do actual send and receive of messages
+	terminator = std::promise<void>{};
 	std::future<void> signal = terminator.get_future();
 	background_thread = std::thread(&PGClient::BackgroundThread, this, std::move(signal));
 	
@@ -733,9 +734,17 @@ bool PGClient::Finalise(){
 	std::cout<<"Deleting Utilities class"<<std::endl;
 	delete utilities; utilities=nullptr;
 	
+	// clear old connections
+	clt_pub_connections.clear();
+	clt_dlr_connections.clear();
+	
 	std::cout<<"deleting sockets"<<std::endl;
 	delete clt_pub_socket; clt_pub_socket=nullptr;
 	delete clt_dlr_socket; clt_dlr_socket=nullptr;
+	
+	// clear old associated polls
+	in_polls.clear();
+	out_polls.clear();
 	
 	std::cout<<"deleting context"<<std::endl;
 	// only delete context if it's local, not from the parent DataModel.
@@ -744,8 +753,12 @@ bool PGClient::Finalise(){
 	// same with logging
 	if(m_data==nullptr || m_data->Log==nullptr) delete m_log; m_log=nullptr;
 	
+	// clear old queries and responses
+	waiting_senders = std::queue<std::pair<Query, std::promise<int>>>{};
+	waiting_recipients.clear();
+	
 	// can't use 'Log' since we may have deleted the Logging class
-	std::cout<<"PGClient destructor done"<<std::endl;
+	std::cout<<"PGClient finalise done"<<std::endl;
 	
 	return true;
 }

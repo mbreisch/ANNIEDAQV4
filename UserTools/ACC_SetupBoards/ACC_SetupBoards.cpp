@@ -22,6 +22,7 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
 	if(configtext!="") m_variables.Initialise(configstream);
 	
 	// allow overrides from local config file
+	localconfigfile=configfile;   // note for reinit
 	if(configfile!="")  m_variables.Initialise(configfile);
 	
 	if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
@@ -30,7 +31,7 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
 	
 	//system("mkdir -p Results");
 	
-	m_data->acc = new ACC();
+	if(m_data->acc==nullptr) m_data->acc = new ACC();
 	
 	Timeoutcounter = 0;
 	TimeoutResetCount = 300;
@@ -41,6 +42,12 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
 
 
 bool ACC_SetupBoards::Execute(){
+	
+	// at start of run, re-fetch Tool config
+	if(m_data->reinit){
+		Finalise();
+		Initialise(localconfigfile,*m_data);
+	}
 	
 	//if(m_data->conf.receiveFlag==0){return true;}
 	
@@ -132,6 +139,8 @@ bool ACC_SetupBoards::Execute(){
 
 
 bool ACC_SetupBoards::Finalise(){
+	delete m_data->acc;
+	m_data->acc = nullptr;
 	return true;
 }
 
