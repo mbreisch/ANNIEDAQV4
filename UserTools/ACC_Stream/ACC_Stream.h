@@ -36,6 +36,8 @@ class ACC_Stream: public Tool {
       auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now().time_since_epoch()).count();
       return (unsigned long long)time;
   }
+
+  int LAPPD_ID;
  private:
 
   std::string localconfigfile;
@@ -46,6 +48,12 @@ class ACC_Stream: public Tool {
   int zmq_polltimeo_ms;
   
   unsigned long id;
+  
+  // verbosity levels: if 'verbosity' < this level, the message type will be logged.
+  int v_error=0;
+  int v_warning=1;
+  int v_message=2;
+  int v_debug=3;
   
 };
 

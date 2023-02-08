@@ -33,8 +33,11 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
     std::string port="0";
 
     //if(!m_variables.Get("IP",ip)) ip="127.0.0.1";
-    if(!m_variables.Get("Port",port)) port="89765";
-
+    port="89765";
+    get_ok = m_variables.Get("Port",port);
+    if(!get_ok) Log("ACC_Stream::Initialise got no port, falling back to default "+port,v_warning,m_verbose);
+    else Log("ACC_Stream::Initialise got port "+port,v_warning,m_verbose);
+    
     std::string connection="tcp://*:"+port;
 
     //std::cout<<"making socket from context "<<m_data->context<<std::endl;
@@ -74,6 +77,12 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
     things[0].revents = 0;
 
     id=0;
+
+    //Load LAPPD_ID
+    LAPPD_ID = -1;
+    m_variables.Get("LAPPD_ID",LAPPD_ID);
+
+	m_data->TCS.Buffer.insert(std::pair<int, queue<PsecData>>(LAPPD_ID,{}));
     
     return true;
 }
@@ -83,11 +92,15 @@ bool ACC_Stream::Execute(){
   
   // at start of  new run, re-fetch Tool config
   if(m_data->reinit){
+    Log("ACC_Stream detected reinitialise, Finalising...",v_warning,m_verbose);
     Finalise();
+    Log("ACC_Stream detected reinitialise, Re-Initialising...",v_warning,m_verbose);
     Initialise(localconfigfile,*m_data);
+    Log("ACC_Stream detected reinitialise, Reinitialised",v_warning,m_verbose);
   }
 
   // receive any outstanding acknowledgements
+  Log("ACC_Stream polling for acks...",v_debug,m_verbose);
   zmq::poll(&things[0], 1, zmq_polltimeo_ms);
   // XXX note: previously if we didn't get an ack quickly enough after sending a message,
   // we'd buffer it and send it again next time. But if the ack arrives in the meantime,
@@ -107,7 +120,7 @@ bool ACC_Stream::Execute(){
       if(ackid==id){
           // message acknowledged successfully
           // Remove the entry that was sent
-          m_data->TCS.Buffer.pop();
+          m_data->TCS.Buffer.at(LAPPD_ID).pop();
           // increment the id for next send
           ++id;
       } else {
@@ -123,8 +136,9 @@ bool ACC_Stream::Execute(){
     // always move the current readout to the buffer if it is valid,
     // then all we ever do is send from the buffer if we can and it has data
     if(m_data->psec.readRetval!=404){
+      Log("ACC_Stream got 404...",v_debug,m_verbose);
       m_data->psec.RawWaveform = m_data->psec.ReceiveData;
-      m_data->TCS.Buffer.push(m_data->psec);
+      m_data->TCS.Buffer.at(LAPPD_ID).push(m_data->psec);
     }
     
     // check for outgoing listener to send new data to
@@ -138,7 +152,7 @@ bool ACC_Stream::Execute(){
     {
         
         // check if the buffer has data
-        if(!m_data->TCS.Buffer.empty()){
+        if(!m_data->TCS.Buffer.at(LAPPD_ID).empty()){
             
             // We have data waiting to be sent
             printf("sending data\n");
@@ -155,7 +169,7 @@ bool ACC_Stream::Execute(){
                     
                 // then the entry itself
                 std::cout<<"sending buffered data!!!!!!!!!!!!!!!!!  : id="<<id<<std::endl;
-                send_ok = m_data->TCS.Buffer.front().Send(sock);
+                send_ok = m_data->TCS.Buffer.at(LAPPD_ID).front().Send(sock);
                 if(!send_ok){
                     Log("ACC_Stream error sending PsecData at front of queue!",0,0);
                 }
@@ -164,7 +178,7 @@ bool ACC_Stream::Execute(){
             } // end if sent id ok
             
             // verbose print
-            if(m_verbose>1){m_data->TCS.Buffer.front().Print();}
+            if(m_verbose>1){m_data->TCS.Buffer.at(LAPPD_ID).front().Print();}
             
             // we'll check for ack and pop it off on next Execute
             
@@ -177,6 +191,7 @@ bool ACC_Stream::Execute(){
     }
 
     //At the end always clear
+    Log("ACC_Stream clearing errors...",v_debug+3,m_verbose);
     m_data->psec.errorcodes.clear();
     m_data->psec.ReceiveData.clear();
     m_data->psec.BoardIndex.clear();
@@ -184,12 +199,14 @@ bool ACC_Stream::Execute(){
     m_data->psec.RawWaveform.clear();
 
     std::stringstream tmp;
-    tmp<<"U="<<m_data->TCS.Buffer.size();
+    tmp<<"U="<<m_data->TCS.Buffer.at(LAPPD_ID).size();
     m_data->vars.Set("Status", tmp.str());
   
   } else {
     // if not running, do not carry over old data
-    if(m_data->TCS.Buffer.size() > 0) m_data->TCS.Buffer = {};
+    Log("ACC_Stream clearing old data...",v_debug+3,m_verbose);
+    if(m_data->TCS.Buffer[LAPPD_ID].size() > 0) m_data->TCS.Buffer.at(LAPPD_ID) = {};
+    Log("ACC_Stream cleared",v_debug+3,m_verbose);
   }
   return true;
 }
@@ -197,8 +214,10 @@ bool ACC_Stream::Execute(){
 
 bool ACC_Stream::Finalise(){
     
+    Log("ACC_Stream deleting zmq socket",v_debug,m_verbose);
     delete sock;
-    sock=0; 
+    sock=0;
+    Log("ACC_Stream finalise done",v_debug,m_verbose);
 
     return true;
 }

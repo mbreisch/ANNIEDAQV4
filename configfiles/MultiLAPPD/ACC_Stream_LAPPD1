@@ -1,0 +1,7 @@
+#Verbosity
+verbose 1
+
+#LAPPD_ID
+LAPPD_ID 1
+
+Port 89764

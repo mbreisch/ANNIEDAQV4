@@ -3,7 +3,9 @@
 
 #include <string>
 #include <iostream>
+#include <map>
 #include <vector>
+#include <chrono>
 #include <queue>
 
 #include "Tool.h"
@@ -34,7 +36,6 @@ class ACC_SetupBoards: public Tool {
     bool Execute(); ///< Executre function used to perform Tool perpose. 
     bool Finalise(); ///< Finalise funciton used to clean up resorces.
 
-    int Timeoutcounter;
     int TimeoutResetCount; ///< how many timeouts before we reset the ACC
 
  private:

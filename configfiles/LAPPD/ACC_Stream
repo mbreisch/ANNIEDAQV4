@@ -1,5 +1,6 @@
 #Verbosity
-verbose 10
+verbose 1
 
-
+#LAPPD_ID
+LAPPD_ID 0
 
