@@ -73,6 +73,10 @@ bool ACC_Stream::Initialise(std::string configfile, DataModel &data){
     things[0].revents = 0;
 
     id=0;
+
+    //Load LAPPD_ID
+    LAPPD_ID = -1;
+    m_variables.Get("LAPPD_ID",LAPPD_ID);
     
     return true;
 }
@@ -100,7 +104,7 @@ bool ACC_Stream::Execute(){
       if(ackid==id){
           // message acknowledged successfully
           // Remove the entry that was sent
-          m_data->TCS.Buffer.pop();
+          m_data->TCS.Buffer.at(LAPPD_ID).pop();
           // increment the id for next send
           ++id;
       } else {
@@ -117,7 +121,7 @@ bool ACC_Stream::Execute(){
     // then all we ever do is send from the buffer if we can and it has data
     if(m_data->psec.readRetval!=404){
       m_data->psec.RawWaveform = m_data->psec.ReceiveData;
-      m_data->TCS.Buffer.push(m_data->psec);
+      m_data->TCS.Buffer.at(LAPPD_ID).push(m_data->psec);
     }
     
     // check for outgoing listener to send new data to
@@ -131,7 +135,7 @@ bool ACC_Stream::Execute(){
     {
         
         // check if the buffer has data
-        if(!m_data->TCS.Buffer.empty()){
+        if(!m_data->TCS.Buffer.at(LAPPD_ID).empty()){
             
             // We have data waiting to be sent
             printf("sending data\n");
@@ -148,7 +152,7 @@ bool ACC_Stream::Execute(){
                     
                 // then the entry itself
                 std::cout<<"sending buffered data!!!!!!!!!!!!!!!!!  : id="<<id<<std::endl;
-                send_ok = m_data->TCS.Buffer.front().Send(sock);
+                send_ok = m_data->TCS.Buffer.at(LAPPD_ID).front().Send(sock);
                 if(!send_ok){
                     Log("ACC_Stream error sending PsecData at front of queue!",0,0);
                 }
@@ -157,7 +161,7 @@ bool ACC_Stream::Execute(){
             } // end if sent id ok
             
             // verbose print
-            if(m_verbose>1){m_data->TCS.Buffer.front().Print();}
+            if(m_verbose>1){m_data->TCS.Buffer.at(LAPPD_ID).front().Print();}
             
             // we'll check for ack and pop it off on next Execute
             
@@ -177,12 +181,12 @@ bool ACC_Stream::Execute(){
     m_data->psec.RawWaveform.clear();
 
     std::stringstream tmp;
-    tmp<<"U="<<m_data->TCS.Buffer.size();
+    tmp<<"U="<<m_data->TCS.Buffer.at(LAPPD_ID).size();
     m_data->vars.Set("Status", tmp.str());
   
   } else {
     // if not running, do not carry over old data
-    if(m_data->TCS.Buffer.size() > 0) m_data->TCS.Buffer = {};
+    if(m_data->TCS.Buffer.at(LAPPD_ID).size() > 0) m_data->TCS.Buffer.at(LAPPD_ID) = {};
   }
   return true;
 }

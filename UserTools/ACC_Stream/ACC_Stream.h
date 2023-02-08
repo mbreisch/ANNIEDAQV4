@@ -36,6 +36,8 @@ class ACC_Stream: public Tool {
       auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now().time_since_epoch()).count();
       return (unsigned long long)time;
   }
+
+  int LAPPD_ID;
  private:
 
   zmq::socket_t* sock;

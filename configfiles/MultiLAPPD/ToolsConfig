@@ -1,0 +1,8 @@
+PGStarter PGStarter configfiles/MultiLAPPD/PGStarterConfig
+RunControl RunControl configfiles/MultiLAPPD/RunControl
+ACC_Receive ACC_Receive configfiles/MultiLAPPD/ACC_Receive
+ACC_SetupBoards ACC_SetupBoards configfiles/MultiLAPPD/ACC_SetupBoards
+ACC_DataRead_LAPPD1 ACC_DataRead configfiles/MultiLAPPD/ACC_DataRead_LAPPD1
+ACC_Stream_LAPPD1 ACC_Stream configfiles/MultiLAPPD/ACC_Stream_LAPPD1
+ACC_DataRead_LAPPD2 ACC_DataRead configfiles/MultiLAPPD/ACC_DataRead_LAPPD2
+ACC_Stream_LAPPD2 ACC_Stream configfiles/MultiLAPPD/ACC_Stream_LAPPD2

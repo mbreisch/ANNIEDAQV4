@@ -3,9 +3,10 @@
 
 #include <string>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <vector>
 #include <chrono>
+#include <queue>
 
 #include "Tool.h"
 
@@ -32,12 +33,12 @@ class ACC_DataRead: public Tool {
   bool Execute(); ///< Executre function used to perform Tool perpose. 
   bool Finalise(); ///< Finalise funciton used to clean up resorces.
 
+  vector<int> LAPPD_on_ACC;
+  int LAPPD_ID;
+  int Port_0;
+  int Port_1;
 
  private:
-
-
-
-
 
 };
 

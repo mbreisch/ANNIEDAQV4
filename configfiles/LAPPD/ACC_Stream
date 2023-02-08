@@ -1,12 +1,9 @@
 #Verbosity
-verbose 10
+verbose 1
 
-#Overall ACC/ACDC config file
-# To change
-IP 127.0.0.1
-# Do not change
-IP_BIND 0.0.0.0
-Port 89765
-Port_BIND 6666
+#LAPPD_ID
+LAPPD_ID 0
+
+
 
 

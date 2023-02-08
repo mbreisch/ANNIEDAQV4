@@ -511,11 +511,10 @@ int ACC::readAcdcBuffers()
 }
 */
 
-/*ID 15: Main listen fuction for data readout. Runs for 5s before retuning a negative*/
-int ACC::listenForAcdcData(int trigMode)
+/*ID 15: Main listen fuction for data readout. Runs for .5s before retuning a 404*/
+int ACC::listenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 {
 	vector<int> boardsReadyForRead;
-    vector<int> boardCheck;
 	map<int,int> readoutSize;
 	unsigned int command; 
 	bool clearCheck;
@@ -541,7 +540,6 @@ int ACC::listenForAcdcData(int trigMode)
 	{ 
 		//Clear the boards read vector
 		boardsReadyForRead.clear(); 
-        boardCheck.clear();
 		readoutSize.clear();
         lastAccBuffer.clear();
 
@@ -579,52 +577,28 @@ int ACC::listenForAcdcData(int trigMode)
 
 
 		//go through all boards on the acc info frame and if 7795 words were transfered note that board
-		for(int k=0; k<MAX_NUM_BOARDS; k++)
+		for(int k: LAPPD_on_ACC)
 		{
 			if(lastAccBuffer.at(14) & (1 << k))
 			{
 				if(lastAccBuffer.at(16+k)==PSECFRAME)
 				{
-					boardCheck.push_back(k);
+					boardsReadyForRead.push_back(k);
 					readoutSize[k] = PSECFRAME;
 				}else if(lastAccBuffer.at(16+k)==PPSFRAME)
 				{
-					boardCheck.push_back(k);
+					boardsReadyForRead.push_back(k);
 					readoutSize[k] = PPSFRAME;
 				}
 			}
 		}
 
 		//old trigger
-		if(boardCheck==alignedAcdcIndices)
+		if(boardsReadyForRead==LAPPD_on_ACC)
 		{
-            boardsReadyForRead = boardCheck;
-            boardCheck.clear();
 			map_accIF = lastAccBuffer;
 			break;
 		}
-
-		/*new trigger
-        bool control = false;
-        if(std::find(boardCheck.begin(),boardCheck.end(),LAPPD1[0])!=boardCheck.end() && std::find(boardCheck.begin(),boardCheck.end(),LAPPD1[1])!=boardCheck.end()) 
-        {
-            control = true;
-            boardsReadyForRead.push_back(LAPPD1[0]);
-            boardsReadyForRead.push_back(LAPPD1[1]);
-        }
-        if(std::find(boardCheck.begin(),boardCheck.end(),LAPPD2[0])!=boardCheck.end() && std::find(boardCheck.begin(),boardCheck.end(),LAPPD2[1])!=boardCheck.end()) 
-        {
-            control = true;
-            boardsReadyForRead.push_back(LAPPD2[0]);
-            boardsReadyForRead.push_back(LAPPD2[1]);
-        }
-        if(control==true)
-        {
-            boardCheck.clear();
-            map_accIF = lastAccBuffer;
-            break;
-        }
-        */
 	}
 
     //check for mixed buffersizes

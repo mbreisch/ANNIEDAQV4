@@ -96,7 +96,7 @@ public:
 	/*ID 14: Software read function*/
 	//int readAcdcBuffers(); 
 	/*ID 15: Main listen fuction for data readout. Runs for 5s before retuning a negative*/
-	int listenForAcdcData(int trigMode); 
+	int listenForAcdcData(int trigMode,vector<int> LAPPD_on_ACC); 
 	/*ID 16: Used to dis/enable transfer data from the PSEC chips to the buffers*/
 	void enableTransfer(int onoff=0); 
 	/*ID 17: Main init function that controls generalk setup as well as trigger settings*/
