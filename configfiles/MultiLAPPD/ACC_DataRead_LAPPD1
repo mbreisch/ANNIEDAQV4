@@ -2,7 +2,7 @@
 verbose 1
 
 #LAPPD ID
-LAPPD_ID 1
+LAPPD_ID 0
 
 #LAPPD Port connections
 Port_0 0

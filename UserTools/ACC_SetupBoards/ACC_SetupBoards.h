@@ -37,6 +37,7 @@ class ACC_SetupBoards: public Tool {
     bool Finalise(); ///< Finalise funciton used to clean up resorces.
 
     int TimeoutResetCount; ///< how many timeouts before we reset the ACC
+    float PPSWaitMultiplier; ///< Multiplier that multiplies the set PPS value and sets this as wait condition for the timeouts
 
  private:
 

@@ -5,5 +5,6 @@ verbose 1
 LAPPD_ID 0
 
 #LAPPD Port connections
+# Finished! Changed for debug purposes normally 0 and 1 for LAPPD40
 Port_0 0
 Port_1 1

@@ -1,3 +1,4 @@
 #Verbosity
 verbose 1
-
+RunStartConfigType local
+RunStartConfigName /home/pi/ACC_SetupBoards_RunStartConfig_v2.txt

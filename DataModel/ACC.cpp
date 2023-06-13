@@ -573,8 +573,10 @@ int ACC::listenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 		if(lastAccBuffer.size()==0)
 		{
 			continue;
+		}else
+		{
+			map_accIF = lastAccBuffer;
 		}
-
 
 		//go through all boards on the acc info frame and if 7795 words were transfered note that board
 		for(int k: LAPPD_on_ACC)
@@ -917,23 +919,39 @@ void ACC::resetACC()
 
 /*---------------------------------New commands--------------------------------------*/
 /*ID 29: SMA special input on*/
-void ACC::setSMA_ON()
-{
-	unsigned int command = 0xFF900001;
-	usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC29EE01);}
+void ACC::setSMA_ON(bool PPS,bool Beamgate)
+{	
+	unsigned int command;
+	if(PPS==true)
+	{
+		command = 0xFF900001;
+		usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC29EE01);}
+	}
 	usleep(1000000);
-	command = 0xFF910001;
-	usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC29EE02);}
+	
+	if(Beamgate==true)
+	{
+		command = 0xFF910001;
+		usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC29EE02);}
+	}
 	usleep(1000000);
 }
 
 /*ID 30: SMA special input off*/
-void ACC::setSMA_OFF()
+void ACC::setSMA_OFF(bool PPS,bool Beamgate)
 {
-	unsigned int command = 0xFF900000;
-	usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC30EE01);}
-	usleep(1000000);
-	command = 0xFF910000;
-	usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC30EE02);}
-	usleep(1000000);
+        unsigned int command;
+        if(PPS==true)
+        {
+                command = 0xFF900000;
+                usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC30EE01);}
+        }
+        usleep(1000000);
+
+        if(Beamgate==true)
+        {
+                command = 0xFF910000;
+                usb->sendData(command); if(usbcheck==false){errorcode.push_back(0xAC30EE02);}
+        }
+        usleep(1000000);
 }

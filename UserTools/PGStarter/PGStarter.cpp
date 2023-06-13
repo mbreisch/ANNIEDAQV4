@@ -88,6 +88,7 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
     // calling Initialise again, it's for a new subrun
     new_run=false;
   };
+  m_data->run = runnum;
   
   // make a query to get the subrrun for this runnum
   resultstring="";
@@ -106,6 +107,7 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
     Log("PGStarter failed to get subrunnum from query response '"+resultstring+"'",v_error,verbosity);
     return false;
   }
+  m_data->subrun = subrunnum;
 
   // if it's a new run we need to look up the run configuration.
   // if we're the main DAQ we do this from the command line args
@@ -265,9 +267,17 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
 
 bool PGStarter::Execute(){
   
-  if(m_data->reinit){
-    Finalise();
-    Initialise("",*m_data);
+  try {
+    if(m_data->reinit){
+      Log("PGStarter reinit set: Finalising...",v_message,verbosity);
+      Finalise();
+      Log("...Initialising...",v_message,verbosity);
+      Initialise("",*m_data);
+      Log("PGStarter reinit done",v_message,verbosity);
+    }
+  } catch(std::exception& e){
+    std::cout<<"PGStarter::Execute experienced an error '"<<e.what()<<"' reinitialising!"<<std::endl;
+    return false;
   }
   
   return true;

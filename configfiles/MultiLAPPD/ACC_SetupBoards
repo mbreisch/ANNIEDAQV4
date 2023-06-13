@@ -1,2 +1,6 @@
 #Verbosity
-verbose 1
+verbose 10
+
+#Local multiplier for the wait time once data taking stops
+#Wait is multiplied by the set PPS value
+PPSWaitMultiplier 3

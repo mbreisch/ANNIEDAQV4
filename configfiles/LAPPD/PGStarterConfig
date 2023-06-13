@@ -1,2 +1,2 @@
-verbosity 3
+verbosity 30
 pgsettingsfile configfiles/LAPPD/PGClientConfig

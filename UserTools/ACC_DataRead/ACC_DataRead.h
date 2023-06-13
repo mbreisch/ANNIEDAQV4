@@ -33,6 +33,7 @@ class ACC_DataRead: public Tool {
   bool Execute(); ///< Executre function used to perform Tool perpose.
   bool Finalise(); ///< Finalise funciton used to clean up resorces.
 
+  map<int,unsigned short> PreviousBuffer;
   vector<int> LAPPD_on_ACC;
   int LAPPD_ID;
   int Port_0;

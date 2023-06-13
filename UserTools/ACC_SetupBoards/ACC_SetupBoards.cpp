@@ -35,6 +35,9 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
 	
 	TimeoutResetCount = 300;
 	m_variables.Get("TimeoutResetCount",TimeoutResetCount);
+	PPSWaitMultiplier = 10;
+	m_variables.Get("PPSWaitMultiplier",PPSWaitMultiplier);
+
 	
 	return true;
 }
@@ -47,54 +50,42 @@ bool ACC_SetupBoards::Execute(){
 		Finalise();
 		Initialise(localconfigfile,*m_data);
 	}
-	
-	//if(m_data->conf.receiveFlag==0){return true;}
+
+	bool StartReset = false;
 	for(std::map<int, int>::iterator it=m_data->TCS.Timeoutcounter.begin(); it!=m_data->TCS.Timeoutcounter.end(); ++it)
 	{
-        if(it->second>=TimeoutResetCount)
-        {
-            m_data->TCS.Timeoutcounter.at(it->first) = 0; //Reset the timeout counter 
-            
-            //IF THERE ARE PROBLEMS 
-            //COMMENT FROM HERE -----------
-            m_data->conf.receiveFlag = 1; //Re-init the Setup part uf the tool
-            m_data->conf.RunControl = 0; //Re-clear the buffers
-            
-            //Print debug frame as overwrite
-            vector<unsigned short> PrintFrame = m_data->acc->getACCInfoFrame();
-            std::fstream outfile("./configfiles/ReadOutChain/ACCIF.txt", std::ios_base::out | std::ios_base::trunc);
-            outfile << "Caused by LAPPD ID " << it->first << std::endl;
-            for(int j=0; j<PrintFrame.size(); j++)
-            {
-                outfile << std::hex << PrintFrame[j] << std::endl; 
-            }
-            outfile << std::dec;
-            outfile.close();
-            PrintFrame.clear();
-            break;
-            //TO HERE -------------
-        }
-    }
-        
-	
-	bool setupret = false;
-	if(m_data->conf.receiveFlag==1)
-	{
-		if(m_data->conf.RunControl==0 || m_data->conf.RunControl==1)
-		{
-			//queue<PsecData>().swap(m_data->TCS.Buffer);
-            for(std::map<int, queue<PsecData>>::iterator ib=m_data->TCS.Buffer.begin(); ib!=m_data->TCS.Buffer.end(); ++ib)
-	        {
-                queue<PsecData>().swap(m_data->TCS.Buffer.at(ib->first));
-            }       
-			m_data->psec.errorcodes.clear();
-			m_data->psec.ReceiveData.clear();
-			m_data->psec.BoardIndex.clear();
-			m_data->psec.AccInfoFrame.clear();
-			m_data->psec.RawWaveform.clear();
-			m_data->conf.RunControl=-1;
+        	if(it->second>TimeoutResetCount)
+        	{
+			std::cout << "Timeout of " << it->first << " with " << it->second << " against " << TimeoutResetCount << std::endl;
+			StartReset = true;
 		}
-		
+	}
+
+	if(StartReset==true)
+	{
+    		//IF THERE ARE PROBLEMS
+    		//COMMENT FROM HERE -----------
+    		m_data->conf.receiveFlag = 1; //Re-init the Setup part uf the tool
+    		//m_data->conf.RunControl = 0; //Re-clear the buffers
+
+    		//Print debug frame as overwrite
+    		vector<unsigned short> PrintFrame = m_data->acc->getACCInfoFrame();
+    		std::fstream outfile("./configfiles/LAPPD/ACCIF.txt", std::ios_base::out | std::ios_base::trunc);
+    		//outfile << "Caused by LAPPD ID " << it->first << std::endl;
+    		for(int j=0; j<PrintFrame.size(); j++)
+    		{
+        		outfile << std::hex << PrintFrame[j] << std::endl; 
+    		}
+    		outfile << std::dec;
+    		outfile.close();
+    		PrintFrame.clear();
+    		//break;
+    		//TO HERE -------------
+
+		for(std::map<int, int>::iterator it=m_data->TCS.Timeoutcounter.begin(); it!=m_data->TCS.Timeoutcounter.end(); ++it)
+		{
+			m_data->TCS.Timeoutcounter.at(it->first) = 0; //Reset the timeout counter
+		}
 		if(m_data->conf.ResetSwitchACC == 1)
 		{
 			m_data->acc->resetACC();
@@ -103,11 +94,33 @@ bool ACC_SetupBoards::Execute(){
 		{
 			m_data->acc->resetACDC();
 		}
-		
+    	}
+
+
+	bool setupret = false;
+	if(m_data->conf.receiveFlag==1)
+	{
+		if(m_data->conf.RunControl==0 || m_data->conf.RunControl==1)
+		{
+			//queue<PsecData>().swap(m_data->TCS.Buffer);
+            		for(std::map<int, queue<PsecData>>::iterator ib=m_data->TCS.Buffer.begin(); ib!=m_data->TCS.Buffer.end(); ++ib)
+	        	{
+                		queue<PsecData>().swap(m_data->TCS.Buffer.at(ib->first));
+	            	}
+			m_data->psec.errorcodes.clear();
+			m_data->psec.ReceiveData.clear();
+			m_data->psec.BoardIndex.clear();
+			m_data->psec.AccInfoFrame.clear();
+			m_data->psec.RawWaveform.clear();
+			m_data->conf.RunControl=-1;
+
+			m_data->acc->resetACC();
+			m_data->acc->resetACDC();
+		}
 		setupret = Setup();
 		return setupret;
 	}
-	
+
 	return true;
 }
 
@@ -185,14 +198,18 @@ bool ACC_SetupBoards::Setup(){
 	ppsratio = std::stoul(ss5.str(),nullptr,16);
 	m_data->acc->setPPSRatio(ppsratio);
 	
+	//SetMaxTimeoutValue
+	TimeoutResetCount = (PPSWaitMultiplier*m_data->conf.PPSRatio)/(m_data->TCS.Timeoutcounter.size()*(timeout/1000.0));
+	std::cout << "Created new timeout value based on " << m_data->conf.PPSRatio << " with " << TimeoutResetCount << std::endl;
+
 	m_data->acc->setPPSBeamMultiplexer(m_data->conf.PPSBeamMultiplexer);
 
 	if(m_data->conf.SMA == 0)
 	{
-	  m_data->acc->setSMA_OFF();
+	  m_data->acc->setSMA_OFF(false,true);
 	}else if(m_data->conf.SMA == 1)
 	{
-	  m_data->acc->setSMA_ON();
+	  m_data->acc->setSMA_ON(false,true);
 	}
 	
 	int retval;
