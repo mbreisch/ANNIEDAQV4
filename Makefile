@@ -16,10 +16,6 @@ endif
 ZMQLib= -L $(Dependencies)/zeromq-4.0.7/lib -lzmq 
 ZMQInclude= -I $(Dependencies)/zeromq-4.0.7/include/ 
 
-YOCTOLib = -L $(Dependencies)/YOCTO/Binaries/linux/armhf -lyocto -lm -lpthread
-YOCTOInclude = -I $(Dependencies)/YOCTO/Sources
-
-
 BoostLib= -L $(Dependencies)/boost_1_66_0/install/lib -lboost_date_time -lboost_serialization -lboost_iostreams -lboost_system
 BoostInclude= -I $(Dependencies)/boost_1_66_0/install/include
 
@@ -28,8 +24,8 @@ PostgresLib=
 PostgresInclude=
 #-I $(Dependencies)/pqxx/install/include
 
-DataModelInclude = $(PostgresInclude) $(YOCTOInclude)
-DataModelLib = $(PostgresLib) $(YOCTOLib) -lusb-1.0 -lwiringPi   
+DataModelInclude = $(PostgresInclude) 
+DataModelLib = $(PostgresLib) -lusb-1.0  
 
 MyToolsInclude = $(PostgresInclude) 
 #-I ToolDAQ/curl-7.65.3/install/include/

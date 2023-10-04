@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.set": "yaml",
+        "Settings": "jade",
+        "vector": "cpp"
+    }
+}

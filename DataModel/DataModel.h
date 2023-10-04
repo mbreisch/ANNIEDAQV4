@@ -17,10 +17,11 @@
 
 #include <zmq.hpp>
 
-#include <Canbus.h>
-#include <SlowControlMonitor.h>
+
 //ACC classes
 #include <ACC.h>
+#include <ACC_ETH.h>
+#include <ACC_USB.h>
 #include <PsecData.h>
 #include <PsecConfig.h>
 #include <TempClassStore.h>
@@ -82,9 +83,6 @@ class DataModel {
   // unused but needed
   std::map<std::string,unsigned long> triggers;
 
-  //SC
-  Canbus* CB;
-  SlowControlMonitor SCMonitor;
   //ACC
   stdUSB* usb;
   ACC* acc;
