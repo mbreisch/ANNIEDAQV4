@@ -79,7 +79,7 @@ class ACC_ETH : public ACC
         //------------------------------------------------------------------------------------//
         //-------------------------Local set functions for board setup------------------------//
         //ID 4: Main init function that controls generalk setup as well as trigger settings//
-        int InitializeForDataReadout(unsigned int boardmask = 0xFF, int triggersource = 0)  override ; 
+        int InitializeForDataReadout(unsigned int boardmask = 0xFF, int triggersource = 0) override ; 
         //ID 5: Set up the software trigger//
         int SetTriggerSource(unsigned int boardmask = 0xFF, int triggersource = 0) override ; 
         //ID 6: Main listen fuction for data readout. Runs for 5s before retuning a negative//
@@ -90,7 +90,7 @@ class ACC_ETH : public ACC
         //ID 8: Fires the software trigger//
         void GenerateSoftwareTrigger() override ; 
         //ID 9: Tells ACDCs to clear their ram.// 	
-        void DumpData(unsigned int boardMask = 0xFF) override ; 
+        void DumpData(unsigned int boardmask = 0xFF) override ; 
         //ID 10
         void ResetACDC() override ; //resets the acdc boards
         //ID 11
