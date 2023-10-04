@@ -35,8 +35,8 @@ class ACC
         virtual void DumpData(unsigned int boardMask = 0xFF) = 0;
         virtual void ResetACDC() = 0;
         virtual void ResetACC() = 0;
-        virtual void SetSMA_Debug() = 0;
-        virtual bool SetPedestals() = 0;
+        virtual void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate) = 0;
+        virtual bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) = 0;
         virtual void ClearData() = 0;
         virtual void ClearErrors() = 0;
 };
