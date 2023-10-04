@@ -10,6 +10,9 @@
 
 #include "Tool.h"
 
+#include <ACC_ETH.h>
+#include <ACC_USB.h>
+
 using namespace std;
 
 #define MAX_NUM_BOARDS 8
@@ -38,11 +41,12 @@ class ACC_SetupBoards: public Tool {
 
     int TimeoutResetCount; ///< how many timeouts before we reset the ACC
     float PPSWaitMultiplier; ///< Multiplier that multiplies the set PPS value and sets this as wait condition for the timeouts
+    std::string IP;
+    std::string Port;
 
  private:
 
     bool Setup();
-    void LoadDefaults();
     std::string localconfigfile;
 
 };

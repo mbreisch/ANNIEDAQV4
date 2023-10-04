@@ -31,20 +31,34 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
 	
 	//system("mkdir -p Results");
 	
-	if(m_data->acc==nullptr) m_data->acc = new ACC();
+    if(!m_variables.Get("Interface_Name",m_data->TCS.Interface_Name)) m_data->TCS.Interface_Name="USB";
+    if(!m_variables.Get("Interface_IP",m_data->TCS.Interface_IP)) m_data->TCS.Interface_IP="127.0.0.1";
+    if(!m_variables.Get("Interface_Port",m_data->TCS.Interface_Port)) m_data->TCS.Interface_Port="8.8.8.8";
+	if(m_data->acc==nullptr)
+    {
+        if(strcmp(m_data->TCS.Interface_Name,"USB") == 0)
+        {
+            m_data->acc = new ACC_USB();
+        }else if(strcmp(m_data->TCS.Interface_Name,"ETH") == 0)
+        {
+            m_data->acc = new ACC_ETH(m_data->TCS.Interface_IP, m_data->TCS.Interface_Port);
+        }else
+        {
+            std::cout << "Invalid Interface_Name" << std::endl;
+        }
+    }
 	
 	TimeoutResetCount = 300;
 	m_variables.Get("TimeoutResetCount",TimeoutResetCount);
 	PPSWaitMultiplier = 10;
 	m_variables.Get("PPSWaitMultiplier",PPSWaitMultiplier);
 
-	
 	return true;
 }
 
 
-bool ACC_SetupBoards::Execute(){
-	
+bool ACC_SetupBoards::Execute()
+{
 	// at start of run, re-fetch Tool config
 	if(m_data->reinit){
 		Finalise();
@@ -63,24 +77,19 @@ bool ACC_SetupBoards::Execute(){
 
 	if(StartReset==true)
 	{
-    		//IF THERE ARE PROBLEMS
-    		//COMMENT FROM HERE -----------
-    		m_data->conf.receiveFlag = 1; //Re-init the Setup part uf the tool
-    		//m_data->conf.RunControl = 0; //Re-clear the buffers
+        //Re-init the Setup part uf the tool
+        m_data->conf.receiveFlag = 1; 
 
-    		//Print debug frame as overwrite
-    		vector<unsigned short> PrintFrame = m_data->acc->getACCInfoFrame();
-    		std::fstream outfile("./configfiles/LAPPD/ACCIF.txt", std::ios_base::out | std::ios_base::trunc);
-    		//outfile << "Caused by LAPPD ID " << it->first << std::endl;
-    		for(int j=0; j<PrintFrame.size(); j++)
-    		{
-        		outfile << std::hex << PrintFrame[j] << std::endl; 
-    		}
-    		outfile << std::dec;
-    		outfile.close();
-    		PrintFrame.clear();
-    		//break;
-    		//TO HERE -------------
+        //Print debug frame as overwrite
+        vector<unsigned short> PrintFrame = m_data->acc->ReturnACCIF();
+        std::fstream outfile("./configfiles/LAPPD/ACCIF.txt", std::ios_base::out | std::ios_base::trunc);
+        for(int j=0; j<PrintFrame.size(); j++)
+        {
+            outfile << std::hex << PrintFrame[j] << std::endl; 
+        }
+        outfile << std::dec;
+        outfile.close();
+        PrintFrame.clear();
 
 		for(std::map<int, int>::iterator it=m_data->TCS.Timeoutcounter.begin(); it!=m_data->TCS.Timeoutcounter.end(); ++it)
 		{
@@ -88,25 +97,23 @@ bool ACC_SetupBoards::Execute(){
 		}
 		if(m_data->conf.ResetSwitchACC == 1)
 		{
-			m_data->acc->resetACC();
+			m_data->acc->ResetACC();
 		}
 		if(m_data->conf.ResetSwitchACDC == 1)
 		{
-			m_data->acc->resetACDC();
+			m_data->acc->ResetACDC();
 		}
-    	}
-
+    }
 
 	bool setupret = false;
 	if(m_data->conf.receiveFlag==1)
 	{
 		if(m_data->conf.RunControl==0 || m_data->conf.RunControl==1)
 		{
-			//queue<PsecData>().swap(m_data->TCS.Buffer);
-            		for(std::map<int, queue<PsecData>>::iterator ib=m_data->TCS.Buffer.begin(); ib!=m_data->TCS.Buffer.end(); ++ib)
-	        	{
-                		queue<PsecData>().swap(m_data->TCS.Buffer.at(ib->first));
-	            	}
+            for(std::map<int, queue<PsecData>>::iterator ib=m_data->TCS.Buffer.begin(); ib!=m_data->TCS.Buffer.end(); ++ib)
+            {
+                queue<PsecData>().swap(m_data->TCS.Buffer.at(ib->first));
+            }
 			m_data->psec.errorcodes.clear();
 			m_data->psec.ReceiveData.clear();
 			m_data->psec.BoardIndex.clear();
@@ -114,8 +121,8 @@ bool ACC_SetupBoards::Execute(){
 			m_data->psec.RawWaveform.clear();
 			m_data->conf.RunControl=-1;
 
-			m_data->acc->resetACC();
-			m_data->acc->resetACDC();
+			m_data->acc->ResetACC();
+			m_data->acc->ResetACDC();
 		}
 		setupret = Setup();
 		return setupret;
@@ -125,60 +132,61 @@ bool ACC_SetupBoards::Execute(){
 }
 
 
-bool ACC_SetupBoards::Finalise(){
+bool ACC_SetupBoards::Finalise()
+{
 	delete m_data->acc;
 	m_data->acc = nullptr;
 	return true;
 }
 
 
-bool ACC_SetupBoards::Setup(){
-	
+bool ACC_SetupBoards::Setup()
+{
 	bool ret=false;
 	
 	//Set timeout value
 	int timeout;
 	m_variables.Get("Timeout",timeout);
-	m_data->acc->setTimeoutInMs(timeout);
+	m_data->acc->SetTimeoutInMs(timeout);
 	
 	//polarity
-	m_data->acc->setSign(m_data->conf.ACC_Sign, 2);
-	m_data->acc->setSign(m_data->conf.ACDC_Sign, 3);
-	m_data->acc->setSign(m_data->conf.SELF_Sign, 4);
+	m_data->acc->SetSign(m_data->conf.ACC_Sign, 2);
+	m_data->acc->SetSign(m_data->conf.ACDC_Sign, 3);
+	m_data->acc->SetSign(m_data->conf.SELF_Sign, 4);
 	
 	//self trigger options
-	m_data->acc->setEnableCoin(m_data->conf.SELF_Enable_Coincidence);
+	m_data->acc->SetEnableCoin(m_data->conf.SELF_Enable_Coincidence);
 	
 	unsigned int coinNum;
 	stringstream ss;
 	ss << std::hex << m_data->conf.SELF_Coincidence_Number;
 	coinNum = std::stoul(ss.str(),nullptr,16);
-	m_data->acc->setNumChCoin(coinNum);
+	m_data->acc->SetNumChCoin(coinNum);
 	
 	unsigned int threshold;
 	stringstream ss2;
 	ss2 << std::hex << m_data->conf.SELF_threshold;
 	threshold = std::stoul(ss2.str(),nullptr,16);
-	m_data->acc->setThreshold(threshold);
+	m_data->acc->SetThreshold(threshold);
 	
 	//psec masks combine
 	std::vector<int> PsecChipMask = {m_data->conf.PSEC_Chip_Mask_0,m_data->conf.PSEC_Chip_Mask_1,m_data->conf.PSEC_Chip_Mask_2,m_data->conf.PSEC_Chip_Mask_3,m_data->conf.PSEC_Chip_Mask_4};
 	std::vector<unsigned int> VecPsecChannelMask = {m_data->conf.PSEC_Channel_Mask_0,m_data->conf.PSEC_Channel_Mask_1,m_data->conf.PSEC_Channel_Mask_2,m_data->conf.PSEC_Channel_Mask_3,m_data->conf.PSEC_Channel_Mask_4};
-	m_data->acc->setPsecChipMask(PsecChipMask);
-	m_data->acc->setPsecChannelMask(VecPsecChannelMask);
+	m_data->acc->SetPsecChipMask(PsecChipMask);
+	m_data->acc->SetPsecChannelMask(VecPsecChannelMask);
 	
 	//validation window
 	unsigned int validationStart;
 	stringstream ss31;
 	ss31 << std::hex << (int)m_data->conf.Validation_Start/25;
 	validationStart = std::stoul(ss31.str(),nullptr,16);
-	m_data->acc->setValidationStart(validationStart);
+	m_data->acc->SetValidationStart(validationStart);
 	
 	unsigned int validationWindow;
 	stringstream ss32;
 	ss32 << std::hex << (int)m_data->conf.Validation_Window/25;
 	validationWindow = std::stoul(ss32.str(),nullptr,16);
-	m_data->acc->setValidationWindow(validationWindow);
+	m_data->acc->SetValidationWindow(validationWindow);
 	
 	
 	//pedestal set
@@ -188,7 +196,7 @@ bool ACC_SetupBoards::Setup(){
 	ss4 << std::hex << m_data->conf.Pedestal_channel;
 	pedestal = std::stoul(ss4.str(),nullptr,16);
 	////set mask
-	m_data->acc->setPedestals(m_data->conf.ACDC_mask,m_data->conf.Pedestal_channel_mask,pedestal);
+	m_data->acc->SetPedestals(m_data->conf.ACDC_mask,m_data->conf.Pedestal_channel_mask,pedestal);
 	
 	
 	//pps settings
@@ -196,13 +204,13 @@ bool ACC_SetupBoards::Setup(){
 	stringstream ss5;
 	ss5 << std::hex << m_data->conf.PPSRatio;
 	ppsratio = std::stoul(ss5.str(),nullptr,16);
-	m_data->acc->setPPSRatio(ppsratio);
+	m_data->acc->SetPPSRatio(ppsratio);
 	
 	//SetMaxTimeoutValue
 	TimeoutResetCount = (PPSWaitMultiplier*m_data->conf.PPSRatio)/(m_data->TCS.Timeoutcounter.size()*(timeout/1000.0));
 	std::cout << "Created new timeout value based on " << m_data->conf.PPSRatio << " with " << TimeoutResetCount << std::endl;
 
-	m_data->acc->setPPSBeamMultiplexer(m_data->conf.PPSBeamMultiplexer);
+	m_data->acc->SetPPSBeamMultiplexer(m_data->conf.PPSBeamMultiplexer);
 
 	if(m_data->conf.SMA == 0)
 	{
@@ -213,7 +221,7 @@ bool ACC_SetupBoards::Setup(){
 	}
 	
 	int retval;
-	retval = m_data->acc->initializeForDataReadout(m_data->conf.triggermode, m_data->conf.ACDC_mask, m_data->conf.Calibration_Mode);
+	retval = m_data->acc->InitializeForDataReadout(m_data->conf.triggermode, m_data->conf.ACDC_mask, m_data->conf.Calibration_Mode);
 	if(retval != 0)
 	{
 		m_data->psec.errorcodes.push_back(0xAA02EE01);
@@ -225,15 +233,15 @@ bool ACC_SetupBoards::Setup(){
 	}
 	
 	m_data->conf.receiveFlag = 2;
-	m_data->acc->emptyUsbLine();
-	m_data->acc->dumpData(0xFF);
+    if(strcmp(m_data->TCS.Interface_Name,"USB") == 0){m_data->acc->EmptyUsbLine();}
+	m_data->acc->DumpData(0xFF);
 	
-	vector<unsigned int> tmpERR = m_data->acc->returnErrors();
+	vector<unsigned int> tmpERR = m_data->acc->ReturnErrors();
 	if(tmpERR.size()==1 && tmpERR[0]==0x00000000)
 	{
 		m_data->psec.errorcodes.insert(std::end(m_data->psec.errorcodes), std::begin(tmpERR), std::end(tmpERR));
 	}
-	m_data->acc->clearErrors();
+	m_data->acc->ClearErrors();
 	tmpERR.clear();
 	
 	return ret;
