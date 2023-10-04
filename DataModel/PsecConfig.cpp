@@ -399,7 +399,8 @@ bool PsecConfig::Print(){
     printf("Receive flag: %i\n", receiveFlag);
     printf("ACDC boardmask: 0x%02x\n",ACDC_mask);
     printf("Calibration Mode: %i\n",Calibration_Mode);
-    printf("SMA: %i\n",SMA);
+    printf("SMA Beamgate: %i\n",SMA_Beamgate);
+    printf("SMA PPS: %i\n",SMA_PPS);
     std::cout << "------------------Trigger settings------------------" << std::endl;
     printf("Triggermode: %i\n",triggermode);
     printf("ACC trigger Sign: %i\n", ACC_Sign);
