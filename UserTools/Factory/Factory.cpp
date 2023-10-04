@@ -9,6 +9,7 @@ if (tool=="ACC_DataRead") ret=new ACC_DataRead;
 if (tool=="ACC_Receive") ret=new ACC_Receive;
 if (tool=="ACC_SetupBoards") ret=new ACC_SetupBoards;
 if (tool=="ACC_Stream") ret=new ACC_Stream;
+if (tool=="ACC_SeeConnectedBoards") ret=new ACC_SeeConnectedBoards;
 if (tool=="RunControl") ret=new RunControl;
 if (tool=="test") ret=new test;
 if (tool=="PGStarter") ret=new PGStarter;

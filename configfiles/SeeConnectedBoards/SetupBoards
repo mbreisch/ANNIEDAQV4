@@ -1,0 +1,6 @@
+#Verbosity
+verbose 1
+
+Interface_Name ETH
+Interface_IP 192.168.46.107
+Interface_Port 5050
