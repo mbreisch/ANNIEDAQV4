@@ -1,6 +1,8 @@
 #ifndef ACC_H
 #define ACC_H
 
+#include <vector>
+
 class ACC 
 {
     public:
