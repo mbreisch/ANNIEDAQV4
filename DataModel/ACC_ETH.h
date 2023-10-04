@@ -110,7 +110,7 @@ class ACC_ETH : public ACC
 
         //-------------------Special functions
         //ID USB-1:	
-        bool EmptyUsbLine() override {}; 
+        bool EmptyUsbLine() override {return false}; 
 
     private:
         //------------------------------------------------------------------------------------//

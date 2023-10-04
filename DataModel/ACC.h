@@ -39,7 +39,7 @@ class ACC
         virtual bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) = 0;
         virtual void ClearData() = 0;
         virtual void ClearErrors() = 0;
-        virtual void EmptyUsbLine() = 0;
+        virtual bool EmptyUsbLine() = 0;
 };
 
 #endif 
