@@ -85,7 +85,7 @@ bool ACC_DataRead::Execute()
                         m_data->psec.errorcodes.push_back(0xAD02EE01);
                         unsigned int dumpIndex = 0x00 | (1<<LAPPD_on_ACC[0]) | (1<<LAPPD_on_ACC[1]);
                         m_data->acc->DumpData(dumpIndex);
-                        if(strcmp(m_data->TCS.Interface_Name,"USB") == 0){m_data->acc->EmptyUsbLine();}
+                        if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0){m_data->acc->EmptyUsbLine();}
                 }else
                 {
                     printf("404\n");

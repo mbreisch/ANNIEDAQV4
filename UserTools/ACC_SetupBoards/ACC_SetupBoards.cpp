@@ -36,10 +36,10 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
     if(!m_variables.Get("Interface_Port",m_data->TCS.Interface_Port)) m_data->TCS.Interface_Port="8.8.8.8";
 	if(m_data->acc==nullptr)
     {
-        if(strcmp(m_data->TCS.Interface_Name,"USB") == 0)
+        if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0)
         {
             m_data->acc = new ACC_USB();
-        }else if(strcmp(m_data->TCS.Interface_Name,"ETH") == 0)
+        }else if(strcmp(m_data->TCS.Interface_Name.c_str(),"ETH") == 0)
         {
             m_data->acc = new ACC_ETH(m_data->TCS.Interface_IP, m_data->TCS.Interface_Port);
         }else
@@ -233,7 +233,7 @@ bool ACC_SetupBoards::Setup()
 	}
 	
 	m_data->conf.receiveFlag = 2;
-    if(strcmp(m_data->TCS.Interface_Name,"USB") == 0){m_data->acc->EmptyUsbLine();}
+    if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0){m_data->acc->EmptyUsbLine();}
 	m_data->acc->DumpData(0xFF);
 	
 	vector<unsigned int> tmpERR = m_data->acc->ReturnErrors();
