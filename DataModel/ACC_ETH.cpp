@@ -687,7 +687,7 @@ std::vector<unsigned short> ACC_ETH::CorrectData(std::vector<uint64_t> input_dat
 }
 
 
-std::vector<uint64_t> ACC_ETH::Temp_Read(int triggersource, vector<int> LAPPD_on_ACC)
+std::vector<unsigned short> ACC_ETH::Temp_Read(int triggersource, vector<int> LAPPD_on_ACC)
 {
     vector<int> BoardsReadyForRead;
 	map<int,int> ReadoutSize;
