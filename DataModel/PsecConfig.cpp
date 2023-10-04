@@ -117,8 +117,11 @@ bool PsecConfig::Send(zmq::socket_t* sock)
     zmq::message_t msg29(sizeof ResetSwitchACDC);
     memcpy(msg29.data(), &ResetSwitchACDC, sizeof ResetSwitchACDC);	
 
-    zmq::message_t msg30(sizeof SMA);
-    memcpy(msg30.data(), &SMA, sizeof SMA);
+    zmq::message_t msg30(sizeof SMA_Beamgate);
+    memcpy(msg30.data(), &SMA_Beamgate, sizeof SMA_Beamgate);
+
+    zmq::message_t msg31(sizeof SMA_PPS);
+    memcpy(msg31.data(), &SMA_PPS, sizeof SMA_PPS);
 
     sock->send(msg0,ZMQ_SNDMORE);
     sock->send(msgID,ZMQ_SNDMORE);
@@ -152,7 +155,8 @@ bool PsecConfig::Send(zmq::socket_t* sock)
     sock->send(msg27,ZMQ_SNDMORE);
     sock->send(msg28,ZMQ_SNDMORE);
     sock->send(msg29,ZMQ_SNDMORE);
-    sock->send(msg30);
+    sock->send(msg30,ZMQ_SNDMORE);
+    sock->send(msg31);
 
     return true;
 }
@@ -255,7 +259,9 @@ bool PsecConfig::Receive(zmq::socket_t* sock)
 	
     //SMA
     sock->recv(&msg);
-    SMA=*(reinterpret_cast<int*>(msg.data()));
+    SMA_Beamgate=*(reinterpret_cast<int*>(msg.data()));
+    sock->recv(&msg);
+    SMA_PPS=*(reinterpret_cast<int*>(msg.data()));
 
     return true;
 }
@@ -266,7 +272,6 @@ bool PsecConfig::Initialise(Store* store)
     store->Get("TVersion",TVersion);
     //if(TVersion!=VersionNumber){return false;}
 
-
     store->Get("LAPPD_ID",LAPPD_ID);
 
     //flag
@@ -276,7 +281,8 @@ bool PsecConfig::Initialise(Store* store)
     store->Get("RunControl",RunControl);
 
     //SMA 
-    store->Get("SMA",SMA);
+    store->Get("SMA",SMA_Beamgate);
+    store->Get("SMA",SMA_PPS);
  
     //trigger
     store->Get("triggermode",triggermode);
@@ -338,7 +344,8 @@ bool PsecConfig::SetDefaults()
     triggermode = 5;
 
     //SMA
-    SMA = 0;
+    SMA_Beamgate = 0;
+    SMA_PPS = 0;
 
     //triggersettings
     ACC_Sign = 0;

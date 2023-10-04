@@ -110,7 +110,7 @@ class ACC_USB : public ACC
         
         //-------------------Special functions
         //ID USB-1:	
-        bool EmptyUsbLine(); 
+        bool EmptyUsbLine() override; 
         //ID USB-2:	
         stdUSB* GetUsbStream(); 
         //ID USB-3:	

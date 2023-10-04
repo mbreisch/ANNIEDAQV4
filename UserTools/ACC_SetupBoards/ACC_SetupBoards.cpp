@@ -212,16 +212,10 @@ bool ACC_SetupBoards::Setup()
 
 	m_data->acc->SetPPSBeamMultiplexer(m_data->conf.PPSBeamMultiplexer);
 
-	if(m_data->conf.SMA == 0)
-	{
-	  m_data->acc->setSMA_OFF(false,true);
-	}else if(m_data->conf.SMA == 1)
-	{
-	  m_data->acc->setSMA_ON(false,true);
-	}
-	
+	m_data->acc->SetSMA_Debug(m_data->conf.SMA_PPS,m_data->conf.SMA_Beamgate);
+
 	int retval;
-	retval = m_data->acc->InitializeForDataReadout(m_data->conf.triggermode, m_data->conf.ACDC_mask, m_data->conf.Calibration_Mode);
+	retval = m_data->acc->InitializeForDataReadout(m_data->conf.triggermode, m_data->conf.ACDC_mask);
 	if(retval != 0)
 	{
 		m_data->psec.errorcodes.push_back(0xAA02EE01);

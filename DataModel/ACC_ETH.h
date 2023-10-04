@@ -108,6 +108,10 @@ class ACC_ETH : public ACC
         //ID 19
         void ClearErrors() override {errorcodes.clear();}
 
+        //-------------------Special functions
+        //ID USB-1:	
+        bool EmptyUsbLine() override {}; 
+
     private:
         //------------------------------------------------------------------------------------//
         //---------------------------------Load neccessary classes----------------------------//
