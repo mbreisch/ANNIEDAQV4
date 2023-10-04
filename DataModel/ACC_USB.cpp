@@ -135,7 +135,7 @@ int ACC_USB::WhichAcdcsConnected()
 }
 
 // >>>> ID:4 Main init function that controls generalk setup as well as trigger settings*/
-int ACC_USB::InitializeForDataReadout(int triggersource, unsigned int boardmask, int calibMode)
+int ACC_USB::InitializeForDataReadout(unsigned int boardmask, int triggersource)
 {
 	unsigned int command;
 	int retval;
@@ -146,9 +146,6 @@ int ACC_USB::InitializeForDataReadout(int triggersource, unsigned int boardmask,
 	{
 		errorcodes.push_back(0xAC17EE01);
 	}
-
-	// Toogels the calibration mode on if requested
-	ToggleCal(calibMode, 0x7FFF, boardmask);
 
 	// Set trigger conditions
 	switch(triggersource)
@@ -282,7 +279,7 @@ int ACC_USB::InitializeForDataReadout(int triggersource, unsigned int boardmask,
 }
 
 // >>>> ID 5: Set up the trigger source
-void ACC_USB::SetTriggerSource(unsigned int boardmask, int triggersource)
+int ACC_USB::SetTriggerSource(unsigned int boardmask, int triggersource)
 {	
 	//ACC trigger
 	unsigned int command = 0x00300000;
@@ -295,6 +292,8 @@ void ACC_USB::SetTriggerSource(unsigned int boardmask, int triggersource)
 	command = (command | (boardmask << 24)) | (unsigned short)triggersource;
 	usbcheck=usb->sendData(command);
 	if(usbcheck==false){errorcodes.push_back(0xAC21EE02);}
+
+    return 0;
 }
 
 // >>>> ID USB-6: Switch for the calibration input on the ACC*/
@@ -350,7 +349,7 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 		//Clear the boards read vector
 		boardsReadyForRead.clear(); 
 		readoutSize.clear();
-        lastAccBuffer.clear();
+        LastACCBuffer.clear();
 
 		//Time the listen fuction
 		now = chrono::steady_clock::now();
@@ -372,7 +371,7 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 		if(usbcheck==false)
 		{
 			errorcodes.push_back(0xAC15EE02);
-			clearCheck = emptyUsbLine();
+			clearCheck = EmptyUsbLine();
 			if(clearCheck==false)
 			{
 				errorcodes.push_back(0xAC15EE03);
@@ -531,9 +530,9 @@ void ACC_USB::VersionCheck()
 //-------------------------------------Help functions---------------------------------//
 
 // >>>> ID 8: Fires the software trigger
-void ACC_USB::SoftwareTrigger()
+void ACC_USB::GenerateSoftwareTrigger()
 {
-	unsigned int command = 0xFFB70000;
+	unsigned int command = 0x00100000;
 	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC13EE01);}	
 }
 
@@ -589,7 +588,7 @@ bool ACC_USB::SetPedestals(unsigned int boardmask, unsigned int chipmask, unsign
 }
 
 // >>>> ID 16: Write function for the error log
-void ACC_ETH::WriteErrorLog(string errorMsg)
+void ACC_USB::WriteErrorLog(string errorMsg)
 {
     string err = "errorlog.txt";
     cout << "------------------------------------------------------------" << endl;
@@ -624,7 +623,7 @@ bool ACC_USB::EmptyUsbLine()
 		}
 		if(send_counter > max_sends)
 		{
-			usbWakeup();
+			UsbWakeup();
 			tempbuff = usb->safeReadData(SAFE_BUFFERSIZE);
 			if(tempbuff.size() == ACCFRAME){
 				return true;
