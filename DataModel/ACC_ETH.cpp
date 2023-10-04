@@ -759,7 +759,7 @@ std::vector<uint64_t> ACC_ETH::Temp_Read(int triggersource, vector<int> LAPPD_on
         uint64_t buffers_4567 = eth->RecieveDataSingle(CML_ACC.RX_Buffer_Size_Ch4567_Readback,0x0);
         uint64_t datadetect = eth->RecieveDataSingle(CML_ACC.Data_Frame_Receive,0x0);
 
-        LastACCBuffer = {0x1234,0xAAAA,firmwareversion,plllock,external_clock,acdcboads,datadetect,buffers_0123,buffers_4567};
+        LastACCBuffer = {};//{0x1234,0xAAAA,firmwareversion,plllock,external_clock,acdcboads,datadetect,buffers_0123,buffers_4567};
         uint64_t allbuffers = (buffers_4567<<32) | buffers_0123;
 
 		//go through all boards on the acc info frame and if 7795 words were transfered note that board
