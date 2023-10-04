@@ -46,10 +46,10 @@ class ACC_USB : public ACC
 
         //------------------------------------------------------------------------------------//
         //--------------------------------Local return functions------------------------------//
-        vector<unsigned short> ReturnRawData(){return out_raw_data;}
-        vector<unsigned short> ReturnACCIF(){return out_acc_if;} 
-        vector<int> ReturnBoardIndices(){return out_boardid;}
-        vector<unsigned int> ReturnErrors()
+        vector<unsigned short> ReturnRawData() override {return out_raw_data;}
+        vector<unsigned short> ReturnACCIF() override {return out_acc_if;} 
+        vector<int> ReturnBoardIndices() override {return out_boardid;}
+        vector<unsigned int> ReturnErrors() override 
         {
             if(errorcodes.size()==0){errorcodes.push_back(0x0);}
             return errorcodes;
@@ -58,55 +58,55 @@ class ACC_USB : public ACC
         //------------------------------------------------------------------------------------//
         //-------------------------Local set functions for board setup------------------------//
         //-------------------Sets global variables, see below for description-----------------//
-        void SetNumChCoin(unsigned int in){SELF_number_channel_coincidence = in;} //sets the number of channels needed for self trigger coincidence	
-        void SetEnableCoin(int in){SELF_coincidence_onoff = in;} //sets the enable coincidence requirement flag for the self trigger
-        void SetThreshold(unsigned int in){SELF_threshold = in;} //sets the threshold for the self trigger
-        void SetPsecChipMask(vector<int> in){SELF_psec_chip_mask = in;} //sets the PSEC chip mask to set individual chips for the self trigger 
-        void SetPsecChannelMask(vector<unsigned int> in){SELF_psec_channel_mask = in;} //sets the PSEC channel mask to set individual channels for the self trigger 
-        void SetValidationStart(unsigned int in){validation_start=in;} //sets the validation window start delay for required trigger modes
-        void SetValidationWindow(unsigned int in){validation_window=in;} //sets the validation window length for required trigger modes
-        void SetTriggermode(int in){triggersource = in;} //sets the overall triggermode
-        void SetSign(int in, int source) //sets the sign (normal or inverted) for chosen source
+        void SetNumChCoin(unsigned int in) override {SELF_number_channel_coincidence = in;} //sets the number of channels needed for self trigger coincidence	
+        void SetEnableCoin(int in) override {SELF_coincidence_onoff = in;} //sets the enable coincidence requirement flag for the self trigger
+        void SetThreshold(unsigned int in) override {SELF_threshold = in;} //sets the threshold for the self trigger
+        void SetPsecChipMask(vector<int> in) override {SELF_psec_chip_mask = in;} //sets the PSEC chip mask to set individual chips for the self trigger 
+        void SetPsecChannelMask(vector<unsigned int> in) override {SELF_psec_channel_mask = in;} //sets the PSEC channel mask to set individual channels for the self trigger 
+        void SetValidationStart(unsigned int in) override {validation_start=in;} //sets the validation window start delay for required trigger modes
+        void SetValidationWindow(unsigned int in) override {validation_window=in;} //sets the validation window length for required trigger modes
+        void SetTriggermode(int in) override {triggersource = in;} //sets the overall triggermode
+        void SetSign(int in, int source) override  //sets the sign (normal or inverted) for chosen source
         {
             if(source==2){ACC_sign = in;}
             else if(source==3){ACDC_sign = in;}
             else if(source==4){SELF_sign = in;}
         }
-        void SetPPSRatio(unsigned int in){PPSRatio = in;} 
-        void SetPPSBeamMultiplexer(int in){PPSBeamMultiplexer = in;} 
-        void SetTimeoutInMs(int in){timeoutvalue = in;}
+        void SetPPSRatio(unsigned int in) override {PPSRatio = in;} 
+        void SetPPSBeamMultiplexer(int in) override {PPSBeamMultiplexer = in;} 
+        void SetTimeoutInMs(int in) override {timeoutvalue = in;}
         
         //------------------------------------------------------------------------------------
         //-------------------------Local set functions for board setup------------------------
         //ID 4: Main init function that controls generalk setup as well as trigger settings//
-        int InitializeForDataReadout(unsigned int boardmask = 0xFF, int triggersource = 0); 
+        int InitializeForDataReadout(unsigned int boardmask = 0xFF, int triggersource = 0) override ; 
         //ID 5: Set up the software trigger//
-        int SetTriggerSource(unsigned int boardmask = 0xFF, int triggersource = 0); 
+        int SetTriggerSource(unsigned int boardmask = 0xFF, int triggersource = 0) override ; 
         //ID 6: Main listen fuction for data readout. Runs for 5s before retuning a negative//
-        int ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC); 
-        vector<uint64_t> Temp_Read(int triggersource, vector<int> LAPPD_on_ACC);
+        int ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC) override ; 
+        vector<uint64_t> Temp_Read(int triggersource, vector<int> LAPPD_on_ACC) override ;
         //ID 7: Special function to check connected ACDCs for their firmware version// 
-        void VersionCheck();
+        void VersionCheck() override ;
         //ID 8: Fires the software trigger//
-        void GenerateSoftwareTrigger(); 
+        void GenerateSoftwareTrigger() override ; 
         //ID 9: Tells ACDCs to clear their ram.// 	
-        void DumpData(unsigned int boardmask = 0xFF); 
+        void DumpData(unsigned int boardmask = 0xFF) override ; 
         //ID 10
-        void ResetACDC(); //resets the acdc boards
+        void ResetACDC() override ; //resets the acdc boards
         //ID 11
-        void ResetACC(); //resets the acdc boards 
+        void ResetACC() override ; //resets the acdc boards 
         //ID 12: Switch PPS input to SMA
-        void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate);
+        void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate) override ;
         //ID 13: Set Pedestal values
-        bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc);
+        bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) override ;
         //ID 16
         void WriteErrorLog(string errorMsg);
         //ID 17
         std::vector<unsigned short> CorrectData(std::vector<uint64_t> input_data);
         //ID 18
-        void ClearData(){out_raw_data.clear(); out_boardid.clear(); out_acc_if.clear();}
+        void ClearData() override {out_raw_data.clear(); out_boardid.clear(); out_acc_if.clear();}
         //ID 19
-        void ClearErrors(){errorcodes.clear();}
+        void ClearErrors() override {errorcodes.clear();}
         
         //-------------------Special functions
         //ID USB-1:	
