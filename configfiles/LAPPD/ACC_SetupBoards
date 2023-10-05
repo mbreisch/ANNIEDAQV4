@@ -1,6 +1,11 @@
 #Verbosity
 verbose 1
 
+#Interface connection to the ACC
+Interface_Name ETH
+Interface_IP 192.168.46.107
+Interface_Port 5050
+
 #Local multiplier for the wait time once data taking stops
 #Wait is multiplied by the set PPS value
 PPSWaitMultiplier 4

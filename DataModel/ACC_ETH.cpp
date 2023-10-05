@@ -51,6 +51,7 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
     if(triggersource<0 || triggersource>9)
     {
         std::cout << "Invalid trigger source chosen, please choose between and including 0 and 9" << std::endl;
+        errorcodes.push_back(0xACCE0401);
         return -401;
     }
 
@@ -59,10 +60,18 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
     command_value = 0;
 
     bool ack = eth->SendData(CML_ACC.RX_Buffer_Reset_Request,0xFF,"w");
+    if(!ack)
+    {
+        errorcodes.push_back(0xACCE0402);
+    }
 
     uint64_t DetectedBoards = eth->RecieveDataSingle(command_address,command_value);
 
-    if((DetectedBoards>>16) == 0xeeee){return -402;}
+    if((DetectedBoards>>16) == 0xeeee)
+    {
+        errorcodes.push_back(0xACCE0403);
+        return -402;
+    }
 
     for(int bi=0; bi<MAX_NUM_BOARDS; bi++)
     {
@@ -86,6 +95,7 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
     switch(triggersource)
 	{ 	
 		case 0: //OFF
+            std::cout << "WARNING! Trigger is set to off" << std::endl;
 			break;
 		case 1: //Software trigger
 			break;
@@ -93,13 +103,21 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
             command_address = CML_ACC.SMA_Polarity_Select;
             command_value = ACC_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0404);
+                printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);
+            }
 			break;
 		case 3: //SMA trigger ACDC 
             command_address = CML_ACC.ACDC_Command;
             command_value = CML_ACDC.SMA_Polarity_Select | (boardmask<<24) | ACDC_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0405);
+                printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);
+            }
 			break;
 		case 4: //Self trigger
 			goto selfsetup;
@@ -108,17 +126,29 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
             command_address = CML_ACC.SMA_Polarity_Select;
             command_value = ACC_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0406);
+                printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Start;
             command_value = validation_start;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0406);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Length;
             command_value = validation_window;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0407);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);
+            }
 
 			goto selfsetup;
 			break;
@@ -126,17 +156,29 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
             command_address = CML_ACC.ACDC_Command;
             command_value = CML_ACDC.SMA_Polarity_Select | (boardmask<<24) | ACDC_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0408);
+                printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);
+            }
 	
             command_address = CML_ACC.Beamgate_Window_Start;
             command_value = validation_start;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0408);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Length;
             command_value = validation_window;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0409);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);
+            }
 
 			goto selfsetup;
 			break;
@@ -144,43 +186,75 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
             command_address = CML_ACC.SMA_Polarity_Select;
             command_value = ACC_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE040a);
+                printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.ACDC_Command;
             command_value = CML_ACC.SMA_Polarity_Select | (boardmask<<24) | ACDC_sign; 
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE040b);
+                printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Start;
             command_value = validation_start;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE040c);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Length;
             command_value = validation_window;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE040d);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);
+            }
 			break;
 		case 8:
             command_address = CML_ACC.SMA_Polarity_Select;
             command_value = ACC_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE040e);
+                printf("Could not send command 0x%08llX with value %i to set ACC SMA sign!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.ACDC_Command;
             command_value = CML_ACC.SMA_Polarity_Select | (boardmask<<24) | ACDC_sign; 
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE040f);
+                printf("Could not send command 0x%08llX with value %i to set ACDC SMA sign!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Start;
             command_value = validation_start;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0410);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window start!\n",command_address,command_value);
+            }
 
             command_address = CML_ACC.Beamgate_Window_Length;
             command_value = validation_window;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0411);
+                printf("Could not send command 0x%08llX with value %i to set Beamgate window length!\n",command_address,command_value);
+            }
 			break;
 		case 9: 
 			break;
@@ -206,35 +280,63 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
                 printf("For Chip %i with command 0x%08x tha mask is 0x%08x\n",i,CommandMask[i],SELF_psec_channel_mask[i]);
 				command_value = (CommandMask[i] | (boardmask << 24)) | SELF_psec_channel_mask[i]; 
                 ret = eth->SendData(command_address,command_value,"w");
-                if(!ret){printf("Could not send command 0x%08llX with value %i to set !\n",command_address,command_value);}
+                if(!ret)
+                {
+                    errorcodes.push_back(0xACCE0412);
+                    printf("Could not send command 0x%08llX with value %i to set !\n",command_address,command_value);
+                }
 			}
 
             command_value = (CML_ACDC.Set_Selftrigger_Sign | (boardmask<<24)) | SELF_sign;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Selftrigger sign!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0413);
+                printf("Could not send command 0x%08llX with value %i to set Selftrigger sign!\n",command_address,command_value);
+            }
 
             command_value = (CML_ACDC.Set_Selftrigger_Use_Coincidence | (boardmask<<24)) | SELF_coincidence_onoff;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Selftrigger Coincidence Switch!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0414);
+                printf("Could not send command 0x%08llX with value %i to set Selftrigger Coincidence Switch!\n",command_address,command_value);
+            }
 
             command_value = (CML_ACDC.Set_Selftrigger_Coincidence_Min | (boardmask<<24)) | SELF_number_channel_coincidence;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Selftrigger Coincidence number!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0415);
+                printf("Could not send command 0x%08llX with value %i to set Selftrigger Coincidence number!\n",command_address,command_value);
+            }
 
             command_value = (CML_ACDC.Set_Selftrigger_Threshold | (boardmask<<24)) | (0x1F << 12) | SELF_threshold;
             ret = eth->SendData(command_address,command_value,"w");
-            if(!ret){printf("Could not send command 0x%08llX with value %i to set Selftrigger threshold!\n",command_address,command_value);}
+            if(!ret)
+            {
+                errorcodes.push_back(0xACCE0416);
+                printf("Could not send command 0x%08llX with value %i to set Selftrigger threshold!\n",command_address,command_value);
+            }
 	}
 
     command_address = CML_ACC.PPS_Beamgate_Multiplex;
     command_value = PPSBeamMultiplexer;
     ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to set Beamgate/PPS Multiplexer!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE0417);
+        printf("Could not send command 0x%08llX with value %i to set Beamgate/PPS Multiplexer!\n",command_address,command_value);
+    }
 
     command_address = CML_ACC.PPS_Divide_Ratio;
     command_value = PPSRatio;
     ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to set PPS Multiplier!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE0418);
+        printf("Could not send command 0x%08llX with value %i to set PPS Multiplier!\n",command_address,command_value);
+    }
 
     //Sets up the burst mode
     eth_burst->SwitchToBurst();
@@ -260,13 +362,21 @@ int ACC_ETH::SetTriggerSource(unsigned int boardmask, int triggersource)
         command_value = triggersource;
 
         ret = eth->SendData(command_address,command_value,"w");
-        if(!ret){printf("Could not send command 0x%08llX with value %i to set trigger source!\n",command_address,command_value);}
+        if(!ret)
+        {
+            errorcodes.push_back(0xACCE0501);
+            printf("Could not send command 0x%08llX with value %i to set trigger source!\n",command_address,command_value);
+        }
     }
 
     command_address = CML_ACC.ACDC_Command;
     command_value = CML_ACDC.Set_Triggermode | (boardmask<<24) | triggersource;
     ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to set trigger source on acdc!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE0502);
+        printf("Could not send command 0x%08llX with value %i to set trigger source on acdc!\n",command_address,command_value);
+    }
     
     return 0;
 }
@@ -290,7 +400,11 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
 
     //Enalble Data Transfer
     bool ret = eth->SendData(CML_ACC.ACDC_Command,CML_ACDC.Enable_Transfer | (0xff<<24) ,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE0601);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
   	
 	//duration variables
 	auto start = chrono::steady_clock::now(); //start of the current event listening. 
@@ -413,8 +527,9 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
     if(ReadoutSize[LAPPD_on_ACC[0]]!=ReadoutSize[LAPPD_on_ACC[1]])
     {
         std::string err_msg = "ERR: Read buffer sizes did not match: " + to_string(ReadoutSize[LAPPD_on_ACC[0]]) + " vs " + to_string(ReadoutSize[LAPPD_on_ACC[1]]);
-        WriteErrorLog(err_msg);
-        // return -603;       
+        printf("%s\n", err_msg);
+        errorcodes.push_back(0xACCE0602);
+        // return 407;       
     }
 
 
@@ -426,7 +541,11 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
 
         //Here should be the read...
         ret = eth->SendData(CML_ACC.Read_ACDC_Data_Buffer, bi,"w");
-        if(!ret){printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);}  
+        if(!ret)
+        {
+            errorcodes.push_back(0xACCE0603);
+            printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+        }
 
         acdc_buffer = CorrectData(eth_burst->RecieveBurst(7795,1,0));
 
@@ -434,17 +553,19 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
 		if((int)acdc_buffer.size() != ReadoutSize[bi])
 		{
 			std::string err_msg = "Couldn't read " + to_string(ReadoutSize[bi]) + " words as expected! Tryingto fix it! Size was: " + to_string(acdc_buffer.size());
-			WriteErrorLog(err_msg);
+			printf("%s\n",err_msg);
+            errorcodes.push_back(0xACCE0604);
             ofstream corpt_file("./corrupt_buffer",ios_base::out | ios_base::trunc);
             for(int l=0; l<acdc_buffer.size();l++){corpt_file<<l<<" "<<std::hex<<acdc_buffer.at(l)<<std::dec<<std::endl;}
             corpt_file.close();
-			return -605;
+			return 408;
 		}
 
 		if(acdc_buffer[0] != 0x1234)
 		{
 			acdc_buffer.clear();
-            return -606;
+            errorcodes.push_back(0xACCE0605);
+            return 409;
 		}
 
         vector<unsigned short> transfer_vector;
@@ -556,7 +677,11 @@ void ACC_ETH::GenerateSoftwareTrigger()
     command_value = 0x1;
 
     bool ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to generate a software trigger!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE0801);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
 }
 
 // >>>> ID 9: Tells ACDCs to clear their buffer
@@ -567,7 +692,11 @@ void ACC_ETH::DumpData(unsigned int boardmask)
     command_value = boardmask;
 
     bool ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to clear RX buffer!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE0901);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
     usleep(100);
 }
 
@@ -578,7 +707,11 @@ void ACC_ETH::ResetACDC()
     command_value = CML_ACDC.Global_Reset | (0xff<<24);
 
     bool ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to reset the ACDCs!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE1001);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
 }
 
 // >>>> ID 11: Resets the ACC
@@ -588,7 +721,11 @@ void ACC_ETH::ResetACC()
     command_value = 0x1;
 
     bool ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to reset the ACC!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE1101);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
 }
 
 // >>>> ID 12: Sets SMA Debug settings
@@ -598,7 +735,11 @@ void ACC_ETH::SetSMA_Debug(unsigned int PPS, unsigned int Beamgate)
     command_value = PPS;
 
     bool ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to switch PPS to SMA!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE1201);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
 
 	usleep(1000000);
 
@@ -606,7 +747,11 @@ void ACC_ETH::SetSMA_Debug(unsigned int PPS, unsigned int Beamgate)
     command_value = Beamgate;
 
     ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to switch Beamgate to RJ45!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE1202);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
     
 	usleep(1000000);
 }
@@ -618,7 +763,11 @@ bool ACC_ETH::SetPedestals(unsigned int boardmask, unsigned int chipmask, unsign
     command_address = CML_ACC.ACDC_Command;
 	command_value = (CML_ACDC.Set_Pedestal_Offset | (boardmask << 24)) | (chipmask << 12) | adc;
     bool ret = eth->SendData(command_address,command_value,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to set pedestal!\n",command_address,command_value);}
+    if(!ret)
+    {
+        errorcodes.push_back(0xACCE1301);
+        printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
+    }
 	return true;
 }
 

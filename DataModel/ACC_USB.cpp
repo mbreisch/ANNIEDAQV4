@@ -14,7 +14,7 @@ ACC_USB::ACC_USB()
 	usb = new stdUSB();
 	if(!usb->isOpen())
 	{
-		errorcodes.push_back(0xAC05EE01);
+		errorcodes.push_back(0xACCB0101);
 		delete usb;
 		exit(EXIT_FAILURE);
 	}
@@ -22,7 +22,7 @@ ACC_USB::ACC_USB()
 	clearCheck = EmptyUsbLine();
 	if(clearCheck==false)
 	{
-		errorcodes.push_back(0xAC05EE02);
+		errorcodes.push_back(0xACCB0102);
 	}
 }
 
@@ -34,7 +34,7 @@ ACC_USB::~ACC_USB()
 	clearCheck = EmptyUsbLine();
 	if(clearCheck==false)
 	{
-		errorcodes.push_back(0xAC06EE01);
+		errorcodes.push_back(0xACCB0301);
 	}
 	delete usb;
 }
@@ -49,7 +49,7 @@ int ACC_USB::CreateAcdcs()
 	bool clearCheck = EmptyUsbLine();
 	if(clearCheck==false)
 	{
-		errorcodes.push_back(0xAC09EE01);
+		errorcodes.push_back(0xACCBB301);
 	}
 
 	//Check for connected ACDC boards
@@ -63,14 +63,14 @@ int ACC_USB::CreateAcdcs()
 		int retval = WhichAcdcsConnected();
 		if(retval==-1)
 		{
-			errorcodes.push_back(0xAC09EE02);
+			errorcodes.push_back(0xACCBB302);
 		}
 	}
 
 	//if there are no ACDCs, return 0
 	if(AcdcIndices.size() == 0)
 	{
-		errorcodes.push_back(0xAC09EE03);
+		errorcodes.push_back(0xACCBB303);
 		return 0;
 	}
 
@@ -91,25 +91,25 @@ int ACC_USB::WhichAcdcsConnected()
 
 	//Resets the RX buffer on all 8 ACDC boards
 	command = 0x000200FF; 
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC11EE01);}
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB401);}
 	//Sends a reset for detected ACDC boards to the ACC
 	command = 0x00030000; 
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC11EE02);}
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB402);}
 	//Request a 32 word ACDC ID frame containing all important infomations
 	command = 0xFFD00000; 
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC11EE03);}
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB403);}
 
 	usleep(100000);
 
 	//Request and read the ACC info buffer and pass it the the corresponding vector
 	command=0x00200000;
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC11EE04);}
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB405);}
 	LastACCBuffer = usb->safeReadData(SAFE_BUFFERSIZE);
 
 	//Check if buffer size is 32 words
 	if(LastACCBuffer.size() != ACCFRAME) 
 	{
-		errorcodes.push_back(0xAC11EE05);
+		errorcodes.push_back(0xACCBB406);
 		return 0;
 	}
 
@@ -144,14 +144,14 @@ int ACC_USB::InitializeForDataReadout(unsigned int boardmask, int triggersource)
 	retval = CreateAcdcs();
 	if(retval==0)
 	{
-		errorcodes.push_back(0xAC17EE01);
+		errorcodes.push_back(0xACCB0401);
 	}
 
 	// Set trigger conditions
 	switch(triggersource)
 	{ 	
 		case 0: //OFF
-			errorcodes.push_back(0xAC17EE02);	
+			errorcodes.push_back(0xACCB0402);	
 			break;
 		case 1: //Software trigger
 			SetTriggerSource(boardmask,triggersource);
@@ -160,13 +160,13 @@ int ACC_USB::InitializeForDataReadout(unsigned int boardmask, int triggersource)
 			SetTriggerSource(boardmask,triggersource);
 			command = 0x00310000;
 			command = command | ACC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE03);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0403);}	
 			break;
 		case 3: //SMA trigger ACDC 
 			SetTriggerSource(boardmask,triggersource);
 			command = 0x00B20000;
 			command = (command | (boardmask << 24)) | ACDC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE04);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0404);}	
 			break;
 		case 4: //Self trigger
 			SetTriggerSource(boardmask,triggersource);
@@ -177,78 +177,78 @@ int ACC_USB::InitializeForDataReadout(unsigned int boardmask, int triggersource)
  			SetTriggerSource(boardmask,triggersource);
 			command = 0x00310000;
 			command = command | ACC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE05);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0405);}	
 
 			command = 0x00320000;
 			command = command | validation_start;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE06);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0406);}	
 			command = 0x00330000;
 			command = command | validation_window;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE07);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0407);}	
 			command = 0x00350000;
 			command = command | PPSBeamMultiplexer;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE08);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0408);}	
 			goto selfsetup;
 			break;
 		case 6: //Self trigger with SMA validation on ACDC
 			SetTriggerSource(boardmask,triggersource);
 			command = 0x00B20000;
 			command = (command | (boardmask << 24)) | ACDC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE09);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0409);}	
 	
 			command = 0x00320000;
 			command = command | validation_start;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE10);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB040a);}	
 			command = 0x00330000;
 			command = command | validation_window;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE11);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB040b);}	
 			goto selfsetup;
 			break;
 		case 7:
 			SetTriggerSource(boardmask,triggersource);
 			command = 0x00320000;
 			command = command | validation_start;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE12);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB040c);}	
 			command = 0x00330000;
 			command = command | validation_window;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE13);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB040d);}	
 			command = 0x00B20000;
 			command = (command | (boardmask << 24)) | ACDC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE14);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB040e);}	
 			command = 0x00310000;
 			command = command | ACC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE15);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB040f);}	
 			break;
 		case 8:
 			SetTriggerSource(boardmask,triggersource);
 			command = 0x00320000;
 			command = command | validation_start;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE16);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0411);}	
 			command = 0x00330000;
 			command = command | validation_window;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE17);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0412);}	
 			command = 0x00B20000;
 			command = (command | (boardmask << 24)) | ACDC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE18);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0413);}	
 			command = 0x00310000;
 			command = command | ACC_sign;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE19);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0414);}	
 			command = 0x00350000;
 			command = command | PPSBeamMultiplexer;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE20);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0415);}	
 			break;
 		case 9: 
 			SetTriggerSource(boardmask,triggersource);
 			break;
 		default: // ERROR case
-			if(usbcheck==false){errorcodes.push_back(0xAC17EE21);}	
+			if(usbcheck==false){errorcodes.push_back(0xACCB0416);}	
 			break;
 		selfsetup:
  			command = 0x00B10000;
 
 			if(SELF_psec_chip_mask.size()!=SELF_psec_channel_mask.size())
 			{
-				errorcodes.push_back(0xAC17EE22);	
+				errorcodes.push_back(0xACCB0417);	
 			}
 			
 			std::vector<unsigned int> CHIPMASK = {0x00000000,0x00001000,0x00002000,0x00003000,0x00004000};
@@ -256,24 +256,24 @@ int ACC_USB::InitializeForDataReadout(unsigned int boardmask, int triggersource)
 			{		
 				command = 0x00B10000;
 				command = (command | (boardmask << 24)) | CHIPMASK[i] | SELF_psec_channel_mask[i]; 
-				usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE23);}	
+				usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0418);}	
 			}
 			command = 0x00B16000;
 			command = (command | (boardmask << 24)) | SELF_sign;
-			usbcheck=usb->sendData(command);	if(usbcheck==false){errorcodes.push_back(0xAC17EE24);}			
+			usbcheck=usb->sendData(command);	if(usbcheck==false){errorcodes.push_back(0xACCB0419);}			
 			command = 0x00B15000;
 			command = (command | (boardmask << 24)) | SELF_number_channel_coincidence;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE25);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB041a);}	
 			command = 0x00B18000;
 			command = (command | (boardmask << 24)) | SELF_coincidence_onoff;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE26);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB041b);}	
 			command = 0x00A60000;
 			command = (command | (boardmask << 24)) | (0x1F << 12) | SELF_threshold;
-			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE27);}	
+			usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB041c);}	
 	}
 	command = 0x00340000;
 	command = command | PPSRatio;
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC17EE28);}	
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB041d);}	
 	
     return 0;
 }
@@ -285,13 +285,13 @@ int ACC_USB::SetTriggerSource(unsigned int boardmask, int triggersource)
 	unsigned int command = 0x00300000;
 	command = (command | (boardmask << 4)) | (unsigned short)triggersource;
 	usbcheck=usb->sendData(command);
-	if(usbcheck==false){errorcodes.push_back(0xAC21EE01);}
+	if(usbcheck==false){errorcodes.push_back(0xACCB0501);}
 
 	//ACDC trigger
 	command = 0x00B00000;
 	command = (command | (boardmask << 24)) | (unsigned short)triggersource;
 	usbcheck=usb->sendData(command);
-	if(usbcheck==false){errorcodes.push_back(0xAC21EE02);}
+	if(usbcheck==false){errorcodes.push_back(0xACCB0502);}
 
     return 0;
 }
@@ -312,7 +312,7 @@ void ACC_USB::ToggleCal(int onoff, unsigned int channelmask, unsigned int boardm
 		command = (command | (boardmask << 24));
 	}
 	usbcheck=usb->sendData(command);
-	if(usbcheck==false){errorcodes.push_back(0xAC20EE01);}
+	if(usbcheck==false){errorcodes.push_back(0xACCBB601);}
 }
 
 
@@ -370,11 +370,11 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 		usbcheck=usb->sendData(command);
 		if(usbcheck==false)
 		{
-			errorcodes.push_back(0xAC15EE02);
+			errorcodes.push_back(0xACCB0601);
 			clearCheck = EmptyUsbLine();
 			if(clearCheck==false)
 			{
-				errorcodes.push_back(0xAC15EE03);
+				errorcodes.push_back(0xACCB0602);
 			}
 		}
 		LastACCBuffer = usb->safeReadData(ACCFRAME);
@@ -403,8 +403,8 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 				}else
                 {
                     std::cout<<"I broke down"<<std::endl;
-                    errorcodes.push_back(0xAC15EE07);
-                    return 408;
+                    errorcodes.push_back(0xACCB0603);
+                    return 406;
                 }
 			}
 		}
@@ -420,7 +420,7 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
     //check for mixed buffersizes
     if(readoutSize[LAPPD_on_ACC[0]]!=readoutSize[LAPPD_on_ACC[1]])
     {
-        errorcodes.push_back(0xAC15EE06);
+        errorcodes.push_back(0xACCB0604);
         return 407;       
     }
 
@@ -431,7 +431,7 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 		//base command for set readmode and which board bi to read
 		unsigned int command = 0x00210000; 
 		command = command | (unsigned int)(bi); 
-		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC15EE04);}	
+		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0605);}	
 
 		//Tranfser the data to a receive vector
 		vector<unsigned short> acdc_buffer = usb->safeReadData(readoutSize[bi]);
@@ -440,13 +440,13 @@ int ACC_USB::ListenForAcdcData(int trigMode, vector<int> LAPPD_on_ACC)
 		if((int)acdc_buffer.size() != readoutSize[bi])
 		{
 			cout << "Couldn't read " << readoutSize[bi] << " words as expected! Tryingto fix it! Size was: " << acdc_buffer.size() << endl;
-			errorcodes.push_back(0xAC15EE05);
-			return (bi+1);
+			errorcodes.push_back(0xACCB0606);
+			return 408;
 		}
 		if(acdc_buffer[0] != 0x1234)
 		{
 			acdc_buffer.clear();
-            return 406;
+            return 409;
 		}
 
 		//save this buffer a private member of ACDC
@@ -533,7 +533,7 @@ void ACC_USB::VersionCheck()
 void ACC_USB::GenerateSoftwareTrigger()
 {
 	unsigned int command = 0x00100000;
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC13EE01);}	
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB0801);}	
 }
 
 // >>>> ID 9: Tells ACDCs to clear their buffer
@@ -543,14 +543,14 @@ void ACC_USB::DumpData(unsigned int boardmask)
 	command = command | boardmask;
 	//send and read. 
 	usbcheck=usb->sendData(command);
- 	if(usbcheck==false){errorcodes.push_back(0xAC18EE01);}
+ 	if(usbcheck==false){errorcodes.push_back(0xACCB0901);}
 }
 
 // >>>> ID 10: Resets the ACDCs
 void ACC_USB::ResetACDC()
 {
     unsigned int command = 0xFFFF0000;
-    usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC27EE01);}
+    usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB1001);}
     usleep(1000000);
 }
 
@@ -558,7 +558,7 @@ void ACC_USB::ResetACDC()
 void ACC_USB::ResetACC()
 {
     unsigned int command = 0x00000000;
-    usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC28EE01);}
+    usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB1101);}
     usleep(1000000);
 }
 
@@ -568,12 +568,12 @@ void ACC_USB::SetSMA_Debug(unsigned int PPS, unsigned int Beamgate)
 	unsigned int command;
 
     command = 0xFF900000 | PPS;
-	usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC29EE01);}
+	usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB1201);}
 
 	usleep(1000000);
 
     command = 0xFF910000 | Beamgate;
-    usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC29EE02);}
+    usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB1202);}
     
 	usleep(1000000);
 }
@@ -583,7 +583,7 @@ bool ACC_USB::SetPedestals(unsigned int boardmask, unsigned int chipmask, unsign
 {
 	unsigned int command = 0x00A20000;
 	command = (command | (boardmask << 24)) | (chipmask << 12) | adc;
-	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC19EE01);}
+	usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCB1301);}
 	return true;
 }
 
@@ -612,7 +612,7 @@ bool ACC_USB::EmptyUsbLine()
 	while(true)
 	{
 		usb->safeReadData(SAFE_BUFFERSIZE);
-		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC07EE01);}
+		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB101);}
 		send_counter++;
 		tempbuff = usb->safeReadData(SAFE_BUFFERSIZE);
 
@@ -628,7 +628,7 @@ bool ACC_USB::EmptyUsbLine()
 			if(tempbuff.size() == ACCFRAME){
 				return true;
 			}else{
-				errorcodes.push_back(0xAC07EE02);
+				errorcodes.push_back(0xACCBB102);
 				return false;
  			}
 		}
@@ -648,11 +648,11 @@ void ACC_USB::EnableTransfer(int onoff)
 	if(onoff == 0)//OFF
 	{ 
 		command = 0xFFB54000;
-		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC16EE01);}	
+		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB501);}	
 	}else if(onoff == 1)//ON
 	{
 		command = 0xFFB50000;
-		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xAC16EE02);}	
+		usbcheck=usb->sendData(command); if(usbcheck==false){errorcodes.push_back(0xACCBB102);}	
 	}
 }
 
@@ -661,5 +661,5 @@ void ACC_USB::UsbWakeup()
 {
 	unsigned int command = 0x00200000;
 	usbcheck=usb->sendData(command);
-	if(usbcheck==false){errorcodes.push_back(0xAC23EE01);}
+	if(usbcheck==false){errorcodes.push_back(0xACCBB701);}
 }
