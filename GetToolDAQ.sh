@@ -97,7 +97,7 @@ cd Dependencies
 
 if [ $tooldaq -eq 1 ]
 then
-git clone https://github.com/ToolFramework/ToolFrameworkCore.git
+git clone https://github.com/ToolFramework/ToolFrameworkCore.git -b v2.3.0
 
 cd ToolFrameworkCore
 make clean
@@ -177,7 +177,7 @@ fi
 
 if [ $tooldaq -eq 1 ]
 then
-    git clone https://github.com/ToolDAQ/ToolDAQFramework.git
+    git clone https://github.com/ToolDAQ/ToolDAQFramework.git -b v2.3.0
     
     cd ToolDAQFramework
     make clean
