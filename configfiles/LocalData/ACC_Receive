@@ -6,5 +6,5 @@ RunStartConfigType superlocal
 RunStartConfigName /root/ANNIEDAQV4/configfiles/RunStart
 
 RunEndConfigType local
-RunEndConfigName /root/ANNIEDAQV4/configfiles/RunStart
+RunEndConfigName /root/ANNIEDAQV4/configfiles/RunEnd
 

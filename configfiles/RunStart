@@ -16,7 +16,7 @@ PPS_Test 0
 
 #Trigger
 ##Triggermode
-Triggermode 1 #...
+triggermode 1 #...
 
 ##ACC settings
 ACC_Sign 0 #normal(0) or inverted(1)
