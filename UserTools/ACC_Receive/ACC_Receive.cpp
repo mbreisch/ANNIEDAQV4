@@ -13,7 +13,15 @@ bool ACC_Receive::Initialise(std::string configfile, DataModel &data){
     
     // get tool config from database
     std::string configtext;
-    bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
+    try
+    {
+        bool get_ok = m_data->postgres_helper.GetToolConfig(m_tool_name, configtext);
+    }catch(std::exception& e)
+    {
+        std::cerr<<"ACC_Receive::Initialise caught exception on config "<<e.what()<<std::endl;
+        get_ok=false;
+    }
+    
     if(!get_ok){
       Log(m_tool_name+" Failed to get Tool config from database!",0,0);
       //return false;
