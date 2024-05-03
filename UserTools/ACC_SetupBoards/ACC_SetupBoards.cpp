@@ -221,7 +221,7 @@ bool ACC_SetupBoards::Setup()
 	m_data->acc->SetSMA_Debug(m_data->conf.SMA_PPS,m_data->conf.SMA_Beamgate);
 
 	int retval;
-	retval = m_data->acc->InitializeForDataReadout(m_data->conf.triggermode, m_data->conf.ACDC_mask);
+	retval = m_data->acc->InitializeForDataReadout(m_data->conf.ACDC_mask, m_data->conf.triggermode);
 	if(retval != 0)
 	{
 		m_data->psec.errorcodes.push_back(0xAA02EE01);
