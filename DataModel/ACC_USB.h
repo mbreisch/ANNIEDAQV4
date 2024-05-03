@@ -75,6 +75,7 @@ class ACC_USB : public ACC
         void SetPPSRatio(unsigned int in) override {PPSRatio = in;} 
         void SetPPSBeamMultiplexer(int in) override {PPSBeamMultiplexer = in;} 
         void SetTimeoutInMs(int in) override {timeoutvalue = in;}
+        void SetEthernetBurstTimeouts(int in1, int in2) override {};
         
         //------------------------------------------------------------------------------------
         //-------------------------Local set functions for board setup------------------------

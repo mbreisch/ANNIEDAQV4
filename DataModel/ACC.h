@@ -26,6 +26,7 @@ class ACC
         virtual void SetPPSRatio(unsigned int in) = 0;
         virtual void SetPPSBeamMultiplexer(int in) = 0;
         virtual void SetTimeoutInMs(int in) = 0;
+        virtual void SetEthernetBurstTimeouts(int in1, int in2) = 0;
         virtual int InitializeForDataReadout(unsigned int boardmask = 0xFF, int triggersource = 0) = 0;
         virtual int SetTriggerSource(unsigned int boardmask = 0xFF, int triggersource = 0) = 0;
         virtual int ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC) = 0;
