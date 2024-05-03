@@ -51,6 +51,7 @@ int ACC_ETH::InitializeForDataReadout(unsigned int boardmask, int triggersource)
     if(triggersource<0 || triggersource>9)
     {
         std::cout << "Invalid trigger source chosen, please choose between and including 0 and 9" << std::endl;
+        std::cout << "Chosen was :" << triggersource << std::endl;
         errorcodes.push_back(0xACCE0401);
         return -401;
     }
