@@ -55,10 +55,9 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
         }
     }
 	
-	TimeoutResetCount = 300;
-	m_variables.Get("TimeoutResetCount",TimeoutResetCount);
-	PPSWaitMultiplier = 10;
-	m_variables.Get("PPSWaitMultiplier",PPSWaitMultiplier);
+	
+	if(!m_variables.Get("TimeoutResetCount",TimeoutResetCount))TimeoutResetCount = 300;
+	if(!m_variables.Get("PPSWaitMultiplier",PPSWaitMultiplier))PPSWaitMultiplier = 10;
 
 	return true;
 }

@@ -2,9 +2,9 @@
 verbose 3
 
 # 3rd feb 2023 testing; local override
-RunStartConfigType local
-RunStartConfigName ./RunStart
+RunStartConfigType superlocal
+RunStartConfigName /root/ANNIEDAQV4/configfiles/RunStart
 
 RunEndConfigType local
-RunEndConfigName ./RunEnd
+RunEndConfigName /root/ANNIEDAQV4/configfiles/RunStart
 
