@@ -1,7 +1,3 @@
-#LAPPD to ACC
-Port0 0
-Port1 1
-
 #Reset
 ResetSwitchACC 1
 ResetSwitchACDC 1
