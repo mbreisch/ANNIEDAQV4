@@ -203,35 +203,45 @@ uint64_t Ethernet::RecieveDataSingle(uint64_t addr, uint64_t value)
 }
 
 
-std::vector<uint64_t> Ethernet::RecieveBurst(int numwords, int timeout_sec, int timeout_us)
+std::vector<uint64_t> Ethernet::RecieveBurst(int wanted_number_of_words, int timeout_sec, int timeout_us)
 {
-    int numbytes = 0;
+    // ---- INITS
+    int numbytes = 0; 
     int wordsRead = 0;
     int how_much_to_read = 0;
-    int maxbytes = 1456;
-    bool firstread = true;
-    uint64_t functionreturn = 0xeeeebb01;
+    bool last_read = false;
 
+    int bytesize = 2;
+    int maxbytes = 1456;
+    int max_words_to_be_read = maxbytes/bytesize;
+
+    uint64_t functionreturn = 0xeeeebb01; // Default error return
+
+    // ---- Create the adresses to read from
     struct sockaddr_storage their_addr;
     socklen_t addr_len = sizeof(their_addr);
 
+    // ---- Reset buffer
     buffer[0] = 0;
 
-    int bytesize = 2;
-    numwords += 8/bytesize;
-    if(bytesize*numwords>maxbytes)
+    // ---- Define read size
+    wanted_number_of_words += 8/bytesize;
+    if(bytesize*wanted_number_of_words>maxbytes)
     {
-        how_much_to_read = maxbytes + 2;
+        how_much_to_read = maxbytes + 2; 
     }else
     {
-        how_much_to_read = bytesize*numwords + 2;
+        how_much_to_read = bytesize*wanted_number_of_words + 2;
     }
     // std::cout << "For the first time I will read " << how_much_to_read << " words" << std::endl;
 
-    std::vector<uint64_t> data(numwords);
-    while(wordsRead < numwords)
+    std::vector<uint64_t> data(wanted_number_of_words);
+    int reduced_number_of_words;// = (wanted_number_of_words/(bytesize/2))+1;
+    // std::vector<uint64_t> tmp_data(reduced_number_of_words);
+    reduced_number_of_words = wanted_number_of_words;
+    // std::cout << "The goal is now " << reduced_number_of_words << std::endl;
+    while(wordsRead < reduced_number_of_words)
     {
-        // read response ///////////////////////////////////////////////////////////
         tv_ = {timeout_sec, timeout_us};  // 0 seconds and 250000 useconds
         int retval = select(m_socket+1, &rfds_, NULL, NULL, &tv_);
         if(retval > 0)
@@ -243,13 +253,16 @@ std::vector<uint64_t> Ethernet::RecieveBurst(int numwords, int timeout_sec, int 
                 break;
             }else
             {
-                // std::cout << "Got " << numbytes << " words back" << std::endl;
+                // std::cout << "Got " << numbytes << " bytes back" << std::endl;
             }
+
+            // ---- Makes sure the buffer is a burst read
             if(!((buffer[0] & 0x7) == 1 || (buffer[0] & 0x7) == 2 || (buffer[0] & 0x7) == 3)) printf("Not burst packet! %x\n", buffer[0]); 
 
+            // ---- Copy all currently stored data in buffer to data
             for(int i = 0; i < (numbytes-2)/bytesize; ++i)
             {
-                if(i+wordsRead < numwords)
+                if(i+wordsRead < wanted_number_of_words)
                 {
                     memcpy((void*)(data.data()+i+wordsRead), (void*)&buffer[TX_DATA_OFFSET_ + bytesize*i], bytesize);    
                 }else
@@ -257,25 +270,32 @@ std::vector<uint64_t> Ethernet::RecieveBurst(int numwords, int timeout_sec, int 
                     break;
                 }
             }
+
+            // ---- Update the amount of words that were already read
+            // std::cout << "Read words updated from  " << wordsRead;
             wordsRead += (numbytes-2)/bytesize;
-            if(bytesize*(numwords-wordsRead)<maxbytes && numwords-wordsRead!=0)
+            // std::cout << " to " << wordsRead << std::endl;
+
+            // ---- Checks if the number of bytes that are supposed to be read needs to be updated
+            // ---- Avoids timeout if number left is smaller than max
+            if(bytesize*(reduced_number_of_words-wordsRead)<maxbytes && reduced_number_of_words-wordsRead!=0) // ---- Case for smaller than max but goal is already reached
             {
-                how_much_to_read = (numwords - wordsRead)*bytesize + 2;
-                // std::cout << "Setting read to " << (numwords - wordsRead)*2 + 2 << std::endl;
-            }else if(numwords-wordsRead==0)
+                how_much_to_read = (reduced_number_of_words - wordsRead)*bytesize + 2;
+                // std::cout << "Setting read to " << (reduced_number_of_words - wordsRead)*2 + 2 << std::endl;
+            }else if(reduced_number_of_words-wordsRead==0) // ---- Goal is reached
             {
-                // printf("Data successfull %i\n",wordsRead);
+                // printf("Data successfull %d\n",wordsRead);
                 break;
-            }else if(numwords-wordsRead<0)
+            }else if(reduced_number_of_words-wordsRead<0) // --- WTF
             {
                 std::cout << "WTF" << std::endl; 
             }
-        }else if(retval == 0)
+        }else if(retval == 0) // ---- Case if select times out
         {
             printf("Burst Read Timeout\n");
             functionreturn = 0xeeeebb03;
             break;
-        }else
+        }else // ---- Case if select breaks
         {
             perror("select()");
             functionreturn = 0xeeeebb04;
@@ -286,6 +306,14 @@ std::vector<uint64_t> Ethernet::RecieveBurst(int numwords, int timeout_sec, int 
     if(data.size()==0)
     {
         data.push_back(functionreturn);
+    }else{
+        // for(int k=0; k<data.size(); k++)
+        // {
+        //     // printf("%d - 0x%016llx\n",k,data.at(k));
+        //     // if ((k + 1) % 4 == 0) {
+        //     // printf("----\n");
+        //     // }
+        // }
     }
 
     memset(buffer, 0, sizeof buffer);
