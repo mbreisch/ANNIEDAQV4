@@ -43,6 +43,7 @@ bool ACC_DataRead::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("Port_0",Port_0);
 	m_variables.Get("Port_1",Port_1);
 	LAPPD_on_ACC = {Port_0,Port_1};
+    if(LAPPD_on_ACC[0]==LAPPD_on_ACC[1]){LAPPD_on_ACC.pop_back();}
 
 	PreviousBuffer.insert(pair<int, unsigned short>(Port_0, 0));
 	PreviousBuffer.insert(pair<int, unsigned short>(Port_1, 0));
@@ -67,7 +68,7 @@ bool ACC_DataRead::Execute()
         {
             //  printf("running\n");
             m_data->psec.LAPPD_ID = LAPPD_ID;
-            if(m_data->conf.triggermode==1 &&  m_data->psec.readRetval!=404)
+            if(m_data->conf.triggermode==1 && m_data->psec.readRetval!=404)
             {
                 printf("trigger mode 1\n");
                 m_data->acc->GenerateSoftwareTrigger();
