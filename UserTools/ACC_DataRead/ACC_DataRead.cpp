@@ -136,7 +136,7 @@ bool ACC_DataRead::Execute()
         }
     }else
 	{
-		printf("Not running\n");
+		// printf("Not running\n");
 	}
 
     return true;
