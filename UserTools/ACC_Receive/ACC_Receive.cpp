@@ -100,7 +100,8 @@ bool ACC_Receive::Execute(){
     
   }else{
         if(RunStartConfigType=="superlocal")
-        { 
+        {   
+            Store tmp;
             tmp.Initialise(RunStartConfigName); 
             if(m_verbose>1){tmp.Print();}
             std::cout<<" did it initiailiase? = "<<m_data->conf.Initialise(&tmp)<<std::endl;
