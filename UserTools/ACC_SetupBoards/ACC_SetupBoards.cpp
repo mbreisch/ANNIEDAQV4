@@ -229,7 +229,7 @@ bool ACC_SetupBoards::Setup()
 	}else
 	{
 		ret = true;
-		//std::cout << "Initialization successfull!" << std::endl;
+		std::cout << "Initialization successfull!" << std::endl;
 	}
 	
 	m_data->conf.receiveFlag = 2;

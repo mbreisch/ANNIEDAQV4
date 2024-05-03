@@ -69,7 +69,7 @@ bool ACC_DataRead::Execute()
             m_data->psec.LAPPD_ID = LAPPD_ID;
             if(m_data->conf.triggermode==1)
             {
-                //printf("trigger mode 1\n");
+                printf("trigger mode 1\n");
                 m_data->acc->GenerateSoftwareTrigger();
             }
 
