@@ -20,7 +20,7 @@ bool ACC_ParseAndSave::Initialise(std::string configfile, DataModel &data)
 
     starttime = getTime();
 
-    system("mkdir -p Results")
+    system("mkdir -p Results");
 
     return true;
 }
@@ -107,7 +107,7 @@ bool ACC_ParseAndSave::Execute()
         {
             for(int cj=i*type; cj<(i+1)*type; cj++)
             {
-                m_data->local.TransferMap[m_data->local.BoardIndex.at(i)].push_back(m_data->local.ReceiveData.at(cj));
+                m_data->local.TransferMap[m_data->psec.BoardIndex.at(i)].push_back(m_data->psec.ReceiveData.at(cj));
             }
         }
 
@@ -143,7 +143,7 @@ bool ACC_ParseAndSave::Execute()
         m_data->vars.Set("StopLoop",1);
     }
 
-    return retfinish,
+    return retfinish;
 }
 
 

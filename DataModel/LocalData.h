@@ -19,6 +19,7 @@ class LocalData{
         map<int,map<int, vector<unsigned short>>> ParseData;
         map<int,vector<unsigned short>> ParseMeta;
         
+        int Savemode;
         int counter;
         int DataSaved;
         string time;
