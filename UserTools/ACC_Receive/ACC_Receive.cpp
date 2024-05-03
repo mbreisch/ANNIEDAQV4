@@ -19,7 +19,7 @@ bool ACC_Receive::Initialise(std::string configfile, DataModel &data){
     }catch(std::exception& e)
     {
         std::cerr<<"ACC_Receive::Initialise caught exception on config "<<e.what()<<std::endl;
-        get_ok=false;
+         bool get_ok=false;
     }
     
     if(!get_ok){
