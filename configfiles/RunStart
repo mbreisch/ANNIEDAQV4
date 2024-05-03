@@ -60,3 +60,5 @@ Pedestal_channel_mask 31 #5 bit representin psec chips
 #PPS
 PPSRatio 0
 PPSBeamMultiplexer 0
+
+RunControl 0
