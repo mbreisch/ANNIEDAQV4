@@ -62,7 +62,7 @@ bool ACC_DataRead::Execute()
         Initialise(localconfigfile,*m_data);
     }
 
-    if(!m_data->running)
+    if(m_data->running)
     {
         try
         {
@@ -70,7 +70,7 @@ bool ACC_DataRead::Execute()
             m_data->psec.LAPPD_ID = LAPPD_ID;
             if(m_data->conf.triggermode==1 && m_data->psec.readRetval!=404)
             {
-                printf("trigger mode 1\n");
+                // printf("trigger mode 1\n");
                 m_data->acc->GenerateSoftwareTrigger();
             }
 
@@ -100,14 +100,14 @@ bool ACC_DataRead::Execute()
                     if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0){m_data->acc->EmptyUsbLine();}
                 }else
                 {
-                    printf("404\n");
+                    // printf("404\n");
 					m_data->TCS.Timeoutcounter.at(LAPPD_ID) = m_data->TCS.Timeoutcounter.at(LAPPD_ID) + 1;
                 }
                 m_data->psec.ReceiveData.clear();
                 m_data->acc->ClearData();
             }else
             {
-                printf("good data\n");
+                // printf("good data\n");
                 m_data->TCS.Timeoutcounter.at(LAPPD_ID) = 0;
                 m_data->psec.AccInfoFrame = m_data->acc->ReturnACCIF();
                 m_data->psec.ReceiveData = m_data->acc->ReturnRawData();
