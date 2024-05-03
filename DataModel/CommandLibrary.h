@@ -41,6 +41,7 @@ class CommandLibrary_ACC
         uint64_t RX_Buffer_Size_Readback = 0x00002010;
         uint64_t RX_Buffer_Size_Ch0123_Readback = 0x00002019;
         uint64_t RX_Buffer_Size_Ch4567_Readback = 0x00002018;
+        uint64_t PPS_Test = 0x00000090; 
 
     private:
 
@@ -75,7 +76,6 @@ class CommandLibrary_ACDC
         uint64_t Test_Mode_0 = 0x00F00000;
         uint64_t DLL_Reset_Request = 0x00F20000;
         uint64_t Global_Reset = 0x00FF0000; 
-
 
     private:
 
