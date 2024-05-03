@@ -14,9 +14,9 @@ bool ACC_ParseAndSave::Initialise(std::string configfile, DataModel &data)
     if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
 
     m_variables.Get("EventsPerFile",EvtsPerFile);
-    m_variables.Get("Savemode",m_data->local.Savemode);
+    m_variables.Get("Savemode",m_data->dlocal.Savemode);
     
-    m_data->local.time = getTime();
+    m_data->dlocal.time = getTime();
 
     starttime = getTime();
 
@@ -36,10 +36,10 @@ bool ACC_ParseAndSave::Execute()
     }
 
     //Savemode check
-    if(m_data->local.Savemode==0) //If no save is chosen skip tool
+    if(m_data->dlocal.Savemode==0) //If no save is chosen skip tool
     {
         retfinish = true;
-    }else if(m_data->local.Savemode==1) //ASCII save in parsed files
+    }else if(m_data->dlocal.Savemode==1) //ASCII save in parsed files
     {
         int retval, type;
         if(m_data->psec.ReceiveData.size()%16==0)
@@ -55,11 +55,11 @@ bool ACC_ParseAndSave::Execute()
         {
             for(int cj=i*type; cj<(i+1)*type; cj++)
             {
-                m_data->local.TransferMap[m_data->psec.BoardIndex.at(i)].push_back(m_data->psec.ReceiveData.at(cj));
+                m_data->dlocal.TransferMap[m_data->psec.BoardIndex.at(i)].push_back(m_data->psec.ReceiveData.at(cj));
             }
         }
 
-        for(std::map<int, vector<unsigned short>>::iterator it=m_data->local.TransferMap.begin(); it!=m_data->local.TransferMap.end(); ++it)
+        for(std::map<int, vector<unsigned short>>::iterator it=m_data->dlocal.TransferMap.begin(); it!=m_data->dlocal.TransferMap.end(); ++it)
         {
             //fill ParsedStream with vectors from data
             retval = getParsedData(it->second);
@@ -68,13 +68,13 @@ bool ACC_ParseAndSave::Execute()
                 return true;
             }else if(retval == 0)
             {
-                m_data->local.ParseData[it->first]=data;
+                m_data->dlocal.ParseData[it->first]=data;
                 retval = getParsedMeta(it->second,it->first);
                 if(retval!=0)
                 {
                     std::cout << "Meta parsing went wrong! " << retval << std::endl;
                 }
-                m_data->local.ParseMeta[it->first]=meta;	
+                m_data->dlocal.ParseMeta[it->first]=meta;	
             }else if(retval!=0 && retval!=-3)
             {
                 std::cout << "Parsing went wrong! " << retval << std::endl;
@@ -82,16 +82,16 @@ bool ACC_ParseAndSave::Execute()
             channel_count = 0;
         }
 
-		if(m_data->local.counter>EvtsPerFile)
+		if(m_data->dlocal.counter>EvtsPerFile)
 		{
-			m_data->local.counter=0;
-			m_data->local.time = getTime();
+			m_data->dlocal.counter=0;
+			m_data->dlocal.time = getTime();
 		}
-		SaveASCII(m_data->local.time);
-		m_data->local.counter +=1;	
+		SaveASCII(m_data->dlocal.time);
+		m_data->dlocal.counter +=1;	
 
         retfinish = true;
-    }else if(m_data->local.Savemode==2)
+    }else if(m_data->dlocal.Savemode==2)
     {
         int retval, type;
         if(m_data->psec.ReceiveData.size()%16==0)
@@ -107,17 +107,17 @@ bool ACC_ParseAndSave::Execute()
         {
             for(int cj=i*type; cj<(i+1)*type; cj++)
             {
-                m_data->local.TransferMap[m_data->psec.BoardIndex.at(i)].push_back(m_data->psec.ReceiveData.at(cj));
+                m_data->dlocal.TransferMap[m_data->psec.BoardIndex.at(i)].push_back(m_data->psec.ReceiveData.at(cj));
             }
         }
 
-		if(m_data->local.counter>EvtsPerFile)
+		if(m_data->dlocal.counter>EvtsPerFile)
 		{
-			m_data->local.counter=0;
-			m_data->local.time = getTime();
+			m_data->dlocal.counter=0;
+			m_data->dlocal.time = getTime();
 		}
-		SaveRaw(m_data->local.time);
-		m_data->local.counter +=1;
+		SaveRaw(m_data->dlocal.time);
+		m_data->dlocal.counter +=1;
 
         //Basic return raw
         retfinish = true;
@@ -127,18 +127,18 @@ bool ACC_ParseAndSave::Execute()
     }
 
 	//Cleanup	
-	m_data->local.ParseData.clear();
-	m_data->local.ParseMeta.clear();
+	m_data->dlocal.ParseData.clear();
+	m_data->dlocal.ParseMeta.clear();
 	m_data->psec.AccInfoFrame.clear();
 	m_data->psec.BoardIndex.clear();
 	m_data->psec.ReceiveData.clear();
     m_data->psec.RawWaveform.clear();
-    m_data->local.TransferMap.clear();
+    m_data->dlocal.TransferMap.clear();
 
-    m_data->local.DataSaved++;
+    m_data->dlocal.DataSaved++;
     int MaxEvents;
     m_variables.Get("MaxEvents",MaxEvents);
-    if(m_data->local.DataSaved==MaxEvents)
+    if(m_data->dlocal.DataSaved==MaxEvents)
     {
         m_data->vars.Set("StopLoop",1);
     }
@@ -331,7 +331,7 @@ int ACC_ParseAndSave::getParsedData(std::vector<unsigned short> buffer)
 void ACC_ParseAndSave::SaveRaw(string time)
 {
 	//Direct raw save of data
-	for(std::map<int, vector<unsigned short>>::iterator it=m_data->local.TransferMap.begin(); it!=m_data->local.TransferMap.end(); ++it)
+	for(std::map<int, vector<unsigned short>>::iterator it=m_data->dlocal.TransferMap.begin(); it!=m_data->dlocal.TransferMap.end(); ++it)
 	{
 		string rawfn = "./Results/Raw_b" + to_string(it->first) + "_" + time + ".txt";
 		ofstream d(rawfn.c_str(), ios::app); 
@@ -351,8 +351,8 @@ void ACC_ParseAndSave::SaveASCII(string time)
 
 	vector<int> boardsReadyForRead = m_data->psec.BoardIndex;
 
-	map<int,map<int, vector<unsigned short>>> map_data = m_data->local.ParseData;
-	map<int, vector<unsigned short>> map_meta = m_data->local.ParseMeta;
+	map<int,map<int, vector<unsigned short>>> map_data = m_data->dlocal.ParseData;
+	map<int, vector<unsigned short>> map_meta = m_data->dlocal.ParseMeta;
 
 	string delim = " ";
 	for(int enm=0; enm<NUM_SAMP; enm++)

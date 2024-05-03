@@ -90,7 +90,7 @@ class DataModel {
   PsecData psec;
   PsecConfig conf;
   TempClassStore TCS;
-  LocalData local;
+  LocalData dlocal;
 
   
  private:
