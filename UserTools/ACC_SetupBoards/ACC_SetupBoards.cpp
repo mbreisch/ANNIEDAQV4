@@ -213,7 +213,7 @@ bool ACC_SetupBoards::Setup()
 	m_data->acc->SetPPSRatio(ppsratio);
 	
 	//SetMaxTimeoutValue
-	TimeoutResetCount = (PPSWaitMultiplier*m_data->conf.PPSRatio)/(m_data->TCS.Timeoutcounter.size()*(timeout/1000.0));
+	//TimeoutResetCount = (PPSWaitMultiplier*m_data->conf.PPSRatio)/(m_data->TCS.Timeoutcounter.size()*(timeout/1000.0));
 	std::cout << "Created new timeout value based on " << m_data->conf.PPSRatio << " with " << TimeoutResetCount << std::endl;
 
 	m_data->acc->SetPPSBeamMultiplexer(m_data->conf.PPSBeamMultiplexer);
