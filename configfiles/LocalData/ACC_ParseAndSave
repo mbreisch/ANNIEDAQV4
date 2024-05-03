@@ -7,5 +7,5 @@ verbose 1
 #2 = Save to Raw
 Savemode 2
 
-EventsPerFile 10000 
-MaxEvents 10000
+EventsPerFile 10
+MaxEvents 10
