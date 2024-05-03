@@ -40,6 +40,8 @@ class ACC_SetupBoards: public Tool {
     bool Finalise(); ///< Finalise funciton used to clean up resorces.
 
     int TimeoutResetCount; ///< how many timeouts before we reset the ACC
+    int Ethernet_Burst_timeout_s;
+    int Ethernet_Burst_timeout_us;
     float PPSWaitMultiplier; ///< Multiplier that multiplies the set PPS value and sets this as wait condition for the timeouts
     std::string IP;
     std::string Port;

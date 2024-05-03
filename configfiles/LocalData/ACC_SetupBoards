@@ -10,3 +10,6 @@ Interface_Port 5050
 #Wait is multiplied by the set PPS value
 PPSWaitMultiplier 4
 TimeoutResetCount 300
+
+Ethernet_Burst_timeout_s 0
+Ethernet_Burst_timeout_us 10000

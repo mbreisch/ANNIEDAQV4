@@ -564,7 +564,7 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
             printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
         }
 
-        acdc_buffer = CorrectData(eth_burst->RecieveBurst(ReadoutSize[bi],10,0));
+        acdc_buffer = CorrectData(eth_burst->RecieveBurst(ReadoutSize[bi],ethernet_burst_timeout_s,ethernet_burst_timeout_us));
 
 		// Handles buffers =/= 7795 words
 		if((int)acdc_buffer.size() != ReadoutSize[bi])

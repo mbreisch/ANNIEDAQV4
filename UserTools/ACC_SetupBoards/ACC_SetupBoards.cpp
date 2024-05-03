@@ -41,6 +41,8 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
     if(!m_variables.Get("Interface_Name",m_data->TCS.Interface_Name)) m_data->TCS.Interface_Name="USB";
     if(!m_variables.Get("Interface_IP",m_data->TCS.Interface_IP)) m_data->TCS.Interface_IP="127.0.0.1";
     if(!m_variables.Get("Interface_Port",m_data->TCS.Interface_Port)) m_data->TCS.Interface_Port="8.8.8.8";
+    if(!m_variables.Get("Ethernet_Burst_timeout_s",Ethernet_Burst_timeout_s)) Ethernet_Burst_timeout_s=1;
+    if(!m_variables.Get("Ethernet_Burst_timeout_us",Ethernet_Burst_timeout_us)) Ethernet_Burst_timeout_us=0;
 	if(m_data->acc==nullptr)
     {
         if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0)
@@ -49,6 +51,7 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
         }else if(strcmp(m_data->TCS.Interface_Name.c_str(),"ETH") == 0)
         {
             m_data->acc = new ACC_ETH(m_data->TCS.Interface_IP, m_data->TCS.Interface_Port);
+            m_data->acc.SetEthernetBurstTimeouts(Ethernet_Burst_timeout_s,Ethernet_Burst_timeout_us);
         }else
         {
             std::cout << "Invalid Interface_Name" << std::endl;

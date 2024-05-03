@@ -75,6 +75,7 @@ class ACC_ETH : public ACC
         void SetPPSRatio(unsigned int in) override {PPSRatio = in;} 
         void SetPPSBeamMultiplexer(int in) override {PPSBeamMultiplexer = in;} 
         void SetTimeoutInMs(int in) override {timeoutvalue = in;}
+        void SetEthernetBurstTimeouts(int in1, int in2){ethernet_burst_timeout_s=in1; ethernet_burst_timeout_us=in2;}
 
         //------------------------------------------------------------------------------------//
         //-------------------------Local set functions for board setup------------------------//
@@ -130,6 +131,8 @@ class ACC_ETH : public ACC
         int SELF_coincidence_onoff; //var: flag to enable self trigger coincidence
         int triggersource; //var: decides the triggermode
         int timeoutvalue;
+        int ethernet_burst_timeout_s;
+        int ethernet_burst_timeout_us;
         int PPSBeamMultiplexer; //var: defines the multiplication of the PPS value 
         unsigned int SELF_number_channel_coincidence; //var: number of channels required in coincidence for the self trigger
         unsigned int SELF_threshold; //var: threshold for the selftrigger
