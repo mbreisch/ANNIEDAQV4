@@ -86,13 +86,17 @@ bool ACC_DataRead::Execute()
                 // printf("bad data Retval=%d\n",m_data->psec.readRetval);
                 if(m_data->psec.readRetval != 404)
                 {
-                        printf("not 404 but %i\n",m_data->psec.readRetval);
-                        m_data->TCS.Timeoutcounter.at(LAPPD_ID) = 0;
-                        m_data->psec.FailedReadCounter = m_data->psec.FailedReadCounter + 1;
-                        m_data->psec.errorcodes.push_back(0xAD02EE01);
-                        unsigned int dumpIndex = 0x00 | (1<<LAPPD_on_ACC[0]) | (1<<LAPPD_on_ACC[1]);
-                        m_data->acc->DumpData(dumpIndex);
-                        if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0){m_data->acc->EmptyUsbLine();}
+                    if(m_data->psec.readRetval == 405)
+                    {
+                        m_data->vars.Set("StopLoop",1);
+                    }
+                    printf("not 404 but %i\n",m_data->psec.readRetval);
+                    m_data->TCS.Timeoutcounter.at(LAPPD_ID) = 0;
+                    m_data->psec.FailedReadCounter = m_data->psec.FailedReadCounter + 1;
+                    m_data->psec.errorcodes.push_back(0xAD02EE01);
+                    unsigned int dumpIndex = 0x00 | (1<<LAPPD_on_ACC[0]) | (1<<LAPPD_on_ACC[1]);
+                    m_data->acc->DumpData(dumpIndex);
+                    if(strcmp(m_data->TCS.Interface_Name.c_str(),"USB") == 0){m_data->acc->EmptyUsbLine();}
                 }else
                 {
                     printf("404\n");
