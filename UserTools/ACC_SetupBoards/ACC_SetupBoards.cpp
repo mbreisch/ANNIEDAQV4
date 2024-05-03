@@ -51,7 +51,7 @@ bool ACC_SetupBoards::Initialise(std::string configfile, DataModel &data){
         }else if(strcmp(m_data->TCS.Interface_Name.c_str(),"ETH") == 0)
         {
             m_data->acc = new ACC_ETH(m_data->TCS.Interface_IP, m_data->TCS.Interface_Port);
-            m_data->acc.SetEthernetBurstTimeouts(Ethernet_Burst_timeout_s,Ethernet_Burst_timeout_us);
+            m_data->acc->SetEthernetBurstTimeouts(Ethernet_Burst_timeout_s,Ethernet_Burst_timeout_us);
         }else
         {
             std::cout << "Invalid Interface_Name" << std::endl;
