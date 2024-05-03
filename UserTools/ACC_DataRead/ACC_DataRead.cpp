@@ -61,7 +61,7 @@ bool ACC_DataRead::Execute()
         Initialise(localconfigfile,*m_data);
     }
 
-    if(m_data->running)
+    if(!m_data->running)
     {
         try
         {
