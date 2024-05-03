@@ -580,6 +580,7 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
 
 		if(acdc_buffer[0] != 0x1234)
 		{
+            printf("0x%04x\n",acdc_buffer[0]);
 			acdc_buffer.clear();
             errorcodes.push_back(0xACCE0605);
             return 409;
