@@ -5,3 +5,6 @@ verbose 3
 RunStartConfigType local
 RunStartConfigName configfiles/RunStart
 
+RunEndConfigType local
+RunEndConfigName configfiles/RunEnd
+
