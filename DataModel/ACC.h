@@ -36,7 +36,7 @@ class ACC
         virtual void ResetACC() = 0;
         virtual void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate) = 0;
         virtual bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) = 0;
-        virtual bool PPS_TestMode(int state) = 0;
+        virtual void PPS_TestMode(int state) = 0;
         virtual void ClearData() = 0;
         virtual void ClearErrors() = 0;
         virtual bool EmptyUsbLine() = 0;
