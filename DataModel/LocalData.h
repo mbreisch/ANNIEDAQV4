@@ -13,6 +13,8 @@ class LocalData{
 
     public:
 
+        LocalData();
+
         map<int, vector<unsigned short>> TransferMap;
         map<int,map<int, vector<unsigned short>>> ParseData;
         map<int,vector<unsigned short>> ParseMeta;
