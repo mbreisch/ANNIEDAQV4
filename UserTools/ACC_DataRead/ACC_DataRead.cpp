@@ -109,9 +109,9 @@ bool ACC_DataRead::Execute()
             {
                 printf("good data\n");
                 m_data->TCS.Timeoutcounter.at(LAPPD_ID) = 0;
-                m_data->psec.AccInfoFrame = m_data->acc->ReturnACCIF(); printf("L-ACC: %d\n",m_data->psec.AccInfoFrame);
-                m_data->psec.ReceiveData = m_data->acc->ReturnRawData(); printf("D-ACC: %d\n",m_data->psec.ReceiveData);
-                m_data->psec.BoardIndex = m_data->acc->ReturnBoardIndices(); printf("B-ACC: %d\n",m_data->psec.BoardIndex);
+                m_data->psec.AccInfoFrame = m_data->acc->ReturnACCIF();
+                m_data->psec.ReceiveData = m_data->acc->ReturnRawData();
+                m_data->psec.BoardIndex = m_data->acc->ReturnBoardIndices();
                 m_data->acc->ClearData();
             }                
         }catch(std::exception& e)
