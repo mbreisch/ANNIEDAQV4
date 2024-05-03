@@ -1,0 +1,11 @@
+#Verbosity
+verbose 1
+
+#Overall ACC/ACDC config file
+#0 = no Save
+#1 = Save to ASCII
+#2 = Save to Raw
+Savemode 2
+
+EventsPerFile 10000 
+MaxEvents 10000

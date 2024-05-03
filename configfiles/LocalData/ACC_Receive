@@ -1,0 +1,7 @@
+#Verbosity
+verbose 3
+
+# 3rd feb 2023 testing; local override
+RunStartConfigType local
+RunStartConfigName configfiles/RunStart
+
