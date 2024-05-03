@@ -14,6 +14,7 @@ bool ACC_ParseAndSave::Initialise(std::string configfile, DataModel &data)
     if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
 
     m_variables.Get("EventsPerFile",EvtsPerFile);
+    m_variables.Get("MaxEvents",MaxEvents);
     m_variables.Get("Savemode",m_data->dlocal.Savemode);
     
     m_data->dlocal.time = getTime();
@@ -136,8 +137,6 @@ bool ACC_ParseAndSave::Execute()
     m_data->dlocal.TransferMap.clear();
 
     m_data->dlocal.DataSaved++;
-    int MaxEvents;
-    m_variables.Get("MaxEvents",MaxEvents);
     if(m_data->dlocal.DataSaved==MaxEvents)
     {
         m_data->vars.Set("StopLoop",1);

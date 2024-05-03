@@ -52,6 +52,7 @@ class ACC_ParseAndSave: public Tool {
         string starttime;
 
         int EvtsPerFile;
+        int MaxEvents;
 
         void SaveRaw(string time);
         void SaveASCII(string time);
