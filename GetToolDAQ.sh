@@ -4,6 +4,7 @@ init=1
 tooldaq=1
 boostflag=1
 zmq=1
+repair=1
 final=1
 rootflag=0
 setup=0
@@ -97,7 +98,7 @@ cd Dependencies
 
 if [ $tooldaq -eq 1 ]
 then
-git clone https://github.com/ToolFramework/ToolFrameworkCore.git
+git clone https://github.com/ToolFramework/ToolFrameworkCore.git -b v2.3.0
 
 cd ToolFrameworkCore
 make clean
@@ -177,7 +178,7 @@ fi
 
 if [ $tooldaq -eq 1 ]
 then
-    git clone https://github.com/ToolDAQ/ToolDAQFramework.git
+    git clone https://github.com/ToolDAQ/ToolDAQFramework.git -b v2.3.0
     
     cd ToolDAQFramework
     make clean
@@ -187,8 +188,13 @@ then
     
 fi
 
-
 cd ../
+
+if [ $repair -eq 1 ]
+then
+    cp -v ./repair/Store.cpp ./Dependencies/ToolFrameworkCore/src/Store/
+    cp -v ./repair/Store.h ./Dependencies/ToolFrameworkCore/src/Store/
+fi
 
 if [ $final -eq 1 ]
 then

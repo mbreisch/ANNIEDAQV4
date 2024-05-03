@@ -99,6 +99,8 @@ class ACC_USB : public ACC
         void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate) override ;
         //ID 13: Set Pedestal values
         bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) override ;
+        //ID 14:
+        void PPS_TestMode(int state){} override;
         //ID 16
         void WriteErrorLog(string errorMsg);
         //ID 17

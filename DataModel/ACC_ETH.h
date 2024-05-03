@@ -84,7 +84,6 @@ class ACC_ETH : public ACC
         int SetTriggerSource(unsigned int boardmask = 0xFF, int triggersource = 0) override ; 
         //ID 6: Main listen fuction for data readout. Runs for 5s before retuning a negative//
         int ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC) override ; 
-        vector<unsigned short> Temp_Read(int triggersource, vector<int> LAPPD_on_ACC) override ;
         //ID 7: Special function to check connected ACDCs for their firmware version// 
         void VersionCheck() override ;
         //ID 8: Fires the software trigger//
@@ -99,6 +98,8 @@ class ACC_ETH : public ACC
         void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate) override ;
         //ID 13: Set Pedestal values
         bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) override ;
+        //ID 14:
+        void PPS_TestMode(int state) override;
         //ID 16
         void WriteErrorLog(string errorMsg);
         //ID 17

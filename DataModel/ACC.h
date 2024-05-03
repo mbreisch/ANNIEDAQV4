@@ -29,7 +29,6 @@ class ACC
         virtual int InitializeForDataReadout(unsigned int boardmask = 0xFF, int triggersource = 0) = 0;
         virtual int SetTriggerSource(unsigned int boardmask = 0xFF, int triggersource = 0) = 0;
         virtual int ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC) = 0;
-        virtual vector<unsigned short> Temp_Read(int triggersource, vector<int> LAPPD_on_ACC) = 0;
         virtual void VersionCheck() = 0;
         virtual void GenerateSoftwareTrigger() = 0;
         virtual void DumpData(unsigned int boardMask = 0xFF) = 0;
@@ -37,6 +36,7 @@ class ACC
         virtual void ResetACC() = 0;
         virtual void SetSMA_Debug(unsigned int PPS, unsigned int Beamgate) = 0;
         virtual bool SetPedestals(unsigned int boardmask, unsigned int chipmask, unsigned int adc) = 0;
+        virtual bool PPS_TestMode(int state) = 0;
         virtual void ClearData() = 0;
         virtual void ClearErrors() = 0;
         virtual bool EmptyUsbLine() = 0;

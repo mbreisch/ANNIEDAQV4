@@ -9,3 +9,5 @@ Dependencies
 main
 *.d
 *.root
+.vscode/settings.json
+LocalDataTaking

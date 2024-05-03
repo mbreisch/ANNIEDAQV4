@@ -1,6 +1,6 @@
 PGStarter PGStarter configfiles/LAPPD/PGStarterConfig
-RunControl RunControl configfiles/LAPPD/RunControl
 ACC_Receive ACC_Receive configfiles/LAPPD/ACC_Receive
 ACC_SetupBoards ACC_SetupBoards configfiles/LAPPD/ACC_SetupBoards
 ACC_DataRead ACC_DataRead configfiles/LAPPD/ACC_DataRead
 ACC_Stream ACC_Stream configfiles/LAPPD/ACC_Stream
+RunControl RunControl configfiles/LAPPD/RunControl

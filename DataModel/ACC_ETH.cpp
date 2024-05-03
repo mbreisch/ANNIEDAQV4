@@ -461,9 +461,25 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
         uint64_t buffers_4567 = eth->RecieveDataSingle(CML_ACC.RX_Buffer_Size_Ch4567_Readback,0x0);
         uint64_t datadetect = eth->RecieveDataSingle(CML_ACC.Data_Frame_Receive,0x0);
 
-        LastACCBuffer = {};//{0x1234,0xAAAA,firmwareversion,plllock,external_clock,acdcboads,datadetect,buffers_0123,buffers_4567};
-
-        uint64_t allbuffers = (buffers_4567<<32) | buffers_0123;
+        LastACCBuffer = {   
+                            0x1234, // 0
+                            0xAAAA, // 1
+                            firmwareversion, // 2
+                            plllock, // 3
+                            external_clock, // 4
+                            acdcboads, // 5
+                            datadetect, // 6
+                            (buffers_0123 & 0xffff), // 7
+                            (buffers_0123 & 0xffff<<16)>>16, // 8
+                            (buffers_0123 & 0xffff<<32)>>32, // 9
+                            (buffers_0123 & 0xffff<<48)>>48, // 10
+                            (buffers_4567 & 0xffff), // 11
+                            (buffers_4567 & 0xffff<<16)>>16, // 12
+                            (buffers_4567 & 0xffff<<32)>>32, // 13
+                            (buffers_4567 & 0xffff<<48)>>48, // 14
+                            0xAAAA, // 15
+                            0x4321 // 16
+                        };
 
 		//go through all boards on the acc info frame and if 7795 words were transfered note that board
 		for(int k: LAPPD_on_ACC)
@@ -471,12 +487,12 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
             if(datadetect & (1<<k))
             {
                 //Data is seen
-                if(((allbuffers>>k*16) & 0xffff) == PSECFRAME)
+                if(LastACCBuffer.at(k+7) == PSECFRAME)
                 {
                     //Data matches
                     BoardsReadyForRead.push_back(k);
 					ReadoutSize[k] = PSECFRAME;
-                }else if(((allbuffers>>k*16) & 0xffff) < PSECFRAME)
+                }else if(LastACCBuffer.at(k+7) < PSECFRAME)
                 {
                     //No data matches
                     // std::stringstream stream;
@@ -491,7 +507,7 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
                     ret = eth->SendData(CML_ACC.Read_ACDC_Data_Buffer, k,"w");
                     if(!ret){printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);}  
 
-                    printf("Reading %i with %i\n",k,((allbuffers>>k*16) & 0xffff));
+                    printf("Reading %i with %i\n",k,LastACCBuffer.at(k+7));
                     vector<uint64_t> acdc_buffer = eth_burst->RecieveBurst(7796,1,0);
                     printf("Got %i words back\n",acdc_buffer.size());
 
@@ -505,7 +521,7 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
             }else
             {
                 //Else is seen
-                if(((allbuffers>>k*16) & 0xffff) == PPSFRAME)
+                if(LastACCBuffer.at(k+7) == PPSFRAME)
                 {
                     //PPS matches
                     BoardsReadyForRead.push_back(k);
@@ -547,7 +563,7 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
             printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
         }
 
-        acdc_buffer = CorrectData(eth_burst->RecieveBurst(7795,1,0));
+        acdc_buffer = CorrectData(eth_burst->RecieveBurst(ReadoutSize[bi],1,0));
 
 		// Handles buffers =/= 7795 words
 		if((int)acdc_buffer.size() != ReadoutSize[bi])
@@ -581,7 +597,6 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
         }
 
 		out_raw_data.insert(out_raw_data.end(), transfer_vector.begin(), transfer_vector.end());
-        out_raw_data.push_back(0xffff);
         transfer_vector.clear();
         acdc_buffer.clear();
 	}
@@ -596,10 +611,15 @@ int ACC_ETH::ListenForAcdcData(int triggersource, vector<int> LAPPD_on_ACC)
 // >>>> ID 7: Special function to check connected ACDCs for their firmware version 
 void ACC_ETH::VersionCheck()
 {
+    ResetACDC();
+    ResetACC();
+
     //Sets up the burst mode
     eth_burst->SwitchToBurst();
     usleep(100);
     eth_burst->SetBurstState(true);
+
+    eth->SendData(CML_ACC.RX_Buffer_Reset_Request,0xff,"w");
 
     //Get ACC Info
     uint64_t acc_fw_version = eth->RecieveDataSingle(CML_ACC.Firmware_Version_Readback,0x1);
@@ -616,6 +636,7 @@ void ACC_ETH::VersionCheck()
     std::cout << " from " << std::hex << acc_fw_year << std::dec << "/" << std::hex << acc_fw_month << std::dec << "/" << std::hex << acc_fw_day << std::dec << std::endl;
     
     uint64_t acdcs_detected = eth->RecieveDataSingle(CML_ACC.ACDC_Board_Detect,0x0);    
+    printf("Detected boards 0x%016llx\n",acdcs_detected);
 
     eth->SendData(CML_ACC.ACDC_Command,CML_ACDC.Disable_Transfer | (0xff<<24),"w");
     usleep(100000);
@@ -629,24 +650,24 @@ void ACC_ETH::VersionCheck()
     {
     	if(acdcs_detected & (1<<bi))
     	{
-    		uint64_t retval = eth->RecieveDataSingle(0x2010 | bi, 0x0);
+    		uint64_t retval = eth->RecieveDataSingle(CML_ACC.RX_Buffer_Size_Readback | bi, 0x1);
     		//printf("Board %i got 0x%016llx\n",bi,retval);
 
             if(retval==32)
             {
-    		    bool ret = eth->SendData(CML_ACC.Read_ACDC_Data_Buffer,bi);
+    		    bool ret = eth->SendData(CML_ACC.Read_ACDC_Data_Buffer,bi,"w");
     		
                 vector<unsigned short> return_vector = CorrectData(eth_burst->RecieveBurst(ACDCFRAME,1,0));
-                for(auto k: return_vector)
-                {
-                    printf("%016llx\n",k);
-                }
+                // for(auto k: return_vector)
+                // {
+                //     printf("%016llx\n",k);
+                // }
                 if(return_vector.size()==32)
                 {
                     if(return_vector.at(1)==0xbbbb)
                     {
                         std::cout << "Board " << bi << " got the firmware version: " << std::hex << return_vector.at(2) << std::dec;
-                        std::cout << " from " << std::hex << return_vector.at(4) << std::dec << "/" << std::hex << return_vector.at(3) << std::dec << std::endl;
+                        std::cout << " from " << std::hex << return_vector.at(3) << std::dec << "/" << std::hex << ((return_vector.at(4) & 0xff<<8)>>8) << std::dec << "/" << std::hex << (return_vector.at(4) & 0xff) << std::dec << std::endl;
                     }else
                     {
                         std::cout << "Board " << bi << " got the wrong info frame" << std::endl;
@@ -657,12 +678,13 @@ void ACC_ETH::VersionCheck()
                 }
             }else
             {
-                std::cout << "The ACDC ID buffer has not 32 words but " << retval << std::endl;
+                std::cout << "The ACDC IF buffer has not 32 words but " << retval << std::endl;
             }
         }else
         {
             std::cout << "ACDC boards " << bi << " was not detected" << endl;
         }
+        eth->SendData(CML_ACC.RX_Buffer_Reset_Request,(1<<bi),"w");
     }
 }
 
@@ -712,6 +734,7 @@ void ACC_ETH::ResetACDC()
         errorcodes.push_back(0xACCE1001);
         printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
     }
+    usleep(5000000);
 }
 
 // >>>> ID 11: Resets the ACC
@@ -726,6 +749,7 @@ void ACC_ETH::ResetACC()
         errorcodes.push_back(0xACCE1101);
         printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);
     }
+    usleep(5000000);
 }
 
 // >>>> ID 12: Sets SMA Debug settings
@@ -771,6 +795,21 @@ bool ACC_ETH::SetPedestals(unsigned int boardmask, unsigned int chipmask, unsign
 	return true;
 }
 
+// >>>> ID 14: Sets PPS Test mode, PPS is generated on the ACCs internal clock
+void ACC_ETH::PPS_TestMode(int state)
+{
+    command_address = CML_ACC.PPS_Test;
+    if(state==1)
+    {
+        command_value = 0x6;
+    }else
+    {
+	    command_value = 0x0;
+    }
+    bool ret = eth->SendData(command_address,command_value,"w");
+    if(!ret){printf("Could not send command 0x%08llX with value %i to set pps test mode!\n",command_address,command_value);}
+}
+
 // >>>> ID 16: Write function for the error log
 void ACC_ETH::WriteErrorLog(string errorMsg)
 {
@@ -791,7 +830,7 @@ std::vector<unsigned short> ACC_ETH::CorrectData(std::vector<uint64_t> input_dat
 {
     std::vector<unsigned short> corrected_data;
 
-    if(input_data.size()==PSECFRAME+4)
+    if(input_data.size()==PSECFRAME+4 || input_data.size()==ACCFRAME+4 || input_data.size()==ACDCFRAME+4 || input_data.size()==PPSFRAME+4)
     {
         input_data.erase(input_data.begin(), input_data.begin()+4);
     }
@@ -807,6 +846,7 @@ std::vector<unsigned short> ACC_ETH::CorrectData(std::vector<uint64_t> input_dat
         }
     }else if(input_data.size()==7795)
     { 
+        input_data.push_back(0x0);
         try
         {
             int i_sort;
@@ -830,171 +870,8 @@ std::vector<unsigned short> ACC_ETH::CorrectData(std::vector<uint64_t> input_dat
         {
             std::cerr << "Error in 7795 reordering and casting: " << e.what() << '\n';
         }
+        corrected_data.pop_back();
     }
 
     return corrected_data;
-}
-
-
-std::vector<unsigned short> ACC_ETH::Temp_Read(int triggersource, vector<int> LAPPD_on_ACC)
-{
-    vector<int> BoardsReadyForRead;
-	map<int,int> ReadoutSize;
-
-	//setup a sigint capturer to safely
-	//reset the boards if a ctrl-c signal is found
-	struct sigaction sa;
-	memset( &sa, 0, sizeof(sa) );
-	sa.sa_handler = got_signal;
-	sigfillset(&sa.sa_mask);
-	sigaction(SIGINT,&sa,NULL);
-
-    //Enalble Data Transfer
-    bool ret = eth->SendData(CML_ACC.ACDC_Command,CML_ACDC.Enable_Transfer | (0xff<<24) ,"w");
-    if(!ret){printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);}
-  	
-	//duration variables
-	auto start = chrono::steady_clock::now(); //start of the current event listening. 
-	auto now = chrono::steady_clock::now(); //just for initialization 
-	auto printDuration = chrono::milliseconds(10000); //prints as it loops and listens
-	auto lastPrint = chrono::steady_clock::now();
-	auto timeoutDuration = chrono::milliseconds(timeoutvalue); // will exit and reinitialize
-
-    uint64_t acdcboads = eth->RecieveDataSingle(CML_ACC.ACDC_Board_Detect,0x0);
-    uint64_t plllock = eth->RecieveDataSingle(CML_ACC.PLL_Lock_Readback,0x0);
-    uint64_t firmwareversion = eth->RecieveDataSingle(CML_ACC.Firmware_Version_Readback,0x0);
-    uint64_t external_clock = eth->RecieveDataSingle(CML_ACC.External_CLock_Lock_Readback,0x0);
-
-	while(true)
-	{ 
-		//Clear the boards read vector
-		BoardsReadyForRead.clear(); 
-		ReadoutSize.clear();
-        LastACCBuffer.clear();
-		
-		//Time the listen fuction
-		now = chrono::steady_clock::now();
-		if(chrono::duration_cast<chrono::milliseconds>(now - lastPrint) > printDuration)
-		{	
-			string err_msg = "Have been waiting for a trigger for ";
-			err_msg += to_string(chrono::duration_cast<chrono::milliseconds>(now - start).count());
-			err_msg += " seconds";
-			WriteErrorLog(err_msg);
-			for(int i=0; i<MAX_NUM_BOARDS; i++)
-			{
-				string err_msg = "Buffer for board ";
-				err_msg += to_string(i);
-				err_msg += " has ";
-				err_msg += to_string(LastACCBuffer.at(16+i));
-				err_msg += " words";
-				WriteErrorLog(err_msg);
-			}
-			lastPrint = chrono::steady_clock::now();
-		}
-
-		if(chrono::duration_cast<chrono::milliseconds>(now - start) > timeoutDuration)
-		{
-			return {601};
-		}
-
-		//If sigint happens, return value of 3
-		if(quitacc.load())
-		{
-			return {602};
-		}
-
-        //Determine buffers and create info frame
-        uint64_t buffers_0123 = eth->RecieveDataSingle(CML_ACC.RX_Buffer_Size_Ch0123_Readback,0x0);
-        uint64_t buffers_4567 = eth->RecieveDataSingle(CML_ACC.RX_Buffer_Size_Ch4567_Readback,0x0);
-        uint64_t datadetect = eth->RecieveDataSingle(CML_ACC.Data_Frame_Receive,0x0);
-
-        LastACCBuffer = {};//{0x1234,0xAAAA,firmwareversion,plllock,external_clock,acdcboads,datadetect,buffers_0123,buffers_4567};
-        uint64_t allbuffers = (buffers_4567<<32) | buffers_0123;
-
-		//go through all boards on the acc info frame and if 7795 words were transfered note that board
-		for(int k: LAPPD_on_ACC)
-		{
-            if(datadetect & (1<<k))
-            {
-                //Data is seen
-                if(((allbuffers>>k*16) & 0xffff) == PSECFRAME)
-                {
-                    //Data matches
-                    BoardsReadyForRead.push_back(k);
-					ReadoutSize[k] = PSECFRAME;
-                }
-            }else
-            {
-                //Else is seen
-                if(((allbuffers>>k*16) & 0xffff) == PPSFRAME)
-                {
-                    //PPS matches
-                    BoardsReadyForRead.push_back(k);
-					ReadoutSize[k] = PPSFRAME;
-                }
-            }
-		}
-
-		//old trigger
-		if(BoardsReadyForRead==LAPPD_on_ACC)
-		{
-            out_acc_if = LastACCBuffer;
-            out_boardid = BoardsReadyForRead;
-			break;
-		}
-    }
-
-    for(int bi: BoardsReadyForRead)
-    {
-        ret = eth->SendData(CML_ACC.Read_ACDC_Data_Buffer, bi,"w");
-        if(!ret){printf("Could not send command 0x%08llX with value %i to enable transfer!\n",command_address,command_value);}  
-
-        std::vector<uint64_t> buffer = eth_burst->RecieveBurst(7795,1,0);
-        std::vector<unsigned short> corrected_data;
-
-        if(buffer.size()>=7795)
-        {
-            try
-            {
-                int i_sort;
-                for(i_sort=0; i_sort<buffer.size(); i_sort+=4)
-                {
-                    if(buffer.size()-i_sort<4)
-                    {
-                        int how_much_is_left = buffer.size() - i_sort; 
-                        for(int i_sort2=how_much_is_left; i_sort2>0; i_sort2--)
-                        {
-                            corrected_data.push_back(static_cast<unsigned short>(buffer.at(i_sort+i_sort2-1)));
-                        }
-                        break;
-                    }
-                    corrected_data.push_back(static_cast<unsigned short>(buffer.at(3+i_sort-0)));
-                    corrected_data.push_back(static_cast<unsigned short>(buffer.at(3+i_sort-1)));
-                    corrected_data.push_back(static_cast<unsigned short>(buffer.at(3+i_sort-2)));
-                    corrected_data.push_back(static_cast<unsigned short>(buffer.at(3+i_sort-3)));
-                }  
-            }catch(const std::exception& e)
-            {
-                std::cerr << "Error in 7795+ reordering and casting: " << e.what() << '\n';
-            }
-        }else
-        {
-            std::cout << "HOW IS " << buffer.size() << "EVEN POSSIBLE" << std::endl;
-        }
-
-        std::string name = "./WTF.txt";
-        ofstream file(name.c_str(),ios_base::out | ios_base::app);
-        file << "ID-" << bi << " ";
-        for(int k=0; k<corrected_data.size(); k++)
-        {
-            file << std::hex << corrected_data.at(k) << std::dec << " ";
-        }
-        file << std::endl;
-        file.close();
-
-        corrected_data.clear();
-        buffer.clear();
-    }
-
-    return LastACCBuffer;
 }

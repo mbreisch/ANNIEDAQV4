@@ -25,6 +25,7 @@
 #include <PsecData.h>
 #include <PsecConfig.h>
 #include <TempClassStore.h>
+#include <LocalData.h>
 
 
 /**
@@ -89,6 +90,7 @@ class DataModel {
   PsecData psec;
   PsecConfig conf;
   TempClassStore TCS;
+  LocalData local;
 
   
  private:
